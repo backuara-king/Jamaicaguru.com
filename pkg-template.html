@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{PKG_NAME}} — Jamaica Guru</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @font-face { font-family:'Fraunces'; font-style:normal; font-weight:300 600; font-display:swap; src:url(data:font/woff2;base64,__FRAUNCES_ROMAN__) format('woff2'); }
+  @font-face { font-family:'Fraunces'; font-style:italic; font-weight:500; font-display:swap; src:url(data:font/woff2;base64,__FRAUNCES_ITALIC__) format('woff2'); }
+  @font-face { font-family:'Inter'; font-style:normal; font-weight:100 900; font-display:swap; src:url(data:font/woff2;base64,__INTER__) format('woff2'); }
+
+  :root{
+    --bg: #FFFFFF;
+    --card: #FFFFFF;
+    --card-soft: #FFF6DC;
+    --card-border: rgba(27,67,50,0.18);
+    --line: rgba(0,0,0,0.10);
+    --purple-accent: #1B4332;
+    --purple-accent-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-soft: #FFD100;
+    --white: #1A1A1A;
+    --muted: #5C5347;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%; scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+  body{
+    margin:0;
+    background: radial-gradient(ellipse 1000px 650px at 50% -5%, #FFEDA8 0%, transparent 65%), var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--white);
+    padding-bottom:96px;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit;}
+  button{font:inherit;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.5;
+    background-image: radial-gradient(rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+
+  .wrap{max-width:980px; margin:0 auto; padding:0 18px; position:relative; z-index:1;}
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px; margin:14px 0 0;
+    font-size:12.5px; font-weight:600; color:var(--muted); text-decoration:none;
+  }
+  .back-link:hover{color:var(--purple-accent);}
+  .back-link svg{width:13px; height:13px;}
+
+  /* ===== NAV (mobile-first) — yellow used as an overlay strip on the white page ===== */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; background:rgba(255,225,120,0.55); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex; align-items:center; gap:7px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; letter-spacing:0.02em; text-decoration:none; color:var(--white);}
+  .logo .palm{color:var(--purple-accent); font-size:15px;}
+  .nav-links{display:none; gap:30px; font-size:14.5px; color:var(--muted);}
+  .nav-links a{text-decoration:none;}
+  .nav-links a:hover{color:var(--white);}
+  .nav-book{
+    display:none;
+    background:var(--white); border:1px solid var(--white); color:var(--gold-soft);
+    border-radius:24px; padding:10px 18px; font-size:13.5px; font-family:'Inter',sans-serif;
+    align-items:center; gap:7px; cursor:pointer; font-weight:600; text-decoration:none;
+  }
+  .menu-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:42px; height:42px; border-radius:10px; background:var(--card-soft);
+    border:1px solid var(--card-border); color:var(--white); cursor:pointer;
+  }
+  .mobile-menu{
+    display:none; flex-direction:column; gap:2px; padding:8px 10px 14px;
+    background:rgba(255,225,120,0.7); border-bottom:1px solid var(--line);
+  }
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{
+    text-decoration:none; color:var(--muted); padding:12px 10px; font-size:15px;
+    border-radius:10px;
+  }
+  .mobile-menu a:active{background:var(--card-soft); color:var(--white);}
+  .mobile-menu .mm-book{
+    margin-top:8px; background:linear-gradient(135deg, var(--purple-accent), var(--purple-accent-2));
+    color:#FFD100; text-align:center; padding:13px; border-radius:24px; font-weight:600; font-size:14.5px;
+    text-decoration:none; display:block;
+  }
+
+  /* ===== HERO (mobile-first) — black/green/gold, straight from the logo ===== */
+  .hero-shell{max-width:1180px; margin:0 auto 28px; padding:18px 14px 0;}
+  .hero-card{
+    --white: #FFFFFF;
+    --muted: rgba(255,255,255,0.75);
+    --gold-soft: #FFD100;
+    --card-soft: rgba(255,255,255,0.14);
+    --card-border: rgba(255,209,0,0.30);
+    --line: rgba(255,255,255,0.20);
+    background:linear-gradient(155deg, #0F1F16 0%, #17331F, #1B4332 70%, #2F6B4F 100%);
+    border:1px solid rgba(255,209,0,0.25);
+    border-radius:22px; padding:22px; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; gap:26px;
+  }
+  .hero-card::before{
+    content:''; position:absolute; top:0; right:0; width:0; height:0;
+    border-style:solid; border-width:0 90px 90px 0; border-color:transparent #FFD100 transparent transparent;
+    opacity:0.9;
+  }
+  .hero-card::after{
+    content:''; position:absolute; top:-120px; left:-120px; width:280px; height:280px;
+    background:radial-gradient(circle, rgba(255,209,0,0.14), transparent 70%);
+  }
+  .hero-copy{position:relative; z-index:1; order:2;}
+  .hero-badge{
+    display:inline-flex; align-items:center; gap:6px; background:rgba(255,209,0,0.16);
+    border:1px solid rgba(255,209,0,0.4); border-radius:20px; padding:6px 13px;
+    font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-soft); margin-bottom:16px;
+  }
+  .hero-copy h2{font-size:30px; font-weight:500; line-height:1.08; margin-bottom:10px; color:var(--white);}
+  .hero-tagline{color:#FFD100; font-size:13.5px; margin-bottom:16px; font-weight:600;}
+  .hero-desc{color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:22px; border-top:1px solid var(--line); padding-top:18px;}
+  .hero-feats{display:grid; grid-template-columns:1fr 1fr; gap:16px 12px; margin-bottom:24px;}
+  .hero-feat{display:flex; align-items:center; gap:10px;}
+  .hero-feat .fi{
+    width:36px; height:36px; min-width:36px; border-radius:50%; background:rgba(255,209,0,0.16);
+    display:flex; align-items:center; justify-content:center; color:var(--gold-soft);
+  }
+  .hero-feat .fi svg{width:16px; height:16px;}
+  .hero-feat span{font-size:12px; color:var(--muted); line-height:1.3;}
+  .hero-price-row{display:flex; flex-direction:column; gap:16px;}
+  .hero-price .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;}
+  .hero-price .amt{font-family:'Fraunces',serif; font-size:32px; line-height:1.1; color:var(--white);}
+  .hero-price .amt span{font-size:13px; color:#FFD100; font-family:'Inter',sans-serif;}
+  .hero-price .forppl{font-size:12.5px; color:var(--muted);}
+  .hero-cta{
+    width:100%; background:#FFD100;
+    color:#12281B; border:none; border-radius:28px; padding:16px 24px;
+    font-family:'Inter',sans-serif; font-weight:700; font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25); min-height:52px; text-decoration:none;
+  }
+
+  .hero-visual{
+    order:1; position:relative; z-index:1; border-radius:18px; overflow:hidden; aspect-ratio:4/3.4;
+    background:linear-gradient(180deg, #0F1F16 0%, #17331F 45%, #1B4332 100%);
+  }
+  .hero-slides{
+    position:absolute; inset:0; display:flex; height:100%; width:100%;
+    transition:transform 0.4s ease;
+  }
+  .hero-slide{position:relative; flex:0 0 100%; height:100%; overflow:hidden;}
+  .hero-slide svg{position:absolute; inset:0; width:100%; height:100%;}
+  .hero-visual .cap{
+    position:absolute; top:18px; left:18px; right:18px; z-index:2;
+    font-family:'Fraunces',serif; font-style:italic; font-size:19px; line-height:1.25; color:#FFFFFF;
+  }
+  .hero-visual .cap u{text-decoration:none; border-bottom:2px solid #FFD100;}
+  .hero-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+    width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(0,0,0,0.35); color:#FFFFFF; backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-arrow:hover{background:rgba(0,0,0,0.5);}
+  .hero-arrow.prev{left:12px;}
+  .hero-arrow.next{right:12px;}
+  .hero-dots{
+    position:absolute; bottom:14px; left:0; right:0; display:flex; justify-content:center; gap:6px; z-index:2;
+  }
+  .hero-dots button{
+    width:6px; height:6px; padding:0; border-radius:50%; background:rgba(255,255,255,0.4); border:none; cursor:pointer;
+    transition:width 0.2s, background 0.2s;
+  }
+  .hero-dots button.on{background:#FFD100; width:16px; border-radius:4px;}
+  .photo-note{
+    text-align:center; font-size:10.5px; color:var(--muted); margin-top:10px; letter-spacing:0.02em; padding:0 20px;
+  }
+
+  /* ===== package description ===== */
+  .pkg-desc{
+    padding-bottom:30px; margin-bottom:30px; border-bottom:1px solid var(--line);
+  }
+  .pkg-desc .step-tag{margin-bottom:8px;}
+  .pkg-desc h2{font-size:20px; font-weight:500; margin-bottom:14px; line-height:1.3;}
+  .pkg-desc p{color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 14px;}
+  .pkg-desc p:last-of-type{margin-bottom:0;}
+  .pkg-included{
+    margin-top:20px; background:var(--card); border:1px solid var(--card-border);
+    border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:12px;
+  }
+  .pkg-included .inc-title{
+    font-size:11px; color:var(--purple-accent); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px; font-weight:700;
+  }
+  .pkg-included ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px;}
+  .pkg-included li{display:flex; align-items:flex-start; gap:10px; font-size:13.5px; color:var(--white); line-height:1.4;}
+  .pkg-included li svg{flex-shrink:0; margin-top:2px; color:var(--gold);}
+
+  /* ===== continuation strip ===== */
+  .continue-note{
+    text-align:center; padding:22px 0 6px;
+    color:var(--muted); font-size:12px; letter-spacing:0.07em; text-transform:uppercase;
+  }
+  .continue-note svg{display:block; margin:6px auto 0; opacity:0.6;}
+
+  /* ===== recap ===== */
+  .recap{
+    display:flex; flex-direction:column; gap:12px;
+    padding:16px 0 24px; border-bottom:1px solid var(--line); margin-bottom:28px;
+  }
+  .recap h1{font-size:26px; font-weight:500; line-height:1.1;}
+  .recap .eyebrow{color:var(--gold); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:7px; display:block;}
+  .recap .price .label{color:var(--muted); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;}
+  .recap .price .amt{font-family:'Fraunces',serif; font-size:24px; color:var(--white);}
+  .recap .price .amt span{color:var(--gold); font-size:14px; font-family:'Inter',sans-serif;}
+
+  /* ===== step scaffolding ===== */
+  .step{ display:flex; gap:14px; margin-bottom:10px; }
+  .step-rail{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:28px; }
+  .step-num{
+    width:28px; height:28px; border-radius:50%;
+    background:var(--card-soft); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-size:12.5px; color:var(--gold-soft); flex-shrink:0;
+  }
+  .step-num.done{background:var(--gold); color:#FFFFFF; border-color:var(--gold);}
+  .step-line{width:1px; flex:1; background:linear-gradient(var(--card-border), transparent); margin:6px 0;}
+  .step:last-of-type .step-line{display:none;}
+
+  .step-body{flex:1; min-width:0; padding-bottom:30px;}
+  .step-tag{color:var(--muted); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;}
+  .step-title{font-size:18px; font-weight:500; margin-bottom:4px; line-height:1.25;}
+  .step-sub{color:var(--muted); font-size:13px; margin-bottom:14px; line-height:1.5;}
+  .optional-pill{
+    display:inline-block; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--gold-soft); border:1px solid var(--card-border); border-radius:20px;
+    padding:2px 8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; font-weight:600;
+  }
+
+  /* guest dropdown */
+  .select-shell{position:relative;}
+  select{
+    width:100%; appearance:none; background:var(--card); color:var(--white);
+    border:1px solid var(--card-border); border-radius:12px; padding:15px 42px 15px 16px;
+    font-size:16px; font-family:'Inter',sans-serif; cursor:pointer; min-height:52px;
+  }
+  select:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .select-shell::after{
+    content:''; position:absolute; right:17px; top:50%; width:9px; height:9px;
+    border-right:2px solid var(--gold); border-bottom:2px solid var(--gold);
+    transform:translateY(-65%) rotate(45deg); pointer-events:none;
+  }
+
+  /* option cards — single column on mobile for full-width tap targets */
+  .option-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+  .opt-card{
+    position:relative; background:var(--card); border:1px solid var(--card-border);
+    border-radius:14px; padding:14px 44px 14px 14px; cursor:pointer;
+    transition:border-color .15s, background .15s;
+    display:flex; align-items:center; gap:13px; min-height:64px;
+  }
+  .opt-card:active{border-color:rgba(230,183,77,0.5);}
+  .opt-card input{position:absolute; opacity:0; pointer-events:none;}
+  .opt-card .icon{
+    width:38px; height:38px; min-width:38px; border-radius:10px; background:var(--card-soft);
+    display:flex; align-items:center; justify-content:center; color:var(--gold);
+  }
+  .opt-card .icon svg{width:18px; height:18px;}
+  .opt-card .text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .opt-card .name{font-size:14.5px; font-weight:600; line-height:1.3;}
+  .opt-card .desc{font-size:12px; color:var(--muted); line-height:1.4;}
+  .opt-card .check{
+    position:absolute; top:50%; right:14px; transform:translateY(-50%);
+    width:20px; height:20px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.3); background:transparent; flex-shrink:0;
+  }
+  .opt-card:has(input:checked){
+    border-color:var(--gold); background:linear-gradient(160deg, rgba(230,183,77,0.14), var(--card));
+  }
+  .opt-card:has(input:checked) .check{ background:var(--gold); border-color:var(--gold); }
+  .opt-card:has(input:checked) .check::after{
+    content:''; display:block; width:5px; height:10px; border-right:2px solid #FFFFFF; border-bottom:2px solid #FFFFFF;
+    transform:translate(7px,4px) rotate(45deg);
+  }
+  .opt-card.none-opt{justify-content:flex-start;}
+  .opt-card.none-opt .name{color:var(--muted); font-weight:500;}
+
+  /* date picker */
+  .date-panel{
+    background:var(--card); border:1px solid var(--card-border); border-radius:16px; padding:18px;
+  }
+  .date-panel .field-label{font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:0.04em;}
+  input[type="date"]{
+    width:100%; background:var(--card-soft); color:var(--white);
+    border:1px solid var(--card-border); border-radius:10px; padding:14px;
+    font-family:'Inter',sans-serif; font-size:16px; color-scheme:light; min-height:50px;
+  }
+  input[type="date"]:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .trip-range{
+    margin-top:16px; padding-top:16px; border-top:1px dashed var(--card-border);
+    display:flex; align-items:center; gap:10px;
+  }
+  .trip-range .dot-line{
+    flex:1; height:1px; background:repeating-linear-gradient(to right, var(--gold) 0 4px, transparent 4px 8px);
+  }
+  .trip-range .cap{font-size:10.5px; color:var(--gold-soft); text-transform:uppercase; letter-spacing:0.06em;}
+  .range-days{display:flex; flex-direction:column; gap:6px; margin-top:12px;}
+  .range-days span{font-size:12.5px; color:var(--muted);}
+  .range-days b{color:var(--white); font-weight:600;}
+
+  /* payment */
+  .pay-grid{display:grid; grid-template-columns:1fr; gap:12px;}
+  .pay-card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:14px; padding:16px 44px 16px 16px;
+    cursor:pointer; position:relative;
+  }
+  .pay-card input{position:absolute; opacity:0; pointer-events:none;}
+  .pay-card:has(input:checked){border-color:var(--gold); background:linear-gradient(160deg, rgba(230,183,77,0.14), var(--card));}
+  .pay-card .pay-name{font-size:14px; font-weight:600; margin-bottom:4px;}
+  .pay-card .pay-amt{font-family:'Fraunces',serif; font-size:22px; color:var(--gold-soft);}
+  .pay-card .pay-note{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4;}
+  .pay-card .check{
+    position:absolute; top:16px; right:14px; width:18px; height:18px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.3);
+  }
+  .pay-card:has(input:checked) .check{background:var(--gold); border-color:var(--gold);}
+  .pay-card:has(input:checked) .check::after{
+    content:''; display:block; width:5px; height:9px; border-right:2px solid #FFFFFF; border-bottom:2px solid #FFFFFF;
+    transform:translate(6px,3px) rotate(45deg);
+  }
+
+  /* sticky bottom summary — thumb-reachable on mobile */
+  .summary-bar{
+    position:sticky; bottom:0; left:0; right:0; z-index:40; margin-top:16px;
+    background:rgba(255,225,120,0.75); backdrop-filter:blur(10px);
+    border-top:1px solid var(--card-border); border-radius:20px 20px 0 0;
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    box-shadow:0 -10px 30px rgba(0,0,0,0.35);
+  }
+  .summary-left .sum-label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;}
+  .summary-left .sum-amt{font-family:'Fraunces',serif; font-size:21px; color:var(--white);}
+  .summary-left .sum-amt span{font-size:12px; color:var(--gold); font-family:'Inter',sans-serif;}
+  .cta-btn{
+    background:linear-gradient(135deg, var(--purple-accent), var(--purple-accent-2));
+    color:#FFD100; border:none; border-radius:26px; padding:14px 20px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer;
+    display:flex; align-items:center; gap:7px; box-shadow:0 6px 20px rgba(27,67,50,0.35);
+    white-space:nowrap; min-height:48px; text-decoration:none;
+  }
+  .cta-btn:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+
+  /* ===================== TABLET (>=600px) ===================== */
+  @media (min-width:600px){
+    .wrap{padding:0 28px;}
+    .hero-shell{padding:24px 24px 0;}
+    .hero-card{padding:34px; border-radius:26px;}
+    .hero-copy h2{font-size:38px;}
+    .hero-feats{grid-template-columns:1fr 1fr; gap:18px;}
+    .option-grid{grid-template-columns:1fr 1fr;}
+    .option-grid .opt-card{flex-direction:column; align-items:flex-start; padding:16px; min-height:120px;}
+    .option-grid .opt-card .check{top:14px; right:14px; transform:none;}
+    .opt-card.none-opt{grid-column:1 / -1; flex-direction:row; align-items:center;}
+    .pay-grid{grid-template-columns:1fr 1fr;}
+    .recap{flex-direction:row; align-items:flex-end; justify-content:space-between;}
+    .recap .price{text-align:right;}
+    .select-shell, .date-panel{max-width:320px;}
+    .hero-price-row{flex-direction:row; align-items:center; justify-content:space-between;}
+    .hero-cta{width:auto;}
+    .range-days{flex-direction:row; justify-content:space-between;}
+  }
+
+  /* ===================== DESKTOP (>=900px) ===================== */
+  @media (min-width:900px){
+    .wrap{max-width:980px; padding:0 24px;}
+
+    .nav{position:static; padding:26px 32px; background:transparent; backdrop-filter:none; border-bottom:none; max-width:1180px; margin:0 auto;}
+    .logo{font-size:19px;}
+    .nav-links{display:flex;}
+    .nav-book{display:flex;}
+    .menu-btn{display:none;}
+    .mobile-menu{display:none !important;}
+
+    .hero-shell{max-width:1180px; margin:0 auto 40px; padding:0 24px;}
+    .hero-card{flex-direction:row; align-items:center; gap:48px; padding:52px; border-radius:28px;}
+    .hero-copy{order:1;}
+    .hero-badge{margin-bottom:22px;}
+    .hero-copy h2{font-size:46px; margin-bottom:12px;}
+    .hero-tagline{margin-bottom:18px;}
+    .hero-desc{font-size:14.5px; max-width:420px; margin-bottom:26px; padding-top:20px;}
+    .hero-feats{grid-template-columns:repeat(4, auto); gap:22px; margin-bottom:30px;}
+    .hero-feat{flex-direction:column; align-items:flex-start; gap:9px; max-width:88px;}
+    .hero-price-row{flex-direction:row; align-items:center; gap:20px;}
+    .hero-price .amt{font-size:38px;}
+    .hero-cta{width:auto; padding:15px 26px; font-size:14px; min-height:auto;}
+    .hero-visual{order:2; aspect-ratio:4/5; border-radius:20px;}
+    .hero-visual .cap{top:26px; left:26px; right:26px; font-size:24px;}
+    .hero-dots{bottom:16px;}
+    .hero-arrow{width:38px; height:38px;}
+    .hero-arrow.prev{left:16px;}
+    .hero-arrow.next{right:16px;}
+    .photo-note{font-size:11px; margin-top:10px; padding:0;}
+
+    .continue-note{padding:28px 0 8px; font-size:13px;}
+
+    .pkg-desc{
+      display:grid; grid-template-columns:1.3fr 1fr; gap:40px; align-items:start;
+      padding-bottom:36px; margin-bottom:36px;
+    }
+    .pkg-desc h2{font-size:24px; margin-bottom:16px;}
+    .pkg-desc p{font-size:14.5px;}
+    .pkg-included{margin-top:0;}
+
+    .recap{flex-direction:row; align-items:flex-end; justify-content:space-between; padding:18px 0 30px; margin-bottom:36px;}
+    .recap h1{font-size:34px;}
+    .recap .eyebrow{font-size:12px; margin-bottom:8px;}
+    .recap .price{text-align:right;}
+    .recap .price .label{font-size:11px;}
+    .recap .price .amt{font-size:30px;}
+    .recap .price .amt span{font-size:15px;}
+
+    .step{gap:22px;}
+    .step-rail{width:34px;}
+    .step-num{width:34px; height:34px; font-size:14px;}
+    .step-body{padding-bottom:34px;}
+    .step-tag{font-size:11px; margin-bottom:6px;}
+    .step-title{font-size:21px; margin-bottom:4px;}
+    .step-sub{font-size:13.5px; margin-bottom:16px;}
+
+    .select-shell{max-width:280px;}
+    select{padding:14px 42px 14px 16px; font-size:15px;}
+
+    .option-grid{grid-template-columns:repeat(3, 1fr); gap:12px;}
+    .opt-card{flex-direction:column; align-items:stretch; gap:10px; padding:16px; min-height:120px;}
+    .opt-card .text{display:contents;}
+    .opt-card .icon{width:34px; height:34px; border-radius:9px;}
+    .opt-card .check{top:12px; right:12px; transform:none;}
+    .opt-card.none-opt{grid-column:1 / -1; flex-direction:row; align-items:center; justify-content:center; text-align:center;}
+
+    .date-panel{max-width:340px; padding:20px;}
+    input[type="date"]{padding:12px 14px; font-size:14.5px; min-height:auto;}
+    .trip-range{margin-top:16px; padding-top:16px;}
+    .range-days{flex-direction:row; justify-content:space-between; margin-top:10px;}
+    .range-days span{font-size:12.5px;}
+
+    .pay-grid{grid-template-columns:1fr 1fr; gap:14px; max-width:560px;}
+    .pay-card{padding:18px;}
+    .pay-card .pay-name{font-size:14px;}
+    .pay-card .pay-amt{font-size:24px;}
+    .pay-card .pay-note{font-size:11.5px; margin-top:6px;}
+    .pay-card .check{top:14px; right:14px; width:17px; height:17px;}
+
+    .summary-bar{position:sticky; margin-top:20px; border-radius:18px 18px 0 0; padding:18px 24px;}
+    .summary-left .sum-amt{font-size:26px;}
+    .cta-btn{padding:15px 30px; font-size:14.5px; border-radius:30px; min-height:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav class="nav">
+  <a class="logo" href="#" data-jg-nav="home"><span class="palm">🌴</span> JAMAICA GURU</a>
+  <div class="nav-links">
+    <a href="#" data-jg-nav="home">Home</a><a href="#" data-jg-nav="home">Packages</a><a href="#booking-start">Experiences</a><a href="#" data-jg-nav="home">Add-Ons</a><a href="#" data-jg-nav="home">About Us</a><a href="#" data-jg-nav="home">Contact</a>
+  </div>
+  <a class="nav-book" href="#booking-start">Book Now
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m0 0l-6-6m6 6l-6 6"/></svg>
+  </a>
+  <button class="menu-btn" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#" data-jg-nav="home">Home</a><a href="#" data-jg-nav="home">Packages</a><a href="#booking-start">Experiences</a><a href="#" data-jg-nav="home">Add-Ons</a><a href="#" data-jg-nav="home">About Us</a><a href="#" data-jg-nav="home">Contact</a>
+  <a class="mm-book" href="#booking-start">Book Now</a>
+</div>
+
+<div class="wrap">
+  <a class="back-link" href="#" data-jg-nav="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5m0 0l6-6m-6 6l6 6"/></svg>
+    Back to all packages
+  </a>
+</div>
+
+<div class="hero-shell">
+  <div class="hero-card">
+    <div class="hero-copy">
+      <div class="hero-badge">✦ {{PKG_BADGE}}</div>
+      <h2>{{PKG_NAME}}</h2>
+      <div class="hero-tagline">{{PKG_TAGLINE}}</div>
+      <p class="hero-desc">{{PKG_HERO_DESC}}</p>
+      <div class="hero-feats">
+        <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 18h18M5 9V6a2 2 0 012-2h10a2 2 0 012 2v3"/></svg></span><span>{{NIGHTS}} Nights Accommodation</span></div>
+        <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg></span><span>Private Transportation</span></div>
+        <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="4"/><path d="M4 7h3l1-2h8l1 2h3v12H4V7z"/></svg></span><span>Curated Experiences</span></div>
+        <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span><span>24/7 Guru Support</span></div>
+      </div>
+      <div class="hero-price-row">
+        <div class="hero-price">
+          <div class="label">Starting from</div>
+          <div class="amt">${{PRICE_BASE}} <span>USD</span></div>
+          <div class="forppl">For 2 People</div>
+        </div>
+        <a class="hero-cta" href="#pkg-details">View Full Details
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m0 0l-6-6m6 6l-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-slides" id="heroSlides">
+
+        <!-- Slide 1: Palms -->
+        <div class="hero-slide">
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMax slice">
+            <defs>
+              <linearGradient id="bgGrad1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0F1F16"/><stop offset="55%" stop-color="#17331F"/><stop offset="100%" stop-color="#1B4332"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="500" fill="url(#bgGrad1)"/>
+            <circle cx="200" cy="150" r="90" fill="#FFD100" opacity="0.10"/>
+            <polygon points="0,0 90,0 0,90" fill="#FFD100" opacity="0.85"/>
+            <path d="M120 300c6-70 20-130 30-155-2 26-10 55 4 76 10-22 4-52 2-78 14 24 24 56 20 84 12-18 10-46 4-66 16 22 22 52 14 78-6 20-18 38-30 50-16 6-32 8-44 11z" fill="#FFD100"/>
+            <rect x="140" y="300" width="18" height="90" fill="#3C2A18"/>
+            <path d="M260 320c5-58 17-108 25-129-2 22-8 46 3 63 8-18 3-43 1-65 12 20 20 47 17 70 10-15 8-38 3-55 13 18 18 43 12 65-5 16-15 32-25 42-13 5-27 7-36 9z" fill="#FFD100" opacity="0.92"/>
+            <rect x="276" y="320" width="15" height="75" fill="#3C2A18"/>
+            <ellipse cx="200" cy="410" rx="200" ry="55" fill="#12281B"/>
+            <ellipse cx="200" cy="400" rx="150" ry="30" fill="#17331F"/>
+          </svg>
+          <div class="cap">{{HERO_CAP}}</div>
+        </div>
+
+        <!-- Slide 2: Waterfall -->
+        <div class="hero-slide">
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMax slice">
+            <defs>
+              <linearGradient id="bgGrad2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0F1F16"/><stop offset="60%" stop-color="#134A3A"/><stop offset="100%" stop-color="#1B4332"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="500" fill="url(#bgGrad2)"/>
+            <path d="M150 20 L165 260 L190 270 L178 20 Z" fill="#FFD100" opacity="0.55"/>
+            <path d="M195 40 L208 270 L232 278 L222 40 Z" fill="#FFD100" opacity="0.4"/>
+            <path d="M235 20 L248 260 L270 270 L260 20 Z" fill="#FFD100" opacity="0.5"/>
+            <ellipse cx="200" cy="290" rx="110" ry="24" fill="#FFD100" opacity="0.35"/>
+            <ellipse cx="200" cy="360" rx="180" ry="90" fill="#0E3A2E"/>
+            <ellipse cx="200" cy="350" rx="150" ry="65" fill="#134A3A"/>
+            <ellipse cx="200" cy="342" rx="120" ry="48" fill="#1B5C48"/>
+          </svg>
+          <div class="cap">Chase the <u>falls</u></div>
+        </div>
+
+        <!-- Slide 3: Horseback on the beach -->
+        <div class="hero-slide">
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMax slice">
+            <defs>
+              <linearGradient id="bgGrad3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0F1F16"/><stop offset="55%" stop-color="#17331F"/><stop offset="100%" stop-color="#2F6B4F"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="500" fill="url(#bgGrad3)"/>
+            <circle cx="90" cy="90" r="46" fill="#FFD100" opacity="0.85"/>
+            <ellipse cx="200" cy="380" rx="220" ry="70" fill="#12281B"/>
+            <path d="M150 330c10-8 18-30 34-32 14-2 20 10 32 8 8-14 24-16 30-6 10 4 12 18 6 26-10 4-18 16-32 16-20 0-24-10-38-8-16 2-26 12-38 8-8-2-4-8 6-12z" fill="#FFD100"/>
+            <path d="M240 300c4-14 14-24 20-22-2 8-6 16-4 24" fill="none" stroke="#FFD100" stroke-width="5" stroke-linecap="round"/>
+            <rect x="150" y="360" width="10" height="26" fill="#FFD100"/>
+            <rect x="220" y="360" width="10" height="26" fill="#FFD100"/>
+            <rect x="260" y="358" width="10" height="26" fill="#FFD100"/>
+          </svg>
+          <div class="cap">Ride the <u>coastline</u></div>
+        </div>
+
+        <!-- Slide 4: Night life -->
+        <div class="hero-slide">
+          <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMax slice">
+            <defs>
+              <linearGradient id="bgGrad4" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0A140F"/><stop offset="60%" stop-color="#12281B"/><stop offset="100%" stop-color="#1B4332"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="500" fill="url(#bgGrad4)"/>
+            <circle cx="70" cy="60" r="2" fill="#FFD100" opacity="0.8"/>
+            <circle cx="140" cy="100" r="1.5" fill="#FFD100" opacity="0.6"/>
+            <circle cx="320" cy="70" r="2" fill="#FFD100" opacity="0.7"/>
+            <circle cx="260" cy="130" r="1.5" fill="#FFD100" opacity="0.5"/>
+            <circle cx="350" cy="160" r="2" fill="#FFD100" opacity="0.6"/>
+            <circle cx="60" cy="170" r="1.5" fill="#FFD100" opacity="0.5"/>
+            <path d="M200 60l10 26 27 3-20 19 6 27-23-14-23 14 6-27-20-19 27-3z" fill="#FFD100" opacity="0.9"/>
+            <ellipse cx="200" cy="420" rx="220" ry="80" fill="#0A140F"/>
+            <ellipse cx="120" cy="400" rx="10" ry="30" fill="#FFD100" opacity="0.7"/>
+            <ellipse cx="200" cy="410" rx="10" ry="40" fill="#FFD100" opacity="0.85"/>
+            <ellipse cx="280" cy="400" rx="10" ry="30" fill="#FFD100" opacity="0.7"/>
+          </svg>
+          <div class="cap">The island after <u>dark</u></div>
+        </div>
+
+      </div>
+      <button class="hero-arrow prev" id="heroPrev" aria-label="Previous image" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="hero-arrow next" id="heroNext" aria-label="Next image" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div class="hero-dots" id="heroDots">
+        <button class="on" type="button" aria-label="Slide 1"></button>
+        <button type="button" aria-label="Slide 2"></button>
+        <button type="button" aria-label="Slide 3"></button>
+        <button type="button" aria-label="Slide 4"></button>
+      </div>
+    </div>
+  </div>
+  <div class="photo-note">Illustrated placeholder — swap in your real destination photography here</div>
+</div>
+
+<div class="wrap">
+
+  <div class="continue-note">
+    Scroll down after "View Full Details" ↓
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </div>
+
+  <div class="recap" id="pkg-details">
+    <div>
+      <span class="eyebrow">{{PKG_BADGE}}</span>
+      <h1>{{PKG_NAME}}</h1>
+    </div>
+    <div class="price">
+      <div class="label">Starting from</div>
+      <div class="amt">${{PRICE_BASE}} <span>USD</span></div>
+    </div>
+  </div>
+
+  <!-- Package description -->
+  <div class="pkg-desc">
+    <div>
+      <div class="step-tag">About this package</div>
+      <h2>{{PKG_ABOUT_TITLE}}</h2>
+      {{PKG_ABOUT_PARAGRAPHS}}
+    </div>
+    <div class="pkg-included">
+      <div class="inc-title">What's included</div>
+      <ul>
+        {{INCLUDED_LIST}}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 1: Guests -->
+  <div class="step" id="booking-start">
+    <div class="step-rail">
+      <div class="step-num done">1</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Party size</div>
+      <div class="step-title">How many guests?</div>
+      <div class="step-sub">Base price covers 2 people. Additional guests are calculated at checkout.</div>
+      <div class="select-shell">
+        <select id="guestSelect">
+          <option value="2" selected>2 Guests</option>
+          <option value="3">3 Guests</option>
+          <option value="4">4 Guests</option>
+          <option value="5">5 Guests</option>
+          <option value="6">6 Guests</option>
+          <option value="7">7 Guests</option>
+          <option value="8">8 Guests</option>
+          <option value="9">9 Guests</option>
+          <option value="10">10 Guests</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Adventure 1 -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">2</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Land adventure &middot; choose one (1)</div>
+      <div class="step-title">Pick your first adventure</div>
+      <div class="option-grid">
+        <label class="opt-card">
+          <input type="radio" name="adv1" checked>
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20c2-4 4-6 8-6s6 2 8 6M9 14c-1-3 0-6 2-8m2 8c1-3 0-6-2-8m-3 0c1-1.5 3-2 4-2s3 .5 4 2"/></svg></span>
+          <span class="text"><span class="name">Horseback Riding</span><span class="desc">Guided beach &amp; trail ride along the coast.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv1">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16l6-10 3 5 3-4 6 9M3 16h18"/></svg></span>
+          <span class="text"><span class="name">Bamboo Rafting</span><span class="desc">Calm river drift on a traditional raft.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv1">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20l7-7M4 6l16 12M8 4l12 12M14 4l6 6"/></svg></span>
+          <span class="text"><span class="name">Ziplining</span><span class="desc">Canopy-line course above the rainforest.</span></span>
+          <span class="check"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Adventure 2 -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">3</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Water adventure &middot; choose one (1)</div>
+      <div class="step-title">Pick your second adventure</div>
+      <div class="option-grid">
+        <label class="opt-card">
+          <input type="radio" name="adv2" checked>
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg></span>
+          <span class="text"><span class="name">Dunn's River Falls</span><span class="desc">Guided climb up the famous cascading falls.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv2">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="11" r="7"/><path d="M6 20c1.5-1 3-1 6-1s4.5 0 6 1"/></svg></span>
+          <span class="text"><span class="name">Blue Hole</span><span class="desc">Cliff jumps and swimming in mineral pools.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv2">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="6"/><path d="M2 12h4m12 0h4M12 2v4m0 12v4"/></svg></span>
+          <span class="text"><span class="name">River Tubing</span><span class="desc">Leisurely float down the river current.</span></span>
+          <span class="check"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Adventure 3 -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">4</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Open-air adventure &middot; choose one (1)</div>
+      <div class="step-title">Pick your third adventure</div>
+      <div class="option-grid">
+        <label class="opt-card">
+          <input type="radio" name="adv3" checked>
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg></span>
+          <span class="text"><span class="name">ATV</span><span class="desc">Off-road ride through backcountry trails.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv3">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15h18l-2 4H5l-2-4zM7 15V8l5-3 5 3v7M12 5v3"/></svg></span>
+          <span class="text"><span class="name">Catamaran / Party Cruise</span><span class="desc">Music, drinks and swimming stops at sea.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="adv3">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17c3-6 7-9 12-9l3-3M9 13l6-6M3 17c2 2 4 2 6 0"/></svg></span>
+          <span class="text"><span class="name">Jet Skiing</span><span class="desc">Guided open-water jet ski run.</span></span>
+          <span class="check"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  {{EXTRA_STEP}}
+
+  <!-- Step: Nightlife (optional) -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">{{NIGHTLIFE_STEP_NUM}}</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Choose one (1)</div>
+      <div class="step-title">Night life <span class="optional-pill">Optional</span></div>
+      <div class="step-sub">Select an option if you'd like to enjoy Jamaica's night life.</div>
+      <div class="option-grid">
+        <label class="opt-card">
+          <input type="radio" name="night" checked>
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
+          <span class="text"><span class="name">8 Rivaz Night Club</span><span class="desc">Live DJ, dancing &amp; island nightlife.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card">
+          <input type="radio" name="night">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
+          <span class="text"><span class="name">Taboo Night Club <span style="font-weight:400;color:var(--muted);">(Strip Club)</span></span><span class="desc">Adults-only entertainment, 18+.</span></span>
+          <span class="check"></span>
+        </label>
+        <label class="opt-card none-opt">
+          <input type="radio" name="night">
+          <span class="text"><span class="name">No thank you — skip the night life add-on</span></span>
+          <span class="check"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step: Dates -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">{{DATES_STEP_NUM}}</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Travel dates</div>
+      <div class="step-title">Pick your start date</div>
+      <div class="step-sub">This package runs {{TRIP_LENGTH_LABEL}} — choose the first day you'd like to travel and we'll fill in the rest.</div>
+      <div class="date-panel">
+        <div class="field-label">Arrival date</div>
+        <input type="date" id="tripDate" value="{{DEFAULT_DATE}}">
+        <div class="trip-range">
+          <span class="cap">Day 1</span>
+          <span class="dot-line"></span>
+          <span class="cap">Day {{DAYS_TOTAL}}</span>
+        </div>
+        <div class="range-days">
+          <span>Arrive <b id="dayStart">—</b></span>
+          <span>Depart <b id="dayEnd">—</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step: Payment -->
+  <div class="step">
+    <div class="step-rail">
+      <div class="step-num done">{{PAY_STEP_NUM}}</div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Secure your spot</div>
+      <div class="step-title">Choose how you'd like to pay</div>
+      <div class="pay-grid">
+        <label class="pay-card">
+          <input type="radio" name="pay" id="payDeposit" checked>
+          <span class="check"></span>
+          <div class="pay-name">Pay 20% Deposit</div>
+          <div class="pay-amt" id="depositAmt">—</div>
+          <div class="pay-note">Reserves your dates now. Remaining balance due 14 days before arrival.</div>
+        </label>
+        <label class="pay-card">
+          <input type="radio" name="pay" id="payFull">
+          <span class="check"></span>
+          <div class="pay-name">Pay in Full</div>
+          <div class="pay-amt" id="fullAmt">—</div>
+          <div class="pay-note">Nothing else to pay — one and done before you land.</div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="summary-bar">
+  <div class="summary-left">
+    <div class="sum-label">Total due today</div>
+    <div class="sum-amt" id="dueTodayAmt">—</div>
+  </div>
+  <a class="cta-btn" id="confirmBtn" href="#">Confirm Booking
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m0 0l-6-6m6 6l-6 6"/></svg>
+  </a>
+</div>
+
+<script>
+  /* ===== Hero image carousel ===== */
+  const heroSlides = document.getElementById('heroSlides');
+  const heroDots = document.querySelectorAll('#heroDots button');
+  const heroPrev = document.getElementById('heroPrev');
+  const heroNext = document.getElementById('heroNext');
+  let heroIndex = 0;
+  const heroSlideCount = heroDots.length;
+
+  function goToSlide(i){
+    heroIndex = (i + heroSlideCount) % heroSlideCount;
+    heroSlides.style.transform = `translateX(-${heroIndex * 100}%)`;
+    heroDots.forEach((d, idx) => d.classList.toggle('on', idx === heroIndex));
+  }
+  heroPrev.addEventListener('click', () => goToSlide(heroIndex - 1));
+  heroNext.addEventListener('click', () => goToSlide(heroIndex + 1));
+  heroDots.forEach((dot, idx) => dot.addEventListener('click', () => goToSlide(idx)));
+
+  // touch swipe support
+  let heroTouchStartX = null;
+  const heroVisual = document.querySelector('.hero-visual');
+  heroVisual.addEventListener('touchstart', (e) => { heroTouchStartX = e.touches[0].clientX; }, {passive:true});
+  heroVisual.addEventListener('touchend', (e) => {
+    if (heroTouchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - heroTouchStartX;
+    if (Math.abs(dx) > 40) { dx > 0 ? goToSlide(heroIndex - 1) : goToSlide(heroIndex + 1); }
+    heroTouchStartX = null;
+  }, {passive:true});
+
+  const PKG_NAME = "{{PKG_NAME_JS}}";
+  const BASE_PRICE = {{PRICE_BASE_RAW}};
+  const PER_EXTRA_GUEST = {{PRICE_PER_GUEST_RAW}};
+  const NIGHTS_OFFSET = {{NIGHTS}};
+  const guestSelect = document.getElementById('guestSelect');
+  const depositAmt = document.getElementById('depositAmt');
+  const fullAmt = document.getElementById('fullAmt');
+  const dueTodayAmt = document.getElementById('dueTodayAmt');
+  const payDeposit = document.getElementById('payDeposit');
+  const payFull = document.getElementById('payFull');
+
+  function totalPrice(){
+    const guests = parseInt(guestSelect.value, 10);
+    const extra = Math.max(0, guests - 2);
+    return BASE_PRICE + extra * PER_EXTRA_GUEST;
+  }
+  function fmt(n){ return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  function recalc(){
+    const total = totalPrice();
+    const deposit = total * 0.2;
+    depositAmt.textContent = fmt(deposit);
+    fullAmt.textContent = fmt(total);
+    const due = payFull.checked ? total : deposit;
+    dueTodayAmt.innerHTML = fmt(due) + ' <span>USD</span>';
+  }
+
+  guestSelect.addEventListener('change', recalc);
+  payDeposit.addEventListener('change', recalc);
+  payFull.addEventListener('change', recalc);
+  recalc();
+
+  const dateInput = document.getElementById('tripDate');
+  const dayStart = document.getElementById('dayStart');
+  const dayEnd = document.getElementById('dayEnd');
+  const opts = { weekday:'short', month:'short', day:'numeric' };
+
+  function updateDates(){
+    const start = new Date(dateInput.value + 'T00:00:00');
+    const end = new Date(start);
+    end.setDate(start.getDate() + NIGHTS_OFFSET);
+    dayStart.textContent = start.toLocaleDateString('en-US', opts);
+    dayEnd.textContent = end.toLocaleDateString('en-US', opts);
+  }
+  dateInput.addEventListener('change', updateDates);
+  updateDates();
+
+  const menuToggle = document.getElementById('menuToggle');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuToggle.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', isOpen);
+  });
+
+  const PKG_BADGE = "{{PKG_BADGE_JS}}";
+  const VIEW_ID = "{{VIEW_ID}}";
+  const confirmBtn = document.getElementById('confirmBtn');
+
+  function pickedName(inputName){
+    const el = document.querySelector('input[name="' + inputName + '"]:checked');
+    if (!el) return '';
+    const card = el.closest('.opt-card');
+    if (card.classList.contains('none-opt')) return '';
+    return card.querySelector('.name').textContent.trim();
+  }
+
+  function gatherTripState(){
+    const end = new Date(dateInput.value + 'T00:00:00');
+    end.setDate(end.getDate() + NIGHTS_OFFSET);
+    return {
+      pkg: PKG_NAME,
+      badge: PKG_BADGE,
+      total: totalPrice().toFixed(2),
+      guests: guestSelect.value,
+      land: pickedName('adv1'),
+      water: pickedName('adv2'),
+      open: pickedName('adv3'),
+      bonus: pickedName('adv4'),
+      night: pickedName('night'),
+      arrive: dateInput.value,
+      depart: end.toISOString().slice(0, 10),
+      viewId: VIEW_ID
+    };
+  }
+
+  // This page lives inside an iframe of the single Jamaica Guru site
+  // document (same window hierarchy, same origin) — so selections hand off
+  // as a direct, same-window function call on the parent rather than a URL
+  // or storage handoff. No navigation, no serialization, nothing to lose.
+  function jgNav(view){
+    if (window.parent && window.parent.jgShowView) window.parent.jgShowView(view);
+  }
+  confirmBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.parent && window.parent.jgSetTripAndShow) {
+      window.parent.jgSetTripAndShow(gatherTripState(), 'review');
+    }
+  });
+  document.querySelectorAll('[data-jg-nav]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      jgNav(el.dataset.jgNav);
+    });
+  });
+</script>
+
+</body>
+</html>
