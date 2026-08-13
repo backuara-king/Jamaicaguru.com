@@ -367,6 +367,13 @@
   </button>
 </div>
 
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient(
+    'https://fgzfpeewbcccxaakpmty.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
+  );
+</script>
 <script>
   // This page lives inside an iframe of the single Jamaica Guru site
   // document — the order total/add-ons/payment choice were handed off as a
@@ -381,6 +388,7 @@
   function fmtMoney(n){ return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
   const order = (window.parent && window.parent.jgOrder) || null;
+  const trip = (window.parent && window.parent.jgTripState) || null;
 
   if (order) {
     document.getElementById('dPkgName').textContent = order.packageName || 'Your Package';
@@ -422,7 +430,9 @@
     return valid;
   }
 
-  form.addEventListener('submit', (e) => {
+  function val(v){ return v || null; }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validate()) {
       const firstError = document.querySelector('.field.has-error');
@@ -431,7 +441,42 @@
     }
 
     const first = document.getElementById('firstName').value.trim();
+    const last = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
     const ref = 'JG-' + Math.floor(100000 + Math.random()*900000);
+
+    const submitBtns = [document.getElementById('placeOrderBtnDesktop'), document.getElementById('placeOrderBtnMobile')].filter(Boolean);
+    submitBtns.forEach(b => { b.disabled = true; });
+
+    const { error } = await window.sb.from('bookings').insert({
+      booking_ref: ref,
+      package_name: (order && order.packageName) || (trip && trip.pkg) || 'Unknown package',
+      guests: trip ? parseInt(trip.guests, 10) || 2 : 2,
+      land_adventure: val(trip && trip.land),
+      water_adventure: val(trip && trip.water),
+      open_adventure: val(trip && trip.open),
+      bonus_adventure: val(trip && trip.bonus),
+      nightlife: val(trip && trip.night),
+      arrival_date: val(trip && trip.arrive),
+      depart_date: val(trip && trip.depart),
+      package_price: order ? order.packagePrice : 0,
+      addons: (order && order.addons) || [],
+      total: order ? order.total : 0,
+      payment_method: order ? order.paymentMethod : 'deposit',
+      due_today: order ? order.dueToday : 0,
+      first_name: first,
+      last_name: last,
+      email: email,
+      phone: phone
+    });
+
+    if (error) {
+      submitBtns.forEach(b => { b.disabled = false; });
+      alert("Something went wrong saving your booking, so we haven't charged anything yet — please try again. (" + error.message + ")");
+      return;
+    }
+
     document.getElementById('confirmName').textContent =
       `Thanks, ${first} — a confirmation is on its way to your inbox.`;
     document.getElementById('confirmRef').textContent = 'Booking Ref: ' + ref;

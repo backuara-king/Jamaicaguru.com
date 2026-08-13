@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>
-  // Soft gate — see login.html for what this does and doesn't protect.
-  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+<style>html:not(.jg-authed){visibility:hidden;}</style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient('https://fgzfpeewbcccxaakpmty.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs');
+  const { data } = await window.sb.auth.getSession();
+  if (!data.session) {
     window.location.href = 'login.html';
+  } else {
+    document.documentElement.classList.add('jg-authed');
   }
 </script>
 <title>Jamaica Guru — Bookings</title>
@@ -245,107 +250,126 @@
   </div>
 
   <div class="filter-row" id="filterRow">
-    <button class="filter-pill active" data-filter="all">All · 24</button>
-    <button class="filter-pill" data-filter="new">New · 4</button>
-    <button class="filter-pill" data-filter="pending">Pending Payment · 3</button>
-    <button class="filter-pill" data-filter="confirmed">Confirmed · 11</button>
-    <button class="filter-pill" data-filter="completed">Completed · 28</button>
-    <button class="filter-pill" data-filter="cancelled">Cancelled · 2</button>
+    <button class="filter-pill active" data-filter="all">All</button>
+    <button class="filter-pill" data-filter="new">New</button>
+    <button class="filter-pill" data-filter="pending">Pending Payment</button>
+    <button class="filter-pill" data-filter="confirmed">Confirmed</button>
+    <button class="filter-pill" data-filter="completed">Completed</button>
+    <button class="filter-pill" data-filter="cancelled">Cancelled</button>
   </div>
 
   <div class="two-up">
     <div>
       <div class="rowlist" id="bookingList">
-
-        <div class="rlrow selected" data-status="confirmed" data-id="JG-1024" data-guest="John Smith" data-package="5-Day Jamaica Experience" data-arrival="June 14" data-depart="June 19" data-guests="2" data-paid="500" data-outstanding="1200" data-accom="XYZ Endz" data-transport="Guru #14 — Assigned">
-          <div class="rl-top"><span class="rl-title">JG-1024 — John Smith</span><span class="badge ok">Confirmed</span></div>
-          <div class="rl-sub">5-Day Jamaica Experience · Arrives June 14</div>
-          <div class="rl-meta"><span class="m">Guests <b>2</b></span><span class="m">Paid <b>$500</b></span><span class="m">Due <b>$1,200</b></span></div>
-        </div>
-
-        <div class="rlrow" data-status="new" data-id="JG-1049" data-guest="Priya Chandra" data-package="3 Day Island Escape" data-arrival="Aug 22" data-depart="Aug 25" data-guests="4" data-paid="0" data-outstanding="2318" data-accom="Not yet assigned" data-transport="Not yet assigned">
-          <div class="rl-top"><span class="rl-title">JG-1049 — Priya Chandra</span><span class="badge gold">New</span></div>
-          <div class="rl-sub">3 Day Island Escape · Arrives Aug 22</div>
-          <div class="rl-meta"><span class="m">Guests <b>4</b></span><span class="m">Paid <b>$0</b></span><span class="m">Due <b>$2,318</b></span></div>
-        </div>
-
-        <div class="rlrow" data-status="pending" data-id="JG-1041" data-guest="Marcus Reid" data-package="3 Day Island Escape" data-arrival="Aug 17" data-depart="Aug 20" data-guests="2" data-paid="379.60" data-outstanding="980.40" data-accom="Palm Grove Villas" data-transport="Guru #7 — Assigned">
-          <div class="rl-top"><span class="rl-title">JG-1041 — Marcus Reid</span><span class="badge warn">Pending Payment</span></div>
-          <div class="rl-sub">3 Day Island Escape · Arrives Aug 17</div>
-          <div class="rl-meta"><span class="m">Guests <b>2</b></span><span class="m">Paid <b>$379.60</b></span><span class="m">Due <b>$980.40</b></span></div>
-        </div>
-
-        <div class="rlrow" data-status="confirmed" data-id="JG-1038" data-guest="The Okafor Family" data-package="5-Day Jamaica Experience" data-arrival="Aug 30" data-depart="Sep 4" data-guests="5" data-paid="1250" data-outstanding="1250" data-accom="Ocean Breeze Resort" data-transport="Guru #3 — Assigned">
-          <div class="rl-top"><span class="rl-title">JG-1038 — The Okafor Family</span><span class="badge ok">Confirmed</span></div>
-          <div class="rl-sub">5-Day Jamaica Experience · Arrives Aug 30</div>
-          <div class="rl-meta"><span class="m">Guests <b>5</b></span><span class="m">Paid <b>$1,250</b></span><span class="m">Due <b>$1,250</b></span></div>
-        </div>
-
-        <div class="rlrow" data-status="completed" data-id="JG-0982" data-guest="Alina Torres" data-package="3 Day Island Escape" data-arrival="July 3" data-depart="July 6" data-guests="2" data-paid="1898" data-outstanding="0" data-accom="Palm Grove Villas" data-transport="Guru #14 — Completed">
-          <div class="rl-top"><span class="rl-title">JG-0982 — Alina Torres</span><span class="badge neutral">Completed</span></div>
-          <div class="rl-sub">3 Day Island Escape · July 3–6</div>
-          <div class="rl-meta"><span class="m">Guests <b>2</b></span><span class="m">Paid <b>$1,898</b></span><span class="m">Due <b>$0</b></span></div>
-        </div>
-
-        <div class="rlrow" data-status="cancelled" data-id="JG-0955" data-guest="Devon Clarke" data-package="3 Day Island Escape" data-arrival="June 2" data-depart="June 5" data-guests="2" data-paid="379.60" data-outstanding="0" data-accom="—" data-transport="—">
-          <div class="rl-top"><span class="rl-title">JG-0955 — Devon Clarke</span><span class="badge danger">Cancelled</span></div>
-          <div class="rl-sub">3 Day Island Escape · Cancelled June 1</div>
-          <div class="rl-meta"><span class="m">Guests <b>2</b></span><span class="m">Refunded <b>$379.60</b></span></div>
-        </div>
-
+        <div style="padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;" id="bookingsLoading">Loading bookings…</div>
       </div>
     </div>
 
     <div>
-      <div class="detail-panel" id="detailPanel">
+      <div class="detail-panel" id="detailPanel" style="display:none;">
         <div class="detail-head">
           <div>
-            <h2 id="dGuest">John Smith</h2>
-            <div class="sub" id="dPackage">5-Day Jamaica Experience</div>
+            <h2 id="dGuest">—</h2>
+            <div class="sub" id="dPackage">—</div>
           </div>
-          <span class="badge ok" id="dStatus">Confirmed</span>
+          <select id="dStatusSelect" class="badge" style="border:none; appearance:none; cursor:pointer;">
+            <option value="new">New</option>
+            <option value="pending">Pending Payment</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         </div>
 
         <div class="kv-grid">
-          <div class="kv"><span class="k">Arrival</span><span class="v" id="dArrival">June 14</span></div>
-          <div class="kv"><span class="k">Departure</span><span class="v" id="dDepart">June 19</span></div>
-          <div class="kv"><span class="k">Guests</span><span class="v" id="dGuests">2</span></div>
-          <div class="kv"><span class="k">Booking ID</span><span class="v" id="dId">JG-1024</span></div>
+          <div class="kv"><span class="k">Arrival</span><span class="v" id="dArrival">—</span></div>
+          <div class="kv"><span class="k">Departure</span><span class="v" id="dDepart">—</span></div>
+          <div class="kv"><span class="k">Guests</span><span class="v" id="dGuests">—</span></div>
+          <div class="kv"><span class="k">Booking Ref</span><span class="v" id="dId">—</span></div>
         </div>
         <div class="kv-grid">
-          <div class="kv"><span class="k">Accommodation</span><span class="v" id="dAccom">XYZ Endz</span></div>
-          <div class="kv"><span class="k">Transportation</span><span class="v" id="dTransport">Guru #14 — Assigned</span></div>
-          <div class="kv"><span class="k">Paid</span><span class="v" id="dPaid">$500</span></div>
-          <div class="kv"><span class="k">Outstanding</span><span class="v" id="dOutstanding">$1,200</span></div>
+          <div class="kv"><span class="k">Email</span><span class="v" id="dEmail">—</span></div>
+          <div class="kv"><span class="k">Phone</span><span class="v" id="dPhone">—</span></div>
+          <div class="kv"><span class="k">Due now</span><span class="v" id="dPaid">—</span></div>
+          <div class="kv"><span class="k">Remaining</span><span class="v" id="dOutstanding">—</span></div>
         </div>
 
-        <h3 style="margin-bottom:10px;">Trip timeline</h3>
-        <div class="timeline">
-          <div class="tl-day"><div class="tl-label">Day 1</div>
-            <div class="tl-item"><span class="tl-dot"></span>Airport pickup</div>
-            <div class="tl-item"><span class="tl-dot"></span>Check-in</div>
-            <div class="tl-item"><span class="tl-dot"></span>Welcome dinner</div>
-          </div>
-          <div class="tl-day"><div class="tl-label">Day 2</div>
-            <div class="tl-item"><span class="tl-dot"></span>Dunn's River Falls</div>
-            <div class="tl-item"><span class="tl-dot"></span>Ocho Rios lunch</div>
-          </div>
-          <div class="tl-day"><div class="tl-label">Day 3</div>
-            <div class="tl-item"><span class="tl-dot"></span>Horseback Riding</div>
-            <div class="tl-item"><span class="tl-dot"></span>Free evening</div>
-          </div>
-        </div>
+        <h3 style="margin-bottom:10px;">Selections</h3>
+        <div class="timeline" id="dSelections"></div>
+      </div>
+      <div class="detail-panel" id="detailEmpty">
+        <div style="text-align:center; color:var(--muted); font-size:13px; padding:20px 0;">Select a booking to see its details.</div>
       </div>
     </div>
   </div>
 
 </main>
-<script>
-
+<script type="module">
   const sidebar = document.getElementById('sidebar');
   document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
   document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
 
+  document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await window.sb.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  const STATUS_LABEL = { new: 'New', pending: 'Pending Payment', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled' };
+  const STATUS_BADGE = { new: 'gold', pending: 'warn', confirmed: 'ok', completed: 'neutral', cancelled: 'danger' };
+
+  function fmt(n){ return '$' + Number(n || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function fmtDate(iso){
+    if (!iso) return '—';
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  const listEl = document.getElementById('bookingList');
+  const { data: bookings, error } = await window.sb
+    .from('bookings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    listEl.innerHTML = `<div style="padding:22px 16px; color:var(--danger); font-size:13px;">Couldn't load bookings: ${error.message}</div>`;
+  } else if (!bookings || bookings.length === 0) {
+    listEl.innerHTML = `<div style="padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;">No bookings yet — they'll show up here as soon as someone checks out on the public site.</div>`;
+  } else {
+    listEl.innerHTML = '';
+    const counts = { all: bookings.length, new: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+
+    bookings.forEach((b, i) => {
+      const status = b.status || 'new';
+      counts[status] = (counts[status] || 0) + 1;
+      const guestName = [b.first_name, b.last_name].filter(Boolean).join(' ') || b.email || 'Unknown guest';
+      const due = b.payment_method === 'full' ? Number(b.total) : Number(b.due_today);
+      const remaining = Number(b.total) - due;
+
+      const row = document.createElement('div');
+      row.className = 'rlrow';
+      row.dataset.index = i;
+      row.dataset.status = status;
+      row.innerHTML = `
+        <div class="rl-top"><span class="rl-title">${b.booking_ref} — ${guestName}</span><span class="badge ${STATUS_BADGE[status]}">${STATUS_LABEL[status]}</span></div>
+        <div class="rl-sub">${b.package_name} · Arrives ${fmtDate(b.arrival_date)}</div>
+        <div class="rl-meta"><span class="m">Guests <b>${b.guests}</b></span><span class="m">Due now <b>${fmt(due)}</b></span><span class="m">Remaining <b>${fmt(remaining)}</b></span></div>
+      `;
+      row.addEventListener('click', () => selectBooking(i, row));
+      listEl.appendChild(row);
+    });
+
+    document.querySelectorAll('.filter-pill').forEach(p => {
+      const f = p.dataset.filter;
+      p.textContent = `${p.textContent.split('·')[0].trim()} · ${counts[f] || 0}`;
+    });
+
+    if (bookings.length) {
+      const firstRow = listEl.querySelector('.rlrow');
+      selectBooking(0, firstRow);
+    }
+  }
 
   document.querySelectorAll('.filter-pill').forEach(p => {
     p.addEventListener('click', () => {
@@ -358,34 +382,55 @@
     });
   });
 
-  document.querySelectorAll('#bookingList .rlrow').forEach(row => {
-    row.addEventListener('click', () => {
-      document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
-      row.classList.add('selected');
-      document.getElementById('dGuest').textContent = row.dataset.guest;
-      document.getElementById('dPackage').textContent = row.dataset.package;
-      document.getElementById('dId').textContent = row.dataset.id;
-      document.getElementById('dArrival').textContent = row.dataset.arrival;
-      document.getElementById('dDepart').textContent = row.dataset.depart;
-      document.getElementById('dGuests').textContent = row.dataset.guests;
-      document.getElementById('dAccom').textContent = row.dataset.accom;
-      document.getElementById('dTransport').textContent = row.dataset.transport;
-      document.getElementById('dPaid').textContent = '$' + row.dataset.paid;
-      document.getElementById('dOutstanding').textContent = '$' + row.dataset.outstanding;
-      const statusEl = document.getElementById('dStatus');
-      statusEl.textContent = row.querySelector('.badge').textContent;
-      statusEl.className = 'badge ' + row.querySelector('.badge').classList[1];
-      document.getElementById('detailPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
-    });
-  });
+  function selectBooking(i, row) {
+    const b = bookings[i];
+    document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    document.getElementById('detailEmpty').style.display = 'none';
+    document.getElementById('detailPanel').style.display = 'block';
 
-</script>
-<script>
-  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    sessionStorage.removeItem('jgAdminAuthed');
-    window.location.href = 'login.html';
-  });
+    const guestName = [b.first_name, b.last_name].filter(Boolean).join(' ') || 'Unknown guest';
+    const due = b.payment_method === 'full' ? Number(b.total) : Number(b.due_today);
+    const remaining = Number(b.total) - due;
+
+    document.getElementById('dGuest').textContent = guestName;
+    document.getElementById('dPackage').textContent = b.package_name;
+    document.getElementById('dId').textContent = b.booking_ref;
+    document.getElementById('dArrival').textContent = fmtDate(b.arrival_date);
+    document.getElementById('dDepart').textContent = fmtDate(b.depart_date);
+    document.getElementById('dGuests').textContent = b.guests;
+    document.getElementById('dEmail').textContent = b.email || '—';
+    document.getElementById('dPhone').textContent = b.phone || '—';
+    document.getElementById('dPaid').textContent = fmt(due);
+    document.getElementById('dOutstanding').textContent = fmt(remaining);
+
+    const sel = document.getElementById('dStatusSelect');
+    sel.value = b.status || 'new';
+    sel.onchange = async () => {
+      const newStatus = sel.value;
+      const { error: updateError } = await window.sb.from('bookings').update({ status: newStatus }).eq('id', b.id);
+      if (updateError) { alert("Couldn't update status: " + updateError.message); return; }
+      b.status = newStatus;
+      row.dataset.status = newStatus;
+      row.querySelector('.badge').textContent = STATUS_LABEL[newStatus];
+      row.querySelector('.badge').className = 'badge ' + STATUS_BADGE[newStatus];
+    };
+
+    const items = [
+      ['Land adventure', b.land_adventure],
+      ['Water adventure', b.water_adventure],
+      ['Open-air adventure', b.open_adventure],
+      ['Bonus adventure', b.bonus_adventure],
+      ['Night life', b.nightlife],
+      ['Add-ons', (b.addons && b.addons.length) ? b.addons.map(a => `${a.name} ×${a.qty}`).join(', ') : 'None'],
+      ['Payment', b.payment_method === 'full' ? 'Paid in full' : '20% deposit'],
+    ].filter(([, v]) => v);
+
+    const selWrap = document.getElementById('dSelections');
+    selWrap.innerHTML = items.map(([label, val]) =>
+      `<div class="tl-item"><span class="tl-dot"></span>${label}: <b style="margin-left:4px;">${val}</b></div>`
+    ).join('') || '<div class="tl-item">No selections recorded.</div>';
+  }
 </script>
 </body>
 </html>

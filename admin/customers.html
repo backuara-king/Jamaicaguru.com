@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>
-  // Soft gate — see login.html for what this does and doesn't protect.
-  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+<style>html:not(.jg-authed){visibility:hidden;}</style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient('https://fgzfpeewbcccxaakpmty.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs');
+  const { data } = await window.sb.auth.getSession();
+  if (!data.session) {
     window.location.href = 'login.html';
+  } else {
+    document.documentElement.classList.add('jg-authed');
   }
 </script>
 <title>Jamaica Guru — Customers</title>
@@ -247,83 +252,111 @@
   <div class="two-up">
     <div>
       <div class="rowlist" id="custList">
-        <div class="rlrow selected" data-name="John Smith" data-email="john.smith@email.com" data-phone="+1 (305) 555-0148" data-country="United States" data-trips="1" data-spent="1898" data-current="JG-1024 — arriving June 14" data-notes="Traveling with his wife for their anniversary. Prefers quieter, less touristy activities." data-pref="Adventure &amp; nature, avoids crowded excursions">
-          <div class="rl-top"><span class="rl-title">John Smith</span><span class="badge neutral">1 trip</span></div>
-          <div class="rl-sub">john.smith@email.com · United States</div>
-          <div class="rl-meta"><span class="m">Spent <b>$1,898</b></span><span class="m">Current trip <b>JG-1024</b></span></div>
-        </div>
-        <div class="rlrow" data-name="Alina Torres" data-email="alina.torres@email.com" data-phone="+1 (786) 555-0192" data-country="United States" data-trips="2" data-spent="3796" data-current="No active trip" data-notes="Repeat guest — booked twice within 6 months. Usually books last-minute." data-pref="Beach &amp; water adventures, groups of 2">
-          <div class="rl-top"><span class="rl-title">Alina Torres</span><span class="badge ok">Repeat · 2 trips</span></div>
-          <div class="rl-sub">alina.torres@email.com · United States</div>
-          <div class="rl-meta"><span class="m">Spent <b>$3,796</b></span><span class="m">Last trip <b>July 3</b></span></div>
-        </div>
-        <div class="rlrow" data-name="The Okafor Family" data-email="d.okafor@email.com" data-phone="+44 7700 900123" data-country="United Kingdom" data-trips="1" data-spent="2500" data-current="JG-1038 — arriving Aug 30" data-notes="Traveling with 3 children (ages 8-14). Requested kid-friendly activity options." data-pref="Family-friendly, groups of 5+">
-          <div class="rl-top"><span class="rl-title">The Okafor Family</span><span class="badge neutral">1 trip</span></div>
-          <div class="rl-sub">d.okafor@email.com · United Kingdom</div>
-          <div class="rl-meta"><span class="m">Spent <b>$2,500</b></span><span class="m">Current trip <b>JG-1038</b></span></div>
-        </div>
-        <div class="rlrow" data-name="Priya Chandra" data-email="priya.c@email.com" data-phone="+1 (416) 555-0177" data-country="Canada" data-trips="1" data-spent="2318" data-current="JG-1049 — arriving Aug 22" data-notes="First-time guest, found Jamaica Guru through Instagram. Asked several questions about night life options." data-pref="Night life, group of 4 friends">
-          <div class="rl-top"><span class="rl-title">Priya Chandra</span><span class="badge gold">New</span></div>
-          <div class="rl-sub">priya.c@email.com · Canada</div>
-          <div class="rl-meta"><span class="m">Spent <b>$2,318</b></span><span class="m">Current trip <b>JG-1049</b></span></div>
-        </div>
-        <div class="rlrow" data-name="Devon Clarke" data-email="devon.clarke@email.com" data-phone="+1 (876) 555-0134" data-country="Jamaica" data-trips="0" data-spent="0" data-current="No active trip" data-notes="Cancelled prior booking due to a schedule conflict. Said he'd like to rebook later this year." data-pref="Unknown">
-          <div class="rl-top"><span class="rl-title">Devon Clarke</span><span class="badge danger">Cancelled trip</span></div>
-          <div class="rl-sub">devon.clarke@email.com · Jamaica</div>
-          <div class="rl-meta"><span class="m">Spent <b>$0</b></span><span class="m">Refunded booking</span></div>
-        </div>
+        <div style="padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;">Loading customers…</div>
       </div>
     </div>
 
     <div>
-      <div class="detail-panel" id="custDetail">
+      <div class="detail-panel" id="custDetail" style="display:none;">
         <div class="detail-head">
-          <div><h2 id="cName">John Smith</h2><div class="sub" id="cEmail">john.smith@email.com</div></div>
+          <div><h2 id="cName">—</h2><div class="sub" id="cEmail">—</div></div>
         </div>
         <div class="kv-grid" style="grid-template-columns:1fr 1fr;">
-          <div class="kv"><span class="k">Phone</span><span class="v" id="cPhone">+1 (305) 555-0148</span></div>
-          <div class="kv"><span class="k">Country</span><span class="v" id="cCountry">United States</span></div>
-          <div class="kv"><span class="k">Trips</span><span class="v" id="cTrips">1</span></div>
-          <div class="kv"><span class="k">Total spent</span><span class="v" id="cSpent">$1,898</span></div>
+          <div class="kv"><span class="k">Phone</span><span class="v" id="cPhone">—</span></div>
+          <div class="kv"><span class="k">Trips booked</span><span class="v" id="cTrips">—</span></div>
+          <div class="kv"><span class="k">Total spent</span><span class="v" id="cSpent">—</span></div>
+          <div class="kv"><span class="k">Most recent</span><span class="v" id="cLast">—</span></div>
         </div>
-        <div class="field"><label>Current trip</label><div style="font-size:13.5px;" id="cCurrent">JG-1024 — arriving June 14</div></div>
-        <div class="field"><label>Preferences</label><div style="font-size:13.5px; color:var(--muted);" id="cPref">Adventure &amp; nature, avoids crowded excursions</div></div>
-        <div class="field"><label>Notes</label><textarea id="cNotes" style="min-height:70px;">Traveling with his wife for their anniversary. Prefers quieter, less touristy activities.</textarea></div>
+        <div class="field"><label>Booking history</label></div>
+        <div class="timeline" id="cTripList"></div>
+      </div>
+      <div class="detail-panel" id="custEmpty">
+        <div style="text-align:center; color:var(--muted); font-size:13px; padding:20px 0;">Select a customer to see their booking history.</div>
       </div>
     </div>
   </div>
 
 </main>
-<script>
-
+<script type="module">
   const sidebar = document.getElementById('sidebar');
   document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
   document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
 
-
-  document.querySelectorAll('#custList .rlrow').forEach(row => {
-    row.addEventListener('click', () => {
-      document.querySelectorAll('#custList .rlrow').forEach(r => r.classList.remove('selected'));
-      row.classList.add('selected');
-      document.getElementById('cName').textContent = row.dataset.name;
-      document.getElementById('cEmail').textContent = row.dataset.email;
-      document.getElementById('cPhone').textContent = row.dataset.phone;
-      document.getElementById('cCountry').textContent = row.dataset.country;
-      document.getElementById('cTrips').textContent = row.dataset.trips;
-      document.getElementById('cSpent').textContent = '$' + Number(row.dataset.spent).toLocaleString();
-      document.getElementById('cCurrent').textContent = row.dataset.current;
-      document.getElementById('cPref').textContent = row.dataset.pref;
-      document.getElementById('cNotes').value = row.dataset.notes;
-    });
-  });
-
-</script>
-<script>
-  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+  document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
     e.preventDefault();
-    sessionStorage.removeItem('jgAdminAuthed');
+    await window.sb.auth.signOut();
     window.location.href = 'login.html';
   });
+
+  function fmt(n){ return '$' + Number(n || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function fmtDate(iso){
+    if (!iso) return '—';
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  const listEl = document.getElementById('custList');
+  const { data: bookings, error } = await window.sb
+    .from('bookings')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    listEl.innerHTML = `<div style="padding:22px 16px; color:var(--danger); font-size:13px;">Couldn't load customers: ${error.message}</div>`;
+  } else if (!bookings || bookings.length === 0) {
+    listEl.innerHTML = `<div style="padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;">No customers yet — they're built from real bookings, so they'll appear once someone checks out.</div>`;
+  } else {
+    // Group bookings by email into customer records.
+    const byEmail = new Map();
+    bookings.forEach(b => {
+      const key = (b.email || '').toLowerCase() || `(no email) ${b.id}`;
+      if (!byEmail.has(key)) byEmail.set(key, []);
+      byEmail.get(key).push(b);
+    });
+
+    const customers = Array.from(byEmail.entries()).map(([email, trips]) => {
+      trips.sort((a, b2) => new Date(b2.created_at) - new Date(a.created_at));
+      const latest = trips[0];
+      const name = [latest.first_name, latest.last_name].filter(Boolean).join(' ') || latest.email || 'Unknown guest';
+      const totalSpent = trips.reduce((sum, t) => sum + Number(t.total || 0), 0);
+      return { email: latest.email || email, name, phone: latest.phone, trips, totalSpent, lastAt: latest.created_at };
+    }).sort((a, b2) => new Date(b2.lastAt) - new Date(a.lastAt));
+
+    listEl.innerHTML = '';
+    customers.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'rlrow';
+      row.innerHTML = `
+        <div class="rl-top"><span class="rl-title">${c.name}</span><span class="badge ${c.trips.length > 1 ? 'ok' : 'neutral'}">${c.trips.length > 1 ? 'Repeat · ' + c.trips.length + ' trips' : '1 trip'}</span></div>
+        <div class="rl-sub">${c.email}</div>
+        <div class="rl-meta"><span class="m">Spent <b>${fmt(c.totalSpent)}</b></span><span class="m">Latest <b>${fmtDate(c.lastAt)}</b></span></div>
+      `;
+      row.addEventListener('click', () => selectCustomer(i, row));
+      listEl.appendChild(row);
+    });
+
+    function selectCustomer(i, row) {
+      const c = customers[i];
+      document.querySelectorAll('#custList .rlrow').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+      document.getElementById('custEmpty').style.display = 'none';
+      document.getElementById('custDetail').style.display = 'block';
+
+      document.getElementById('cName').textContent = c.name;
+      document.getElementById('cEmail').textContent = c.email;
+      document.getElementById('cPhone').textContent = c.phone || '—';
+      document.getElementById('cTrips').textContent = c.trips.length;
+      document.getElementById('cSpent').textContent = fmt(c.totalSpent);
+      document.getElementById('cLast').textContent = fmtDate(c.lastAt);
+
+      document.getElementById('cTripList').innerHTML = c.trips.map(t => `
+        <div class="tl-item"><span class="tl-dot"></span>${t.booking_ref} — ${t.package_name} <b style="margin-left:4px;">${fmt(t.total)}</b></div>
+      `).join('');
+    }
+
+    if (customers.length) selectCustomer(0, listEl.querySelector('.rlrow'));
+  }
 </script>
 </body>
 </html>

@@ -58,6 +58,7 @@
     font-size:14.5px; font-weight:700; margin-top:4px; min-height:48px;
   }
   .login-btn:hover{background:var(--green-2);}
+  .login-btn:disabled{opacity:0.6; cursor:not-allowed;}
 
   .back-note{
     text-align:center; margin-top:20px; font-size:12.5px; color:var(--muted);
@@ -78,50 +79,66 @@
     <h1>Admin sign in</h1>
     <div class="sub">This area is for the Jamaica Guru team only.</div>
 
-    <div class="error-msg" id="errorMsg">That access code isn't right. Try again.</div>
+    <div class="error-msg" id="errorMsg">That email or password isn't right. Try again.</div>
 
     <form id="loginForm">
       <div class="field">
-        <label for="accessCode">Access code</label>
-        <input type="password" id="accessCode" autocomplete="current-password" autofocus>
+        <label for="accessEmail">Email</label>
+        <input type="email" id="accessEmail" autocomplete="username" autofocus>
       </div>
-      <button type="submit" class="login-btn">Sign In</button>
+      <div class="field">
+        <label for="accessCode">Password</label>
+        <input type="password" id="accessCode" autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
     </form>
 
     <div class="back-note"><a href="../index.html">&larr; Back to the main site</a></div>
   </div>
 
   <div class="fine-print">
-    This is a soft gate for a demo admin panel, not real security — it runs entirely in your browser, so it only keeps casual visitors out. Don't rely on this to protect real customer or payment data.
+    Signing in checks against real accounts you've created in Supabase — this isn't a hardcoded password anymore. Only people you've explicitly added as a user can get in.
   </div>
 </div>
 
-<script>
-  // Change this to whatever access code you'd like — it's the only place it
-  // needs to be updated. Because this check runs in the browser, anyone who
-  // views this page's source (or the GitHub repo, if it's public) can read
-  // it — see the note on the login card.
-  const ACCESS_CODE = 'JamaicaGuru2026';
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  const sb = createClient(
+    'https://fgzfpeewbcccxaakpmty.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
+  );
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) window.location.href = 'dashboard-home.html';
 
   const form = document.getElementById('loginForm');
-  const input = document.getElementById('accessCode');
   const errorMsg = document.getElementById('errorMsg');
+  const emailInput = document.getElementById('accessEmail');
+  const passInput = document.getElementById('accessCode');
+  const loginBtn = document.getElementById('loginBtn');
 
-  // Already signed in this browser session? Skip straight to the dashboard.
-  if (sessionStorage.getItem('jgAdminAuthed') === 'true') {
-    window.location.href = 'dashboard-home.html';
-  }
-
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (input.value === ACCESS_CODE) {
-      sessionStorage.setItem('jgAdminAuthed', 'true');
-      window.location.href = 'dashboard-home.html';
-    } else {
+    errorMsg.classList.remove('show');
+    emailInput.classList.remove('invalid');
+    passInput.classList.remove('invalid');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in…';
+
+    const { error } = await sb.auth.signInWithPassword({
+      email: emailInput.value.trim(),
+      password: passInput.value
+    });
+
+    if (error) {
       errorMsg.classList.add('show');
-      input.classList.add('invalid');
-      input.value = '';
-      input.focus();
+      passInput.classList.add('invalid');
+      passInput.value = '';
+      passInput.focus();
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign In';
+    } else {
+      window.location.href = 'dashboard-home.html';
     }
   });
 </script>

@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>
-  // Soft gate — see login.html for what this does and doesn't protect.
-  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+<style>html:not(.jg-authed){visibility:hidden;}</style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient('https://fgzfpeewbcccxaakpmty.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs');
+  const { data } = await window.sb.auth.getSession();
+  if (!data.session) {
     window.location.href = 'login.html';
+  } else {
+    document.documentElement.classList.add('jg-authed');
   }
 </script>
 <title>Jamaica Guru — Website</title>
@@ -302,10 +307,10 @@
   });
 
 </script>
-<script>
-  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+<script type="module">
+  document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
     e.preventDefault();
-    sessionStorage.removeItem('jgAdminAuthed');
+    await window.sb.auth.signOut();
     window.location.href = 'login.html';
   });
 </script>
