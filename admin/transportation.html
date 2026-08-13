@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Soft gate — see login.html for what this does and doesn't protect.
+  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
+<title>Jamaica Guru — Transportation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --sidebar: #12281B;
+    --sidebar-hover: #1B4332;
+    --green: #1B4332;
+    --green-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-vivid: #FFD100;
+    --bg: #F7F7F5;
+    --card: #FFFFFF;
+    --border: #E4E2DC;
+    --ink: #1A1A1A;
+    --muted: #6B675E;
+    --danger: #C0392B;
+    --danger-bg: #FBEAE8;
+    --warn: #B26A00;
+    --warn-bg: #FDF1DE;
+    --ok: #1B7A45;
+    --ok-bg: #E9F6EF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit; text-decoration:none;}
+  button{font:inherit; cursor:pointer;}
+  input, textarea, select{font:inherit;}
+
+  .mobile-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--sidebar); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:60;
+  }
+  .mobile-topbar .brand{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .mobile-topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff; width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .sidebar{
+    background:var(--sidebar); color:#EFEDE6; width:100%;
+    display:none; flex-direction:column; padding:18px 12px; gap:2px;
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar .brand{display:flex; align-items:center; justify-content:space-between; padding:6px 10px 18px;}
+  .sidebar .brand-name{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#fff;}
+  .sidebar .close-btn{background:none; border:none; color:#fff; width:32px; height:32px;}
+  .nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(239,237,230,0.45); padding:14px 12px 6px;}
+  .nav-item{display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; color:rgba(239,237,230,0.75); font-size:14px; font-weight:500;}
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .nav-item.active{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active svg{color:var(--gold-vivid);}
+  .sidebar-footer{margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:10px; font-size:13px;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--gold-vivid); color:#12281B; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+
+  .main{flex:1; padding:20px 16px 40px;}
+  .page-header{margin-bottom:18px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .page-header h1{font-size:22px; font-weight:600;}
+  .page-header .sub{font-size:13px; color:var(--muted); margin-top:5px;}
+  .btn-primary{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-secondary{
+    background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600; white-space:nowrap;
+  }
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:16px;}
+  .card h3{font-size:14.5px; font-weight:600; margin-bottom:3px;}
+  .card .card-sub{font-size:12px; color:var(--muted); margin-bottom:14px;}
+
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px; font-weight:600;}
+  .field .hint{font-weight:400; color:var(--muted); font-size:11px;}
+  .field input, .field textarea, .field select{
+    width:100%; border:1px solid var(--border); border-radius:10px; padding:11px 13px;
+    font-size:14px; background:#fff; color:var(--ink); min-height:44px;
+  }
+  .field textarea{min-height:80px; resize:vertical; line-height:1.5;}
+  .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible{outline:2px solid var(--green); outline-offset:1px;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  /* filter pills */
+  .filter-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;}
+  .filter-pill{
+    flex-shrink:0; background:#fff; border:1px solid var(--border); border-radius:20px; padding:9px 14px;
+    font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap;
+  }
+  .filter-pill.active{background:var(--green); color:#fff; border-color:var(--green);}
+
+  /* list rows used as a responsive "table" */
+  .rowlist{background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;}
+  .rlrow{padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .rlrow:last-child{border-bottom:none;}
+  .rlrow:hover{background:var(--bg);}
+  .rlrow.selected{background:#F0EEE6;}
+  .rl-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .rl-title{font-size:14px; font-weight:600;}
+  .rl-sub{font-size:12px; color:var(--muted); margin-top:3px;}
+  .rl-meta{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
+  .rl-meta .m{font-size:11.5px; color:var(--muted);}
+  .rl-meta .m b{color:var(--ink); font-weight:600;}
+
+  .badge{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:4px 10px; border-radius:14px; white-space:nowrap;}
+  .badge.ok{background:var(--ok-bg); color:var(--ok);}
+  .badge.warn{background:var(--warn-bg); color:var(--warn);}
+  .badge.danger{background:var(--danger-bg); color:var(--danger);}
+  .badge.neutral{background:var(--bg); color:var(--muted);}
+  .badge.gold{background:rgba(154,107,0,0.1); color:var(--gold);}
+
+  /* detail panel */
+  .detail-panel{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;}
+  .detail-head{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:16px; flex-wrap:wrap;}
+  .detail-head h2{font-size:19px; font-weight:600;}
+  .detail-head .sub{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .kv-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;}
+  .kv{display:flex; flex-direction:column; gap:3px;}
+  .kv .k{font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600;}
+  .kv .v{font-size:14px; font-weight:600;}
+
+  .timeline{display:flex; flex-direction:column; gap:0;}
+  .tl-day{padding:12px 0; border-top:1px solid var(--border);}
+  .tl-day:first-child{border-top:none;}
+  .tl-day .tl-label{font-size:12px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:8px;}
+  .tl-item{display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13.5px;}
+  .tl-item .tl-dot{width:6px; height:6px; border-radius:50%; background:var(--gold-vivid); flex-shrink:0;}
+
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;}
+  .stat-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px;}
+  .stat-card .label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;}
+  .stat-card .value{font-family:'Fraunces',serif; font-size:22px; margin-top:6px;}
+  .stat-card .trend{font-size:11px; margin-top:6px; color:var(--muted);}
+  .stat-card .trend.up{color:var(--ok);}
+
+  .bar-list{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px;}
+  .bar-row{margin-bottom:14px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-row .br-top{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;}
+  .bar-row .br-top b{font-weight:600;}
+  .bar-row .br-top span{color:var(--muted);}
+  .bar-track{height:8px; border-radius:5px; background:var(--bg); overflow:hidden;}
+  .bar-fill{height:100%; border-radius:5px; background:var(--green);}
+
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:16px 0 20px; overflow-x:auto;}
+  .tab-btn{background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600; color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;}
+  .tab-btn.active{color:var(--green); border-bottom-color:var(--green);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .perm-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .perm-table th, .perm-table td{padding:10px 8px; text-align:center; border-bottom:1px solid var(--border);}
+  .perm-table th{font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted);}
+  .perm-table td:first-child, .perm-table th:first-child{text-align:left; font-weight:600; color:var(--ink);}
+  .perm-table input[type="checkbox"]{width:17px; height:17px; accent-color:var(--green);}
+  .perm-table-wrap{overflow-x:auto;}
+
+  .note-banner{
+    background:var(--warn-bg); border:1px solid rgba(178,106,0,0.25); border-radius:12px; padding:12px 14px;
+    font-size:12.5px; color:var(--warn); margin-bottom:16px; line-height:1.5;
+  }
+
+  @media (min-width:960px){
+    .mobile-topbar{display:none;}
+    body{flex-direction:row;}
+    .sidebar{display:flex; position:sticky; top:0; height:100vh; width:250px; flex-shrink:0; inset:auto;}
+    .sidebar .close-btn{display:none;}
+    .main{flex:1; padding:32px 40px 60px; max-width:1080px;}
+    .two-up{display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start;}
+    .stat-grid{grid-template-columns:repeat(4,1fr);}
+    .kv-grid{grid-template-columns:repeat(4,1fr);}
+
+
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <div class="brand">🌴 Jamaica Guru Admin</div>
+  <button id="menuToggle" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-name">🌴 Jamaica Guru</div>
+    <button class="close-btn" id="closeSidebar" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-group-label">Overview</div>
+  <a class="nav-item " href="dashboard-home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+
+  <div class="nav-group-label">Operations</div>
+  <a class="nav-item " href="bookings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Bookings</a>
+  <a class="nav-item " href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg>Customers</a>
+
+  <div class="nav-group-label">Catalog</div>
+  <a class="nav-item " href="admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
+  <a class="nav-item " href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
+  <a class="nav-item active" href="transportation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg>Transportation</a>
+
+  <div class="nav-group-label">Site</div>
+  <a class="nav-item " href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
+  <a class="nav-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M8 17V10m5 7V6m5 11v-5"/></svg>Analytics</a>
+  <a class="nav-item " href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">T</div>
+    <div style="flex:1;">
+      <div style="font-weight:600; color:#fff;">Tray</div>
+      <div style="font-size:11.5px; color:rgba(239,237,230,0.55);">Admin</div>
+    </div>
+    <a href="#" id="logoutLink" style="font-size:11.5px; color:rgba(239,237,230,0.5); text-decoration:underline;">Log out</a>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page-header">
+    <div><h1>Transportation</h1><div class="sub">Your fleet and your Gurus (drivers).</div></div>
+    <button class="btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="vehicles">Vehicles</button>
+    <button class="tab-btn" data-tab="drivers">Gurus (Drivers)</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-vehicles">
+    <div class="rowlist">
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-001</span><span class="badge ok">Assigned</span></div>
+        <div class="rl-sub">2019 · Plate JA-4471 · Capacity 8</div>
+        <div class="rl-meta"><span class="m">Mileage <b>186,432 km</b></span><span class="m">Next service <b>190,000 km</b></span><span class="m">Driver <b>Michael</b></span><span class="m">Insurance exp. <b>Dec 2026</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Toyota Hiace — #JG-002</span><span class="badge ok">Assigned</span></div>
+        <div class="rl-sub">2021 · Plate JA-5820 · Capacity 12</div>
+        <div class="rl-meta"><span class="m">Mileage <b>92,110 km</b></span><span class="m">Next service <b>100,000 km</b></span><span class="m">Driver <b>Andre</b></span><span class="m">Insurance exp. <b>Mar 2027</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Honda CR-V — #JG-003</span><span class="badge warn">Maintenance</span></div>
+        <div class="rl-sub">2020 · Plate JA-3390 · Capacity 5</div>
+        <div class="rl-meta"><span class="m">Mileage <b>141,880 km</b></span><span class="m">In shop until <b>Aug 15</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jan 2027</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-004</span><span class="badge neutral">Available</span></div>
+        <div class="rl-sub">2022 · Plate JA-6127 · Capacity 8</div>
+        <div class="rl-meta"><span class="m">Mileage <b>44,205 km</b></span><span class="m">Next service <b>50,000 km</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jul 2027</b></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-drivers">
+    <div class="rowlist">
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Guru #14 — Michael</span><span class="badge ok">Available</span></div>
+        <div class="rl-sub">Toyota Noah #JG-001 · St. Ann service area</div>
+        <div class="rl-meta"><span class="m">Trips completed <b>147</b></span><span class="m">Rating <b>4.9</b></span><span class="m">On-time <b>94%</b></span><span class="m">This month <b>14 trips</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Guru #7 — Andre</span><span class="badge warn">On Trip</span></div>
+        <div class="rl-sub">Toyota Hiace #JG-002 · Montego Bay service area</div>
+        <div class="rl-meta"><span class="m">Trips completed <b>93</b></span><span class="m">Rating <b>4.8</b></span><span class="m">On-time <b>91%</b></span><span class="m">This month <b>9 trips</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Guru #3 — Kadeem</span><span class="badge ok">Available</span></div>
+        <div class="rl-sub">Unassigned vehicle · Ocho Rios service area</div>
+        <div class="rl-meta"><span class="m">Trips completed <b>61</b></span><span class="m">Rating <b>4.7</b></span><span class="m">On-time <b>88%</b></span><span class="m">This month <b>6 trips</b></span></div>
+      </div>
+      <div class="rlrow">
+        <div class="rl-top"><span class="rl-title">Guru #22 — Sasha-Kay</span><span class="badge neutral">Off Today</span></div>
+        <div class="rl-sub">Unassigned vehicle · Negril service area</div>
+        <div class="rl-meta"><span class="m">Trips completed <b>28</b></span><span class="m">Rating <b>5.0</b></span><span class="m">On-time <b>100%</b></span><span class="m">This month <b>3 trips</b></span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+<script>
+
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
+  document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
+
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+</script>
+<script>
+  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('jgAdminAuthed');
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>

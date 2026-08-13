@@ -21,6 +21,19 @@ perl gen-packages.pl
 
 `index.html` is a bundle — it embeds `home.html`, the three package pages, `review.html`, and `checkout.html` as base64 text blocks so the whole site works from a single file with no server. After editing any of the source view files (or regenerating the package pages), `index.html` needs to be rebuilt from them; it will not pick up changes automatically. Ask Claude to rebuild it, or see the conversation history for the build script.
 
+## Admin dashboard (`/admin`)
+
+A separate internal dashboard for managing bookings, customers, the activity/experience catalog, transportation, and website content:
+
+- **`admin/login.html`** — sign-in gate. Everything else in `/admin` redirects here if you're not signed in.
+- **`admin/dashboard-home.html`** — overview (action items, revenue, today's operations).
+- **`admin/admin-dashboard.html`** — edit a package's price, description, adventure options, and gallery.
+- **`admin/bookings.html`**, **`admin/customers.html`**, **`admin/experiences.html`**, **`admin/transportation.html`**, **`admin/website.html`**, **`admin/analytics.html`**, **`admin/settings.html`** — one page per area, linked from the sidebar on every admin page.
+
+**Important — this is not real security.** The login is a client-side check (see `ACCESS_CODE` near the top of `admin/login.html`'s `<script>`) that runs entirely in the visitor's browser. It stops casual visitors from wandering into the admin pages; it does **not** stop anyone who views the page source, and it does **not** stop anyone who can see this repo's code (if the repo is public, that includes anyone on the internet). Don't put real customer, payment, or business-sensitive data behind it and treat it as protected — that would need a real backend with server-side authentication, which this static site doesn't have.
+
+To change the access code, edit the `ACCESS_CODE` value in `admin/login.html` and push. Every admin page (except `login.html` itself) is also entirely populated with the same kind of sample data as the public site — bookings, customers, and revenue numbers shown there aren't real.
+
 ## Hosting it
 
 This is plain static HTML/CSS/JS — no build step required. To publish with GitHub Pages:
@@ -28,6 +41,7 @@ This is plain static HTML/CSS/JS — no build step required. To publish with Git
 1. Go to this repo's **Settings → Pages**.
 2. Under **Source**, choose the `main` branch and `/ (root)` folder.
 3. Save. GitHub will give you a URL like `https://backuara-king.github.io/Jamaicaguru.com/` within a minute or two.
+4. The admin dashboard will be at `https://backuara-king.github.io/Jamaicaguru.com/admin/login.html`.
 
 ## Status
 

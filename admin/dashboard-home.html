@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Soft gate — see login.html for what this does and doesn't protect.
+  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
+<title>Jamaica Guru — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sidebar: #12281B;
+    --sidebar-hover: #1B4332;
+    --green: #1B4332;
+    --green-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-vivid: #FFD100;
+    --bg: #F7F7F5;
+    --card: #FFFFFF;
+    --border: #E4E2DC;
+    --ink: #1A1A1A;
+    --muted: #6B675E;
+    --danger: #C0392B;
+    --danger-bg: #FBEAE8;
+    --warn: #B26A00;
+    --warn-bg: #FDF1DE;
+    --ok: #1B7A45;
+    --ok-bg: #E9F6EF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit; text-decoration:none;}
+  button{font:inherit; cursor:pointer;}
+
+  /* ===== Mobile top bar ===== */
+  .mobile-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--sidebar); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:60;
+  }
+  .mobile-topbar .brand{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .mobile-topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff; width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    background:var(--sidebar); color:#EFEDE6; width:100%;
+    display:none; flex-direction:column; padding:18px 12px; gap:2px;
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar .brand{display:flex; align-items:center; justify-content:space-between; padding:6px 10px 18px;}
+  .sidebar .brand-name{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#fff;}
+  .sidebar .close-btn{background:none; border:none; color:#fff; width:32px; height:32px;}
+  .nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(239,237,230,0.45); padding:14px 12px 6px;}
+  .nav-item{display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; color:rgba(239,237,230,0.75); font-size:14px; font-weight:500;}
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .nav-item.active{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active svg{color:var(--gold-vivid);}
+  .nav-item .soon{margin-left:auto; font-size:9.5px; text-transform:uppercase; letter-spacing:0.05em; color:rgba(239,237,230,0.4); border:1px solid rgba(239,237,230,0.2); border-radius:8px; padding:2px 6px;}
+  .sidebar-footer{margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:10px; font-size:13px;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--gold-vivid); color:#12281B; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+
+  /* ===== Main ===== */
+  .main{flex:1; padding:20px 16px 40px;}
+  .page-header{margin-bottom:20px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .page-header h1{font-size:22px; font-weight:600;}
+  .page-header .sub{font-size:13px; color:var(--muted); margin-top:5px;}
+  .date-pill{font-size:12px; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:20px; padding:8px 14px; white-space:nowrap;}
+
+  .section{margin-bottom:26px;}
+  .section-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .section-head h2{font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);}
+  .section-head a{font-size:12.5px; color:var(--green); font-weight:600;}
+
+  /* ===== Action required ===== */
+  .action-card{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;}
+  .action-item{
+    display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border);
+  }
+  .action-item:last-child{border-bottom:none;}
+  .action-item .sev{width:9px; height:9px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+  .action-item .sev.high{background:var(--danger);}
+  .action-item .sev.med{background:var(--gold-vivid); box-shadow:0 0 0 1px rgba(154,107,0,0.3) inset;}
+  .action-item .txt{flex:1; font-size:13.5px; line-height:1.4;}
+  .action-item .txt b{font-weight:600;}
+  .action-item .meta{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .action-item .go{font-size:12px; font-weight:600; color:var(--green); white-space:nowrap; padding-top:1px;}
+  .action-card.empty{padding:22px 16px; text-align:center; color:var(--muted); font-size:13px;}
+
+  /* ===== Stat cards ===== */
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .stat-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px;}
+  .stat-card .label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;}
+  .stat-card .value{font-family:'Fraunces',serif; font-size:24px; margin-top:6px;}
+  .stat-card .trend{font-size:11.5px; margin-top:6px; display:flex; align-items:center; gap:4px;}
+  .stat-card .trend.up{color:var(--ok);}
+  .stat-card .trend.down{color:var(--danger);}
+  .stat-card .trend.flat{color:var(--muted);}
+
+  /* ===== Bookings pill row ===== */
+  .pill-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .pill-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 10px; text-align:center;}
+  .pill-card .n{font-family:'Fraunces',serif; font-size:22px;}
+  .pill-card .l{font-size:10.5px; color:var(--muted); margin-top:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em;}
+  .pill-card.accent .n{color:var(--gold);}
+  .pill-card.warn .n{color:var(--warn);}
+  .pill-card.danger .n{color:var(--danger);}
+
+  /* ===== Operations list ===== */
+  .ops-list{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;}
+  .ops-row{display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border);}
+  .ops-row:last-child{border-bottom:none;}
+  .ops-row .ic{width:36px; height:36px; min-width:36px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--green);}
+  .ops-row .ic svg{width:17px; height:17px;}
+  .ops-row .txt{flex:1;}
+  .ops-row .t1{font-size:13.5px; font-weight:600;}
+  .ops-row .t2{font-size:11.5px; color:var(--muted); margin-top:1px;}
+  .ops-row .num{font-family:'Fraunces',serif; font-size:19px;}
+
+  /* ===== Mini bar comparison ===== */
+  .compare-card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px;}
+  .compare-row{margin-bottom:16px;}
+  .compare-row:last-child{margin-bottom:0;}
+  .compare-row .cr-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .compare-row .cr-label{font-size:12.5px; font-weight:600;}
+  .compare-row .cr-val{font-size:12.5px; color:var(--muted);}
+  .bar-track{height:8px; border-radius:5px; background:var(--bg); overflow:hidden;}
+  .bar-fill{height:100%; border-radius:5px; background:var(--green);}
+  .bar-fill.prev{background:#C7C3B8;}
+
+  /* ===================== DESKTOP ===================== */
+  @media (min-width:960px){
+    .mobile-topbar{display:none;}
+    body{flex-direction:row;}
+    .sidebar{display:flex; position:sticky; top:0; height:100vh; width:250px; flex-shrink:0; inset:auto;}
+    .sidebar .close-btn{display:none;}
+    .main{flex:1; padding:32px 40px; max-width:1080px;}
+    .stat-grid{grid-template-columns:repeat(4, 1fr);}
+    .pill-row{grid-template-columns:repeat(6, 1fr);}
+    .two-up{display:grid; grid-template-columns:1.4fr 1fr; gap:20px; align-items:start;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="mobile-topbar">
+  <div class="brand">🌴 Jamaica Guru Admin</div>
+  <button id="menuToggle" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-name">🌴 Jamaica Guru</div>
+    <button class="close-btn" id="closeSidebar" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-group-label">Overview</div>
+  <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+
+  <div class="nav-group-label">Operations</div>
+  <a class="nav-item" href="bookings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Bookings</a>
+  <a class="nav-item" href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg>Customers</a>
+
+  <div class="nav-group-label">Catalog</div>
+  <a class="nav-item" href="admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
+  <a class="nav-item" href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
+  <a class="nav-item" href="transportation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg>Transportation</a>
+
+  <div class="nav-group-label">Site</div>
+  <a class="nav-item" href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
+  <a class="nav-item" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M8 17V10m5 7V6m5 11v-5"/></svg>Analytics</a>
+  <a class="nav-item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">T</div>
+    <div style="flex:1;">
+      <div style="font-weight:600; color:#fff;">Tray</div>
+      <div style="font-size:11.5px; color:rgba(239,237,230,0.55);">Admin</div>
+    </div>
+    <a href="#" id="logoutLink" style="font-size:11.5px; color:rgba(239,237,230,0.5); text-decoration:underline;">Log out</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <div class="page-header">
+    <div>
+      <h1>Good morning, Tray</h1>
+      <div class="sub">Here's where Jamaica Guru stands today.</div>
+    </div>
+    <div class="date-pill" id="todayDate">Wednesday, August 12</div>
+  </div>
+
+  <div class="two-up">
+    <div>
+
+      <!-- Action Required -->
+      <div class="section">
+        <div class="section-head"><h2>🔴 Action required</h2></div>
+        <div class="action-card">
+          <div class="action-item">
+            <span class="sev high"></span>
+            <div class="txt"><b>2 bookings</b> have no assigned driver
+              <div class="meta">JG-104822 &middot; JG-104831 — both arrive within 5 days</div>
+            </div>
+            <a href="#" class="go">Assign →</a>
+          </div>
+          <div class="action-item">
+            <span class="sev high"></span>
+            <div class="txt">Airport pickup for <b>JG-104798</b> is tomorrow with no vehicle assigned
+              <div class="meta">Guest arrives 6:40 AM &middot; Montego Bay</div>
+            </div>
+            <a href="#" class="go">Assign →</a>
+          </div>
+          <div class="action-item">
+            <span class="sev med"></span>
+            <div class="txt"><b>1 guest</b> has an outstanding balance due in 3 days
+              <div class="meta">JG-104756 — $980.40 remaining</div>
+            </div>
+            <a href="#" class="go">Review →</a>
+          </div>
+          <div class="action-item">
+            <span class="sev med"></span>
+            <div class="txt"><b>3 activities</b> still need supplier confirmation
+              <div class="meta">Blue Hole (×2), ATV Adventure (×1)</div>
+            </div>
+            <a href="#" class="go">Confirm →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="section">
+        <div class="section-head"><h2>Revenue</h2></div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label">This month</div>
+            <div class="value">$18,420</div>
+            <div class="trend up">↑ 12% vs last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">This year</div>
+            <div class="value">$96,150</div>
+            <div class="trend up">↑ 34% vs last year</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Outstanding</div>
+            <div class="value">$5,240</div>
+            <div class="trend flat">Across 6 bookings</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Avg. booking value</div>
+            <div class="value">$2,105</div>
+            <div class="trend up">↑ $180 vs last month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings breakdown -->
+      <div class="section">
+        <div class="section-head"><h2>Bookings</h2><a href="bookings.html">View all →</a></div>
+        <div class="pill-row">
+          <div class="pill-card accent"><div class="n">4</div><div class="l">New</div></div>
+          <div class="pill-card"><div class="n">11</div><div class="l">Confirmed</div></div>
+          <div class="pill-card"><div class="n">7</div><div class="l">Upcoming</div></div>
+          <div class="pill-card"><div class="n">28</div><div class="l">Completed</div></div>
+          <div class="pill-card danger"><div class="n">2</div><div class="l">Cancelled</div></div>
+          <div class="pill-card warn"><div class="n">3</div><div class="l">Pending payment</div></div>
+        </div>
+      </div>
+
+      <!-- Business health -->
+      <div class="section">
+        <div class="section-head"><h2>Business health</h2></div>
+        <div class="compare-card">
+          <div class="compare-row">
+            <div class="cr-top"><span class="cr-label">Bookings this month</span><span class="cr-val">9 vs 6 last month</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:75%;"></div></div>
+          </div>
+          <div class="compare-row">
+            <div class="cr-top"><span class="cr-label">Conversion rate</span><span class="cr-val">12.8% of inquiries</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:38%;"></div></div>
+          </div>
+          <div class="compare-row">
+            <div class="cr-top"><span class="cr-label">Revenue per package</span><span class="cr-val">3 Day Island Escape — $1,898 avg</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:60%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div>
+      <!-- Operations today -->
+      <div class="section">
+        <div class="section-head"><h2>Operations</h2></div>
+        <div class="ops-list">
+          <div class="ops-row">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></span>
+            <div class="txt"><div class="t1">Upcoming trips</div><div class="t2">Next 7 days</div></div>
+            <div class="num">5</div>
+          </div>
+          <div class="ops-row">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21l6-6M21 3l-9 9M3 3l7 7M21 21l-6-6"/></svg></span>
+            <div class="txt"><div class="t1">Arriving today</div><div class="t2">Guests landing today</div></div>
+            <div class="num">3</div>
+          </div>
+          <div class="ops-row">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg></span>
+            <div class="txt"><div class="t1">Currently in Jamaica</div><div class="t2">Guests on active trips</div></div>
+            <div class="num">6</div>
+          </div>
+          <div class="ops-row">
+            <span class="ic" style="color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg></span>
+            <div class="txt"><div class="t1">Unassigned trips</div><div class="t2">Need a driver assigned</div></div>
+            <div class="num" style="color:var(--danger);">2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="section">
+        <div class="section-head"><h2>Quick links</h2></div>
+        <div class="ops-list">
+          <a class="ops-row" href="admin-dashboard.html">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg></span>
+            <div class="txt"><div class="t1">Edit 3 Day Island Escape</div><div class="t2">Pricing, adventures, images</div></div>
+            <span style="color:var(--muted);">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
+  document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
+
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+</script>
+
+<script>
+  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('jgAdminAuthed');
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>

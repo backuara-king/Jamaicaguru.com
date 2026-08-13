@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Soft gate — see login.html for what this does and doesn't protect.
+  if (sessionStorage.getItem('jgAdminAuthed') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
+<title>Jamaica Guru — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sidebar: #12281B;
+    --sidebar-hover: #1B4332;
+    --green: #1B4332;
+    --green-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-vivid: #FFD100;
+    --bg: #F7F7F5;
+    --card: #FFFFFF;
+    --border: #E4E2DC;
+    --ink: #1A1A1A;
+    --muted: #6B675E;
+    --danger: #C0392B;
+    --danger-bg: #FBEAE8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit; text-decoration:none;}
+  button{font:inherit; cursor:pointer;}
+  input, textarea, select{font:inherit;}
+
+  /* ===== Mobile top bar ===== */
+  .mobile-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--sidebar); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:60;
+  }
+  .mobile-topbar .brand{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .mobile-topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff; width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    background:var(--sidebar); color:#EFEDE6; width:100%;
+    display:none; flex-direction:column; padding:18px 12px; gap:2px;
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar .brand{
+    display:flex; align-items:center; justify-content:space-between; padding:6px 10px 18px;
+  }
+  .sidebar .brand-name{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#fff;}
+  .sidebar .close-btn{background:none; border:none; color:#fff; width:32px; height:32px;}
+  .nav-group-label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(239,237,230,0.45);
+    padding:14px 12px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px;
+    color:rgba(239,237,230,0.75); font-size:14px; font-weight:500;
+  }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .nav-item.active{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active svg{color:var(--gold-vivid);}
+  .nav-item .soon{
+    margin-left:auto; font-size:9.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:rgba(239,237,230,0.4); border:1px solid rgba(239,237,230,0.2); border-radius:8px; padding:2px 6px;
+  }
+  .sidebar-footer{
+    margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,0.1);
+    display:flex; align-items:center; gap:10px; font-size:13px;
+  }
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--gold-vivid); color:#12281B;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;
+  }
+
+  /* ===== Main ===== */
+  .main{flex:1; padding:20px 16px 100px;}
+  .page-header{margin-bottom:18px;}
+  .breadcrumb{font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .breadcrumb a{color:var(--green); font-weight:600;}
+  .page-header h1{font-size:22px; font-weight:600;}
+  .page-header .sub{font-size:13px; color:var(--muted); margin-top:5px;}
+
+  .status-row{display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap;}
+  .status-pill{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    padding:5px 11px; border-radius:20px; background:rgba(27,67,50,0.10); color:var(--green);
+    display:flex; align-items:center; gap:6px;
+  }
+  .status-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
+  .last-saved{font-size:12px; color:var(--muted);}
+
+  /* ===== Tabs ===== */
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:20px 0 22px; overflow-x:auto;}
+  .tab-btn{
+    background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600;
+    color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .tab-btn.active{color:var(--green); border-bottom-color:var(--green);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ===== Form elements ===== */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px;}
+  .card h3{font-size:14.5px; font-weight:600; margin-bottom:3px;}
+  .card .card-sub{font-size:12px; color:var(--muted); margin-bottom:16px;}
+
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px; font-weight:600;}
+  .field .hint{font-weight:400; color:var(--muted); font-size:11px;}
+  .field input, .field textarea, .field select{
+    width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 14px;
+    font-size:14.5px; background:#fff; color:var(--ink); min-height:46px;
+  }
+  .field textarea{min-height:90px; resize:vertical; line-height:1.5;}
+  .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible{
+    outline:2px solid var(--green); outline-offset:1px;
+  }
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .price-input{position:relative;}
+  .price-input span{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:14.5px;}
+  .price-input input{padding-left:26px;}
+
+  /* ===== Inclusions checklist ===== */
+  .list-editor{display:flex; flex-direction:column; gap:8px;}
+  .list-row{display:flex; align-items:center; gap:8px;}
+  .list-row input[type="text"]{flex:1;}
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:9px; border:1px solid var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .icon-btn.danger{color:var(--danger); border-color:var(--danger-bg);}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
+  .add-row-btn{
+    display:flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:var(--green);
+    background:none; border:none; padding:9px 2px; margin-top:2px; align-self:flex-start;
+  }
+
+  /* ===== Adventure category editor ===== */
+  .adv-category{margin-bottom:22px;}
+  .adv-category:last-child{margin-bottom:0;}
+  .adv-category-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .adv-category-head h4{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);}
+  .adv-category-head .req-tag{
+    font-size:10px; text-transform:uppercase; font-weight:700; color:var(--gold); background:rgba(154,107,0,0.08);
+    padding:3px 8px; border-radius:10px;
+  }
+  .adv-category-head .opt-tag{
+    font-size:10px; text-transform:uppercase; font-weight:700; color:var(--muted); background:var(--bg);
+    padding:3px 8px; border-radius:10px;
+  }
+
+  /* ===== Image gallery ===== */
+  .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
+  .img-tile{
+    position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff;
+  }
+  .img-tile .remove-img{
+    position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center;
+  }
+  .img-tile .cover-tag{
+    position:absolute; bottom:6px; left:6px; font-size:9.5px; font-weight:700; text-transform:uppercase;
+    background:var(--gold-vivid); color:#12281B; padding:3px 7px; border-radius:8px;
+  }
+  .img-tile.add-tile{
+    background:var(--bg); border:2px dashed var(--border); color:var(--muted); flex-direction:column; gap:8px;
+    cursor:pointer;
+  }
+  .img-tile.add-tile:hover{border-color:var(--green); color:var(--green);}
+
+  /* ===== Sticky save bar ===== */
+  .save-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:#fff; border-top:1px solid var(--border); padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    box-shadow:0 -6px 20px rgba(0,0,0,0.06);
+  }
+  .save-bar .unsaved{font-size:12.5px; color:var(--gold); font-weight:600; display:flex; align-items:center; gap:6px;}
+  .save-bar .unsaved .dot{width:6px; height:6px; border-radius:50%; background:var(--gold-vivid);}
+  .save-bar .actions{display:flex; gap:8px;}
+  .btn-discard{
+    background:none; border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600;
+  }
+  .btn-save{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;
+  }
+
+  /* ===== toast ===== */
+  .toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-140%);
+    background:var(--green); color:#fff; padding:12px 20px; border-radius:12px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px; z-index:100; transition:transform 0.3s ease; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ===================== DESKTOP ===================== */
+  @media (min-width:960px){
+    .mobile-topbar{display:none;}
+    body{flex-direction:row;}
+    .sidebar{
+      display:flex; position:sticky; top:0; height:100vh; width:250px; flex-shrink:0; inset:auto;
+    }
+    .sidebar .close-btn{display:none;}
+    .main{flex:1; padding:32px 40px 100px; max-width:1000px;}
+    .save-bar{left:250px; padding:16px 40px;}
+    .img-grid{grid-template-columns:repeat(3, 1fr);}
+    .two-col{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="mobile-topbar">
+  <div class="brand">🌴 Jamaica Guru Admin</div>
+  <button id="menuToggle" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-name">🌴 Jamaica Guru</div>
+    <button class="close-btn" id="closeSidebar" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-group-label">Overview</div>
+  <a class="nav-item" href="dashboard-home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+
+  <div class="nav-group-label">Operations</div>
+  <a class="nav-item" href="bookings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Bookings</a>
+  <a class="nav-item" href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg>Customers</a>
+
+  <div class="nav-group-label">Catalog</div>
+  <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
+  <a class="nav-item" href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
+  <a class="nav-item" href="transportation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg>Transportation</a>
+
+  <div class="nav-group-label">Site</div>
+  <a class="nav-item" href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
+  <a class="nav-item" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M8 17V10m5 7V6m5 11v-5"/></svg>Analytics</a>
+  <a class="nav-item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">T</div>
+    <div style="flex:1;">
+      <div style="font-weight:600; color:#fff;">Tray</div>
+      <div style="font-size:11.5px; color:rgba(239,237,230,0.55);">Admin</div>
+    </div>
+    <a href="#" id="logoutLink" style="font-size:11.5px; color:rgba(239,237,230,0.5); text-decoration:underline;">Log out</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <div class="page-header">
+    <div class="breadcrumb"><a href="admin-dashboard.html">Packages</a> / 3 Day Island Escape</div>
+    <h1>3 Day Island Escape</h1>
+    <div class="sub">Edit the price, description, adventure options, and gallery for this package. Changes go live once published.</div>
+    <div class="status-row">
+      <span class="status-pill"><span class="dot"></span> Published</span>
+      <span class="last-saved" id="lastSaved">Last saved just now</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="details">Details &amp; Pricing</button>
+    <button class="tab-btn" data-tab="adventures">Adventures &amp; Inclusions</button>
+    <button class="tab-btn" data-tab="images">Images</button>
+  </div>
+
+  <!-- TAB: Details & Pricing -->
+  <div class="tab-panel active" id="tab-details">
+    <div class="card">
+      <h3>Basic information</h3>
+      <div class="card-sub">This is what guests see at the top of the package page.</div>
+      <div class="field">
+        <label>Package title</label>
+        <input type="text" value="3 Day Island Escape">
+      </div>
+      <div class="field">
+        <label>Tagline</label>
+        <input type="text" value="Relax. Explore. Experience Jamaica.">
+      </div>
+      <div class="field">
+        <label>Short description <span class="hint">— shown on the hero card</span></label>
+        <textarea>The perfect quick getaway. Enjoy handpicked experiences, comfortable stays, and private transportation as you explore the best of Jamaica in just 3 unforgettable days.</textarea>
+      </div>
+      <div class="field">
+        <label>About this package <span class="hint">— shown further down the page</span></label>
+        <textarea style="min-height:130px;">The 3 Day Island Escape is built for travelers who want the best of Jamaica without spending their trip stitching together bookings. From the moment you land, a private driver has you covered — no rideshares, no haggling with taxis, no wondering how you'll get from the villa to the falls.</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Pricing &amp; capacity</h3>
+      <div class="card-sub">The starting price shown to guests, and how many people it covers.</div>
+      <div class="two-col">
+        <div class="field">
+          <label>Starting price <span class="hint">for base guest count</span></label>
+          <div class="price-input"><span>$</span><input type="text" value="1,898.00"></div>
+        </div>
+        <div class="field">
+          <label>Currency</label>
+          <select><option selected>USD</option><option>JMD</option><option>CAD</option><option>GBP</option></select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Min guests</label>
+          <input type="number" value="2">
+        </div>
+        <div class="field">
+          <label>Max guests</label>
+          <input type="number" value="10">
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Price per extra guest <span class="hint">above min</span></label>
+          <div class="price-input"><span>$</span><input type="text" value="420.00"></div>
+        </div>
+        <div class="field">
+          <label>Duration</label>
+          <input type="text" value="3 Nights, 4 Days">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Adventures & Inclusions -->
+  <div class="tab-panel" id="tab-adventures">
+    <div class="card">
+      <h3>What's included</h3>
+      <div class="card-sub">Shown as the checklist on the package page.</div>
+      <div class="list-editor" id="inclusionsList">
+        <div class="list-row">
+          <input type="text" value="2 nights accommodation for your full party">
+          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="list-row">
+          <input type="text" value="Private transportation to and from every activity">
+          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="list-row">
+          <input type="text" value="Entry fees and guides for all 3 chosen adventures">
+          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="list-row">
+          <input type="text" value="24/7 support from your Jamaica Guru contact">
+          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <button class="add-row-btn" data-target="inclusionsList" data-placeholder="New inclusion...">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add inclusion
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Adventure options</h3>
+      <div class="card-sub">The choices guests pick from when booking. Add, remove, or rename options in each category.</div>
+
+      <div class="adv-category">
+        <div class="adv-category-head"><h4>Land Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
+        <div class="list-editor" data-category="land">
+          <div class="list-row"><input type="text" value="Horseback Riding"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Bamboo Rafting"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Ziplining"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        </div>
+        <button class="add-row-btn" data-target-category="land" data-placeholder="New land adventure...">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
+        </button>
+      </div>
+
+      <div class="adv-category">
+        <div class="adv-category-head"><h4>Water Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
+        <div class="list-editor" data-category="water">
+          <div class="list-row"><input type="text" value="Dunn's River Falls"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Blue Hole"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="River Tubing"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        </div>
+        <button class="add-row-btn" data-target-category="water" data-placeholder="New water adventure...">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
+        </button>
+      </div>
+
+      <div class="adv-category">
+        <div class="adv-category-head"><h4>Third Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
+        <div class="list-editor" data-category="third">
+          <div class="list-row"><input type="text" value="ATV"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Catamaran / Party Cruise"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Jet Skiing"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        </div>
+        <button class="add-row-btn" data-target-category="third" data-placeholder="New adventure...">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
+        </button>
+      </div>
+
+      <div class="adv-category">
+        <div class="adv-category-head"><h4>Night Life</h4><span class="opt-tag">Choose 1 · Optional</span></div>
+        <div class="list-editor" data-category="night">
+          <div class="list-row"><input type="text" value="8 Rivaz Night Club"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="list-row"><input type="text" value="Taboo Night Club (Strip Club)"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        </div>
+        <button class="add-row-btn" data-target-category="night" data-placeholder="New night life option...">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Images -->
+  <div class="tab-panel" id="tab-images">
+    <div class="card">
+      <h3>Package gallery</h3>
+      <div class="card-sub">These images appear in the hero carousel on the package page. The first image is used as the cover.</div>
+      <div class="img-grid" id="imgGrid">
+        <div class="img-tile" style="background:linear-gradient(155deg,#0F1F16,#1B4332);">
+          <span class="cover-tag">Cover</span>
+          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="img-tile" style="background:linear-gradient(155deg,#134A3A,#1B4332);">
+          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="img-tile" style="background:linear-gradient(155deg,#17331F,#2F6B4F);">
+          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="img-tile" style="background:linear-gradient(155deg,#0A140F,#1B4332);">
+          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="img-tile add-tile" id="addImgTile">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add image</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Sticky save bar -->
+<div class="save-bar">
+  <div class="unsaved" id="unsavedIndicator" style="visibility:hidden;"><span class="dot"></span> Unsaved changes</div>
+  <div class="actions">
+    <button class="btn-discard" id="discardBtn">Discard</button>
+    <button class="btn-save" id="saveBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+      Save changes
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+  Package saved
+</div>
+
+<script>
+  /* ===== Mobile sidebar toggle ===== */
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
+  document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
+
+  /* ===== Tabs ===== */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ===== Track unsaved changes ===== */
+  const unsavedIndicator = document.getElementById('unsavedIndicator');
+  function markDirty(){ unsavedIndicator.style.visibility = 'visible'; }
+
+  document.addEventListener('input', (e) => {
+    if (e.target.matches('input, textarea, select')) markDirty();
+  });
+
+  /* ===== Remove list rows (inclusions + adventure options) ===== */
+  document.querySelectorAll('.main').forEach(main => {
+    main.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-row');
+      if (removeBtn) {
+        removeBtn.closest('.list-row').remove();
+        markDirty();
+      }
+    });
+  });
+
+  /* ===== Add row buttons (inclusions + each adventure category) ===== */
+  document.querySelectorAll('.add-row-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let container;
+      if (btn.dataset.target) {
+        container = document.getElementById(btn.dataset.target);
+      } else if (btn.dataset.targetCategory) {
+        container = document.querySelector(`.list-editor[data-category="${btn.dataset.targetCategory}"]`);
+      }
+      if (!container) return;
+
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML = `<input type="text" placeholder="${btn.dataset.placeholder || 'New item...'}">
+        <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+      container.appendChild(row);
+      row.querySelector('input').focus();
+      markDirty();
+    });
+  });
+
+  /* ===== Image gallery: remove + add ===== */
+  const imgGrid = document.getElementById('imgGrid');
+  imgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (removeBtn) {
+      const wasCover = removeBtn.closest('.img-tile').querySelector('.cover-tag');
+      removeBtn.closest('.img-tile').remove();
+      if (wasCover) {
+        const firstTile = imgGrid.querySelector('.img-tile:not(.add-tile)');
+        if (firstTile) {
+          const tag = document.createElement('span');
+          tag.className = 'cover-tag';
+          tag.textContent = 'Cover';
+          firstTile.prepend(tag);
+        }
+      }
+      markDirty();
+    }
+  });
+
+  const sampleGradients = [
+    'linear-gradient(155deg,#0F1F16,#2F6B4F)',
+    'linear-gradient(155deg,#12281B,#1B4332)',
+    'linear-gradient(155deg,#134A3A,#17331F)',
+    'linear-gradient(155deg,#1B4332,#0A140F)'
+  ];
+  document.getElementById('addImgTile').addEventListener('click', () => {
+    const tile = document.createElement('div');
+    tile.className = 'img-tile';
+    tile.style.background = sampleGradients[Math.floor(Math.random() * sampleGradients.length)];
+    tile.innerHTML = `<button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+    imgGrid.insertBefore(tile, document.getElementById('addImgTile'));
+    markDirty();
+  });
+
+  /* ===== Save / Discard ===== */
+  const toast = document.getElementById('toast');
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    unsavedIndicator.style.visibility = 'hidden';
+    document.getElementById('lastSaved').textContent = 'Last saved just now';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  });
+  document.getElementById('discardBtn').addEventListener('click', () => {
+    if (confirm('Discard unsaved changes?')) location.reload();
+  });
+</script>
+
+<script>
+  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('jgAdminAuthed');
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>
