@@ -132,6 +132,10 @@
   .badge.danger{background:var(--danger-bg); color:var(--danger);}
   .badge.neutral{background:var(--bg); color:var(--muted);}
   .badge.gold{background:rgba(154,107,0,0.1); color:var(--gold);}
+  .status-select{
+    padding:5px 26px 5px 12px; background-repeat:no-repeat; background-position:right 8px center; background-size:11px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B675E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
 
   /* detail panel */
   .detail-panel{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;}
@@ -284,7 +288,7 @@
             <h2 id="dGuest">—</h2>
             <div class="sub" id="dPackage">—</div>
           </div>
-          <select id="dStatusSelect" class="badge" style="border:none; appearance:none; cursor:pointer;">
+          <select id="dStatusSelect" class="badge status-select" style="border:none; appearance:none; cursor:pointer;">
             <option value="new">New</option>
             <option value="pending">Pending Payment</option>
             <option value="confirmed">Confirmed</option>
@@ -452,6 +456,7 @@
 
     const sel = document.getElementById('dStatusSelect');
     sel.value = b.status || 'new';
+    sel.className = 'badge status-select ' + STATUS_BADGE[b.status || 'new'];
     sel.onchange = async () => {
       const newStatus = sel.value;
       // .select().single() so we get back the review_token the database
@@ -463,6 +468,7 @@
       row.dataset.status = newStatus;
       row.querySelector('.badge').textContent = STATUS_LABEL[newStatus];
       row.querySelector('.badge').className = 'badge ' + STATUS_BADGE[newStatus];
+      sel.className = 'badge status-select ' + STATUS_BADGE[newStatus];
       renderReviewLink(b);
     };
 
