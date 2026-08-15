@@ -530,7 +530,7 @@
     });
   }
 
-  document.querySelectorAll('.addon-card').forEach(card => {
+  function bindAddonCard(card){
     const name = card.dataset.name;
     const price = parseFloat(card.dataset.price);
     const bottom = card.querySelector('.addon-bottom');
@@ -560,7 +560,52 @@
       });
       recalc();
     });
-  });
+  }
+
+  const GENERIC_ADDON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5l2.9 6.2 6.6.7-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.7L12 2.5z"/></svg>';
+
+  function addonCardHtml(a){
+    const iconHtml = (Array.isArray(a.images) && a.images.length)
+      ? '<img src="' + a.images[0] + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">'
+      : GENERIC_ADDON_ICON;
+    return '<div class="addon-card" data-price="' + a.price + '" data-name="">' +
+      '<div class="addon-top">' +
+        '<span class="addon-icon">' + iconHtml + '</span>' +
+        '<div><div class="addon-name"></div><div class="addon-desc"></div></div>' +
+      '</div>' +
+      '<div class="addon-bottom">' +
+        '<div class="addon-price">$' + Number(a.price).toLocaleString('en-US', {maximumFractionDigits:2}) + ' <span>/ ' + (a.price_unit || 'person').replace(/^per\s+/, '') + '</span></div>' +
+        '<button class="addon-add-btn">Add</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // Live add-ons: try to replace the static fallback cards above with the
+  // real catalog (including images) before wiring up the Add buttons — if
+  // this fails for any reason, the static cards already in the page stand
+  // and get bound exactly as before.
+  (async () => {
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      const sb = createClient(
+        'https://fgzfpeewbcccxaakpmty.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
+      );
+      const { data, error } = await sb.from('addons').select('*').eq('active', true).order('sort_order');
+      if (!error && data && data.length) {
+        const grid = document.getElementById('addonGrid');
+        grid.innerHTML = data.map(addonCardHtml).join('');
+        grid.querySelectorAll('.addon-card').forEach((card, i) => {
+          card.dataset.name = data[i].name;
+          card.querySelector('.addon-name').textContent = data[i].name || '';
+          card.querySelector('.addon-desc').textContent = data[i].description || '';
+        });
+      }
+    } catch (e) {
+      // Supabase unreachable — the static fallback cards already in the page stand.
+    }
+    document.querySelectorAll('.addon-card').forEach(bindAddonCard);
+  })();
 
   const payDeskDeposit = document.getElementById('payDeskDeposit');
   const payDeskFull = document.getElementById('payDeskFull');

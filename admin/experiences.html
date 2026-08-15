@@ -207,6 +207,38 @@
   }
   .toast.show{transform:translateX(-50%) translateY(0);}
 
+  /* ===== Catalog tabs (Activities / Add-Ons) ===== */
+  .catalog-tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:4px 0 20px; overflow-x:auto;}
+  .catalog-tab{
+    background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600;
+    color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .catalog-tab.active{color:var(--green); border-bottom-color:var(--green);}
+  .catalog-panel{display:none;}
+  .catalog-panel.active{display:block;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  /* ===== Image gallery (reused from Packages editor) ===== */
+  .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
+  .img-tile{
+    position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff;
+  }
+  .img-tile .remove-img{
+    position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center;
+  }
+  .img-tile .cover-tag{
+    position:absolute; bottom:6px; left:6px; font-size:9.5px; font-weight:700; text-transform:uppercase;
+    background:var(--gold-vivid); color:#12281B; padding:3px 7px; border-radius:8px;
+  }
+  .img-tile.add-tile{
+    background:var(--bg); border:2px dashed var(--border); color:var(--muted); flex-direction:column; gap:8px;
+    cursor:pointer;
+  }
+  .img-tile.add-tile:hover{border-color:var(--green); color:var(--green);}
+  @media (min-width:960px){ .img-grid{grid-template-columns:repeat(3, 1fr);} }
+
   @media (min-width:960px){
     .mobile-topbar{display:none;}
     body{flex-direction:row;}
@@ -269,75 +301,155 @@
 <main class="main">
 
   <div class="page-header">
-    <div><h1>Experiences</h1><div class="sub">The activity database that your packages pull from.</div></div>
+    <div><h1>Experiences</h1><div class="sub" id="pageSub">The activity database that your packages pull from.</div></div>
     <button class="btn-primary" id="addActivityBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Activity</button>
+    <button class="btn-primary" id="addAddonBtn" style="display:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Add-On</button>
   </div>
 
-  <div class="note-banner">
-    Activities live here once, and packages reference them by category (Land / Water / Third / Night) — so renaming or repricing an activity here updates it everywhere it's used, instead of editing every package by hand.
+  <div class="catalog-tabs">
+    <button class="catalog-tab active" data-panel="activities" type="button">Activities</button>
+    <button class="catalog-tab" data-panel="addons" type="button">Package Add-Ons</button>
   </div>
 
-  <div class="filter-row" id="expFilters">
-    <button class="filter-pill active" data-filter="all" type="button">All</button>
-    <button class="filter-pill" data-filter="land" type="button">Land</button>
-    <button class="filter-pill" data-filter="water" type="button">Water</button>
-    <button class="filter-pill" data-filter="third" type="button">Third</button>
-    <button class="filter-pill" data-filter="night" type="button">Night Life</button>
-  </div>
+  <!-- PANEL: Activities (feeds the Packages editor's adventure pickers) -->
+  <div class="catalog-panel active" id="panel-activities">
+    <div class="note-banner">
+      Activities live here once, and packages reference them by category (Land / Water / Third / Night) — so renaming or repricing an activity here updates it everywhere it's used, instead of editing every package by hand.
+    </div>
 
-  <div class="rowlist" id="expList">
-    <div class="rlrow-empty">Loading activities&hellip;</div>
-  </div>
+    <div class="filter-row" id="expFilters">
+      <button class="filter-pill active" data-filter="all" type="button">All</button>
+      <button class="filter-pill" data-filter="land" type="button">Land</button>
+      <button class="filter-pill" data-filter="water" type="button">Water</button>
+      <button class="filter-pill" data-filter="third" type="button">Third</button>
+      <button class="filter-pill" data-filter="night" type="button">Night Life</button>
+    </div>
 
-  <div class="card" id="expEditCard" style="margin-top:20px; display:none;">
-    <h3 id="editCardTitle">Edit activity — <span id="eName">&nbsp;</span></h3>
-    <div class="card-sub" id="editCardSub">Changes here apply everywhere this activity is offered.</div>
+    <div class="rowlist" id="expList">
+      <div class="rlrow-empty">Loading activities&hellip;</div>
+    </div>
 
-    <div class="field"><label>Activity name</label><input type="text" id="eNameInput" placeholder="e.g. Dunn's River Falls"></div>
-    <div class="two-col">
-      <div class="field">
-        <label>Category</label>
-        <select id="eCategory">
-          <option value="land">Land Adventure</option>
-          <option value="water">Water Adventure</option>
-          <option value="third">Third Adventure</option>
-          <option value="night">Night Life</option>
-        </select>
+    <div class="card" id="expEditCard" style="margin-top:20px; display:none;">
+      <h3 id="editCardTitle">Edit activity — <span id="eName">&nbsp;</span></h3>
+      <div class="card-sub" id="editCardSub">Changes here apply everywhere this activity is offered.</div>
+
+      <div class="field"><label>Activity name</label><input type="text" id="eNameInput" placeholder="e.g. Dunn's River Falls"></div>
+      <div class="two-col">
+        <div class="field">
+          <label>Category</label>
+          <select id="eCategory">
+            <option value="land">Land Adventure</option>
+            <option value="water">Water Adventure</option>
+            <option value="third">Third Adventure</option>
+            <option value="night">Night Life</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="eActive">
+            <option value="true">Active — offered in Packages</option>
+            <option value="false">Inactive — hidden from Packages</option>
+          </select>
+        </div>
       </div>
-      <div class="field">
-        <label>Status</label>
-        <select id="eActive">
-          <option value="true">Active — offered in Packages</option>
-          <option value="false">Inactive — hidden from Packages</option>
-        </select>
+      <div class="field"><label>Description</label><textarea id="eDesc"></textarea></div>
+      <div class="two-col">
+        <div class="field"><label>Location</label><input type="text" id="eLocation"></div>
+        <div class="field"><label>Duration</label><input type="text" id="eDuration"></div>
       </div>
-    </div>
-    <div class="field"><label>Description</label><textarea id="eDesc"></textarea></div>
-    <div class="two-col">
-      <div class="field"><label>Location</label><input type="text" id="eLocation"></div>
-      <div class="field"><label>Duration</label><input type="text" id="eDuration"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Cost (what you pay)</label><input type="text" id="eCost"></div>
-      <div class="field"><label>Selling price</label><input type="text" id="eSell"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Supplier</label><input type="text" id="eSupplier"></div>
-      <div class="field"><label>Capacity</label><input type="text" id="eCapacity"></div>
-    </div>
+      <div class="two-col">
+        <div class="field"><label>Cost (what you pay)</label><input type="text" id="eCost"></div>
+        <div class="field"><label>Selling price</label><input type="text" id="eSell"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Supplier</label><input type="text" id="eSupplier"></div>
+        <div class="field"><label>Capacity</label><input type="text" id="eCapacity"></div>
+      </div>
 
-    <div class="usage-note" id="usageNote" style="display:none;"></div>
+      <div class="usage-note" id="usageNote" style="display:none;"></div>
 
-    <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
-      <button class="icon-btn danger" id="deleteActivityBtn" type="button" aria-label="Delete">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
-      </button>
-      <div style="display:flex; gap:8px;">
-        <button class="btn-discard" id="cancelActivityBtn" type="button">Cancel</button>
-        <button class="btn-save" id="saveActivityBtn" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-          Save
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
+        <button class="icon-btn danger" id="deleteActivityBtn" type="button" aria-label="Delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
         </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-discard" id="cancelActivityBtn" type="button">Cancel</button>
+          <button class="btn-save" id="saveActivityBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: Package Add-Ons (feeds the homepage teaser, the Add-Ons page, and the booking review step) -->
+  <div class="catalog-panel" id="panel-addons">
+    <div class="note-banner">
+      These are optional extras a guest can add on top of any package during booking — shown on the homepage, the full Add-Ons page, and the "Add more excursions" step when someone books.
+    </div>
+
+    <div class="rowlist" id="addonList">
+      <div class="rlrow-empty">Loading add-ons&hellip;</div>
+    </div>
+
+    <div class="card" id="addonEditCard" style="margin-top:20px; display:none;">
+      <h3 id="addonEditCardTitle">Edit add-on — <span id="aName">&nbsp;</span></h3>
+      <div class="card-sub" id="addonEditCardSub">Changes here apply everywhere this add-on is shown.</div>
+
+      <div class="field"><label>Add-on name</label><input type="text" id="aNameInput" placeholder="e.g. Sunset Catamaran Cruise"></div>
+      <div class="field"><label>Description</label><textarea id="aDesc"></textarea></div>
+      <div class="two-col">
+        <div class="field"><label>Price</label><input type="text" id="aPrice" placeholder="e.g. 65"></div>
+        <div class="field">
+          <label>Priced</label>
+          <select id="aPriceUnit">
+            <option value="per person">Per person</option>
+            <option value="per couple">Per couple</option>
+            <option value="flat rate">Flat rate</option>
+          </select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Status</label>
+          <select id="aActive">
+            <option value="true">Active — bookable</option>
+            <option value="false">Inactive — hidden</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Homepage teaser <span class="hint">— shown in the small 4-up preview</span></label>
+          <select id="aFeatured">
+            <option value="false">Not featured</option>
+            <option value="true">Featured on homepage</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Photo <span class="hint">— shown on the Add-Ons page and homepage teaser</span></label>
+        <div class="img-grid" id="addonImgGrid">
+          <div class="img-tile add-tile" id="addAddonImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
+        </div>
+        <input type="file" id="addonImgFileInput" accept="image/*" multiple style="display:none;">
+        <div class="img-upload-status" id="addonImgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
+        <button class="icon-btn danger" id="deleteAddonBtn" type="button" aria-label="Delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-discard" id="cancelAddonBtn" type="button">Cancel</button>
+          <button class="btn-save" id="saveAddonBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+            Save
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -525,6 +637,186 @@
   });
 
   loadExperiences();
+
+  /* ===== Catalog tabs ===== */
+  const pageSub = document.getElementById('pageSub');
+  const addActivityBtn = document.getElementById('addActivityBtn');
+  const addAddonBtn = document.getElementById('addAddonBtn');
+  const SUB_TEXT = {
+    activities: 'The activity database that your packages pull from.',
+    addons: 'Optional extras guests can add on top of any package during booking.'
+  };
+  document.querySelectorAll('.catalog-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const panel = tab.dataset.panel;
+      document.querySelectorAll('.catalog-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.catalog-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+      pageSub.textContent = SUB_TEXT[panel];
+      addActivityBtn.style.display = panel === 'activities' ? '' : 'none';
+      addAddonBtn.style.display = panel === 'addons' ? '' : 'none';
+      if (panel === 'addons' && !addonsLoaded) loadAddons();
+    });
+  });
+
+  /* ===== Add-Ons: load, add, edit, delete, image upload ===== */
+  let addons = [];
+  let addonsLoaded = false;
+  let editingAddonId = null;
+  let currentAddonImages = [];
+
+  const addonList = document.getElementById('addonList');
+  const addonEditCard = document.getElementById('addonEditCard');
+  const aNameInput = document.getElementById('aNameInput');
+  const aName = document.getElementById('aName');
+  const aDesc = document.getElementById('aDesc');
+  const aPrice = document.getElementById('aPrice');
+  const aPriceUnit = document.getElementById('aPriceUnit');
+  const aActive = document.getElementById('aActive');
+  const aFeatured = document.getElementById('aFeatured');
+  const deleteAddonBtn = document.getElementById('deleteAddonBtn');
+  const addonImgGrid = document.getElementById('addonImgGrid');
+  const addAddonImgTile = document.getElementById('addAddonImgTile');
+  const addonImgFileInput = document.getElementById('addonImgFileInput');
+  const addonImgUploadStatus = document.getElementById('addonImgUploadStatus');
+
+  function renderAddonImages(){
+    addonImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentAddonImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      addonImgGrid.insertBefore(tile, addAddonImgTile);
+    });
+  }
+  addonImgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (!removeBtn) return;
+    currentAddonImages.splice(Number(removeBtn.closest('.img-tile').dataset.idx), 1);
+    renderAddonImages();
+  });
+  addAddonImgTile.addEventListener('click', () => addonImgFileInput.click());
+  addonImgFileInput.addEventListener('change', async () => {
+    const files = Array.from(addonImgFileInput.files || []);
+    if (!files.length) return;
+    addonImgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      addonImgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('addon-images').upload(path, file, { upsert: false });
+      if (upErr) { addonImgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`; continue; }
+      const { data: pub } = window.sb.storage.from('addon-images').getPublicUrl(path);
+      currentAddonImages.push(pub.publicUrl);
+    }
+    addonImgUploadStatus.style.display = 'none';
+    addonImgFileInput.value = '';
+    renderAddonImages();
+  });
+
+  function renderAddonList(){
+    if (!addons.length) {
+      addonList.innerHTML = '<div class="rlrow-empty">No add-ons yet — click "Add Add-On" to create your first one.</div>';
+      return;
+    }
+    addonList.innerHTML = addons.map(a => {
+      return '<div class="rlrow' + (a.id === editingAddonId ? ' selected' : '') + '" data-id="' + a.id + '">' +
+        '<div class="rl-top"><span class="rl-title"></span><span class="badge ' + (a.active ? 'ok' : 'neutral') + '">' + (a.active ? 'Active' : 'Inactive') + (a.featured ? ' <span style="opacity:0.6">&middot; Featured</span>' : '') + '</span></div>' +
+        '<div class="rl-sub"></div>' +
+        '<div class="rl-meta"><span class="m">Price <b>$' + Number(a.price || 0).toFixed(0) + ' ' + (a.price_unit || '') + '</b></span></div>' +
+      '</div>';
+    }).join('');
+    addonList.querySelectorAll('.rlrow').forEach(row => {
+      const a = addons.find(x => x.id === row.dataset.id);
+      row.querySelector('.rl-title').textContent = a.name;
+      row.querySelector('.rl-sub').textContent = a.description || '';
+      row.addEventListener('click', () => openAddonEditor(a));
+    });
+  }
+
+  function openAddonEditor(a){
+    editingAddonId = a.id;
+    aName.textContent = a.name;
+    document.getElementById('addonEditCardTitle').firstChild.textContent = 'Edit add-on — ';
+    aNameInput.value = a.name || '';
+    aDesc.value = a.description || '';
+    aPrice.value = a.price != null ? a.price : '';
+    aPriceUnit.value = a.price_unit || 'per person';
+    aActive.value = String(a.active);
+    aFeatured.value = String(a.featured);
+    currentAddonImages = Array.isArray(a.images) ? a.images.slice() : [];
+    renderAddonImages();
+    deleteAddonBtn.style.display = '';
+    addonEditCard.style.display = '';
+    renderAddonList();
+    addonEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function openNewAddon(){
+    editingAddonId = null;
+    aName.textContent = 'New add-on';
+    document.getElementById('addonEditCardTitle').firstChild.textContent = 'Add add-on — ';
+    aNameInput.value = '';
+    aDesc.value = '';
+    aPrice.value = '';
+    aPriceUnit.value = 'per person';
+    aActive.value = 'true';
+    aFeatured.value = 'false';
+    currentAddonImages = [];
+    renderAddonImages();
+    deleteAddonBtn.style.display = 'none';
+    addonEditCard.style.display = '';
+    renderAddonList();
+    addonEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  addAddonBtn.addEventListener('click', openNewAddon);
+  document.getElementById('cancelAddonBtn').addEventListener('click', () => { addonEditCard.style.display = 'none'; editingAddonId = null; renderAddonList(); });
+
+  async function loadAddons(){
+    const { data, error } = await window.sb.from('addons').select('*').order('sort_order');
+    if (error) { alert("Couldn't load add-ons: " + error.message); return; }
+    addons = data || [];
+    addonsLoaded = true;
+    renderAddonList();
+  }
+
+  document.getElementById('saveAddonBtn').addEventListener('click', async () => {
+    const name = aNameInput.value.trim();
+    if (!name) { alert('Please enter an add-on name.'); return; }
+    const payload = {
+      name,
+      description: aDesc.value.trim() || null,
+      price: parseFloat(aPrice.value) || 0,
+      price_unit: aPriceUnit.value,
+      active: aActive.value === 'true',
+      featured: aFeatured.value === 'true',
+      images: currentAddonImages
+    };
+    const { error } = editingAddonId
+      ? await window.sb.from('addons').update(payload).eq('id', editingAddonId)
+      : await window.sb.from('addons').insert(payload);
+    if (error) { alert("Couldn't save: " + error.message); return; }
+    const wasEditing = !!editingAddonId;
+    addonEditCard.style.display = 'none';
+    editingAddonId = null;
+    await loadAddons();
+    showToast(wasEditing ? 'Add-on updated' : 'Add-on added');
+  });
+
+  deleteAddonBtn.addEventListener('click', async () => {
+    if (!editingAddonId) return;
+    if (!confirm('Delete this add-on? This can’t be undone.')) return;
+    const { error } = await window.sb.from('addons').delete().eq('id', editingAddonId);
+    if (error) { alert("Couldn't delete: " + error.message); return; }
+    addonEditCard.style.display = 'none';
+    editingAddonId = null;
+    await loadAddons();
+    showToast('Add-on deleted');
+  });
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
