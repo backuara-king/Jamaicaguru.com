@@ -399,12 +399,12 @@
           </div>
           <div class="card-body">
             <span class="duration">4 Days &middot; 3 Nights</span>
-            <h3>3-Day Mini Jamaican Adventure</h3>
+            <h3 id="homeCardName-3day">3-Day Mini Jamaican Adventure</h3>
             <div class="rating">
               <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L10 1.5Z"/></svg>
               <b>4.56</b><span>(183 reviews)</span>
             </div>
-            <p class="excerpt">Discover the heart of Jamaica in a long weekend &mdash; bamboo rafting, local eats, and just enough sun to reset.</p>
+            <p class="excerpt" id="homeCardDesc-3day">Discover the heart of Jamaica in a long weekend &mdash; bamboo rafting, local eats, and just enough sun to reset.</p>
             <div class="price-row"><del>$949</del><ins id="homeCardPrice-3day">$820</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="3day">Book Now</a></div>
           </div>
@@ -418,12 +418,12 @@
           </div>
           <div class="card-body">
             <span class="duration">6 Days &middot; 5 Nights</span>
-            <h3>5-Day Getaway Jamaican Adventure</h3>
+            <h3 id="homeCardName-5day">5-Day Getaway Jamaican Adventure</h3>
             <div class="rating">
               <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L10 1.5Z"/></svg>
               <b>4.57</b><span>(159 reviews)</span>
             </div>
-            <p class="excerpt">Dive deep into the island &mdash; climb Dunn&rsquo;s River Falls, wander Ocho Rios, and settle into island time.</p>
+            <p class="excerpt" id="homeCardDesc-5day">Dive deep into the island &mdash; climb Dunn&rsquo;s River Falls, wander Ocho Rios, and settle into island time.</p>
             <div class="price-row"><del>$1,352</del><ins id="homeCardPrice-5day">$1,210.55</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="5day">Book Now</a></div>
           </div>
@@ -437,12 +437,12 @@
           </div>
           <div class="card-body">
             <span class="duration">8 Days &middot; 7 Nights</span>
-            <h3>7-Day Ultimate Jamaican Adventure</h3>
+            <h3 id="homeCardName-7day">7-Day Ultimate Jamaican Adventure</h3>
             <div class="rating">
               <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L10 1.5Z"/></svg>
               <b>4.51</b><span>(157 reviews)</span>
             </div>
-            <p class="excerpt">Experience the full island &mdash; Seven Mile Beach, the Blue Mountains, and everywhere worth seeing in between.</p>
+            <p class="excerpt" id="homeCardDesc-7day">Experience the full island &mdash; Seven Mile Beach, the Blue Mountains, and everywhere worth seeing in between.</p>
             <div class="price-row"><del>$1,612</del><ins id="homeCardPrice-7day">$1,450</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="7day">Book Now</a></div>
           </div>
@@ -742,11 +742,15 @@
         'https://fgzfpeewbcccxaakpmty.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
       );
-      const { data, error } = await sb.from('packages').select('slug, price_base');
+      const { data, error } = await sb.from('packages').select('slug, title, short_description, price_base');
       if (error || !data) return;
       data.forEach(pkg => {
-        const el = document.getElementById('homeCardPrice-' + pkg.slug);
-        if (el) el.textContent = '$' + fmtHomePrice(pkg.price_base);
+        const priceEl = document.getElementById('homeCardPrice-' + pkg.slug);
+        if (priceEl) priceEl.textContent = '$' + fmtHomePrice(pkg.price_base);
+        const nameEl = document.getElementById('homeCardName-' + pkg.slug);
+        if (nameEl && pkg.title) nameEl.textContent = pkg.title;
+        const descEl = document.getElementById('homeCardDesc-' + pkg.slug);
+        if (descEl && pkg.short_description) descEl.textContent = pkg.short_description;
       });
     } catch (e) {
       // Supabase unreachable — static fallback prices already in the page stand.
