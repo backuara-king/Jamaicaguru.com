@@ -108,6 +108,15 @@
   .status-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
   .last-saved{font-size:12px; color:var(--muted);}
 
+  /* ===== Package switcher ===== */
+  .pkg-switcher{display:flex; gap:8px; margin:18px 0 4px; flex-wrap:wrap;}
+  .pkg-switch-btn{
+    background:#fff; border:1px solid var(--border); color:var(--muted); border-radius:20px;
+    padding:9px 16px; font-size:13px; font-weight:600;
+  }
+  .pkg-switch-btn.active{background:var(--green); border-color:var(--green); color:#fff;}
+  .pkg-switch-btn:disabled{opacity:0.5;}
+
   /* ===== Tabs ===== */
   .tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:20px 0 22px; overflow-x:auto;}
   .tab-btn{
@@ -281,13 +290,19 @@
 <main class="main">
 
   <div class="page-header">
-    <div class="breadcrumb"><a href="admin-dashboard.html">Packages</a> / 3 Day Island Escape</div>
-    <h1>3 Day Island Escape</h1>
-    <div class="sub">Edit the price, description, adventure options, and gallery for this package. Changes go live once published.</div>
+    <div class="breadcrumb">Packages / <span id="breadcrumbTitle">Loading&hellip;</span></div>
+    <h1 id="pageTitle">Loading&hellip;</h1>
+    <div class="sub">Edit the price, description, adventure options, and gallery for this package. Changes go live on the site the moment you save.</div>
     <div class="status-row">
-      <span class="status-pill"><span class="dot"></span> Published</span>
-      <span class="last-saved" id="lastSaved">Last saved just now</span>
+      <span class="status-pill"><span class="dot"></span> Live</span>
+      <span class="last-saved" id="lastSaved">&nbsp;</span>
     </div>
+  </div>
+
+  <div class="pkg-switcher" id="pkgSwitcher">
+    <button class="pkg-switch-btn active" data-slug="3day" type="button">3-Day</button>
+    <button class="pkg-switch-btn" data-slug="5day" type="button">5-Day</button>
+    <button class="pkg-switch-btn" data-slug="7day" type="button">7-Day</button>
   </div>
 
   <div class="tabs">
@@ -303,19 +318,23 @@
       <div class="card-sub">This is what guests see at the top of the package page.</div>
       <div class="field">
         <label>Package title</label>
-        <input type="text" value="3 Day Island Escape">
+        <input type="text" id="fieldTitle">
       </div>
       <div class="field">
         <label>Tagline</label>
-        <input type="text" value="Relax. Explore. Experience Jamaica.">
+        <input type="text" id="fieldTagline">
       </div>
       <div class="field">
         <label>Short description <span class="hint">— shown on the hero card</span></label>
-        <textarea>The perfect quick getaway. Enjoy handpicked experiences, comfortable stays, and private transportation as you explore the best of Jamaica in just 3 unforgettable days.</textarea>
+        <textarea id="fieldShortDesc"></textarea>
       </div>
       <div class="field">
-        <label>About this package <span class="hint">— shown further down the page</span></label>
-        <textarea style="min-height:130px;">The 3 Day Island Escape is built for travelers who want the best of Jamaica without spending their trip stitching together bookings. From the moment you land, a private driver has you covered — no rideshares, no haggling with taxis, no wondering how you'll get from the villa to the falls.</textarea>
+        <label>About section heading</label>
+        <input type="text" id="fieldAboutHeading">
+      </div>
+      <div class="field">
+        <label>About this package <span class="hint">— shown further down the page. Leave a blank line between paragraphs.</span></label>
+        <textarea style="min-height:130px;" id="fieldAboutText"></textarea>
       </div>
     </div>
 
@@ -325,31 +344,31 @@
       <div class="two-col">
         <div class="field">
           <label>Starting price <span class="hint">for base guest count</span></label>
-          <div class="price-input"><span>$</span><input type="text" value="1,898.00"></div>
+          <div class="price-input"><span>$</span><input type="text" id="fieldPrice"></div>
         </div>
         <div class="field">
           <label>Currency</label>
-          <select><option selected>USD</option><option>JMD</option><option>CAD</option><option>GBP</option></select>
+          <select id="fieldCurrency"><option>USD</option><option>JMD</option><option>CAD</option><option>GBP</option></select>
         </div>
       </div>
       <div class="two-col">
         <div class="field">
           <label>Min guests</label>
-          <input type="number" value="2">
+          <input type="number" id="fieldMinGuests">
         </div>
         <div class="field">
           <label>Max guests</label>
-          <input type="number" value="10">
+          <input type="number" id="fieldMaxGuests">
         </div>
       </div>
       <div class="two-col">
         <div class="field">
           <label>Price per extra guest <span class="hint">above min</span></label>
-          <div class="price-input"><span>$</span><input type="text" value="420.00"></div>
+          <div class="price-input"><span>$</span><input type="text" id="fieldPricePerGuest"></div>
         </div>
         <div class="field">
-          <label>Duration</label>
-          <input type="text" value="3 Nights, 4 Days">
+          <label>Duration <span class="hint">shown as text, e.g. "3 Nights, 4 Days"</span></label>
+          <input type="text" id="fieldDuration">
         </div>
       </div>
     </div>
@@ -360,24 +379,7 @@
     <div class="card">
       <h3>What's included</h3>
       <div class="card-sub">Shown as the checklist on the package page.</div>
-      <div class="list-editor" id="inclusionsList">
-        <div class="list-row">
-          <input type="text" value="2 nights accommodation for your full party">
-          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="list-row">
-          <input type="text" value="Private transportation to and from every activity">
-          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="list-row">
-          <input type="text" value="Entry fees and guides for all 3 chosen adventures">
-          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="list-row">
-          <input type="text" value="24/7 support from your Jamaica Guru contact">
-          <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-      </div>
+      <div class="list-editor" id="inclusionsList"></div>
       <button class="add-row-btn" data-target="inclusionsList" data-placeholder="New inclusion...">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add inclusion
       </button>
@@ -389,11 +391,7 @@
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Land Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="land">
-          <div class="list-row"><input type="text" value="Horseback Riding"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Bamboo Rafting"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Ziplining"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-        </div>
+        <div class="list-editor" data-category="land"></div>
         <button class="add-row-btn" data-target-category="land" data-placeholder="New land adventure...">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
         </button>
@@ -401,11 +399,7 @@
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Water Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="water">
-          <div class="list-row"><input type="text" value="Dunn's River Falls"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Blue Hole"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="River Tubing"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-        </div>
+        <div class="list-editor" data-category="water"></div>
         <button class="add-row-btn" data-target-category="water" data-placeholder="New water adventure...">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
         </button>
@@ -413,11 +407,7 @@
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Third Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="third">
-          <div class="list-row"><input type="text" value="ATV"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Catamaran / Party Cruise"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Jet Skiing"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-        </div>
+        <div class="list-editor" data-category="third"></div>
         <button class="add-row-btn" data-target-category="third" data-placeholder="New adventure...">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
         </button>
@@ -425,10 +415,7 @@
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Night Life</h4><span class="opt-tag">Choose 1 · Optional</span></div>
-        <div class="list-editor" data-category="night">
-          <div class="list-row"><input type="text" value="8 Rivaz Night Club"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-          <div class="list-row"><input type="text" value="Taboo Night Club (Strip Club)"><button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-        </div>
+        <div class="list-editor" data-category="night"></div>
         <button class="add-row-btn" data-target-category="night" data-placeholder="New night life option...">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
         </button>
@@ -440,26 +427,15 @@
   <div class="tab-panel" id="tab-images">
     <div class="card">
       <h3>Package gallery</h3>
-      <div class="card-sub">These images appear in the hero carousel on the package page. The first image is used as the cover.</div>
+      <div class="card-sub">These images appear in the hero carousel on the package page. The first image is used as the cover. Leave empty to keep the illustrated placeholder.</div>
       <div class="img-grid" id="imgGrid">
-        <div class="img-tile" style="background:linear-gradient(155deg,#0F1F16,#1B4332);">
-          <span class="cover-tag">Cover</span>
-          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="img-tile" style="background:linear-gradient(155deg,#134A3A,#1B4332);">
-          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="img-tile" style="background:linear-gradient(155deg,#17331F,#2F6B4F);">
-          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
-        <div class="img-tile" style="background:linear-gradient(155deg,#0A140F,#1B4332);">
-          <button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-        </div>
         <div class="img-tile add-tile" id="addImgTile">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
           <span>Add image</span>
         </div>
       </div>
+      <input type="file" id="imgFileInput" accept="image/*" multiple style="display:none;">
+      <div class="img-upload-status" id="imgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
     </div>
   </div>
 
@@ -500,11 +476,30 @@
 
   /* ===== Track unsaved changes ===== */
   const unsavedIndicator = document.getElementById('unsavedIndicator');
-  function markDirty(){ unsavedIndicator.style.visibility = 'visible'; }
+  let dirty = false;
+  function markDirty(){ unsavedIndicator.style.visibility = 'visible'; dirty = true; }
 
   document.addEventListener('input', (e) => {
     if (e.target.matches('input, textarea, select')) markDirty();
   });
+
+  /* ===== List editor helpers (inclusions + each adventure category) ===== */
+  function addListRow(container, placeholder, value){
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `<input type="text" placeholder="${placeholder || 'New item...'}">
+      <button class="icon-btn danger remove-row" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+    if (value != null) row.querySelector('input').value = value;
+    container.appendChild(row);
+    return row;
+  }
+  function fillListEditor(container, values){
+    container.innerHTML = '';
+    (values || []).forEach(v => addListRow(container, '', v));
+  }
+  function readListEditor(container){
+    return Array.from(container.querySelectorAll('.list-row input')).map(i => i.value.trim()).filter(Boolean);
+  }
 
   /* ===== Remove list rows (inclusions + adventure options) ===== */
   document.querySelectorAll('.main').forEach(main => {
@@ -527,63 +522,191 @@
         container = document.querySelector(`.list-editor[data-category="${btn.dataset.targetCategory}"]`);
       }
       if (!container) return;
-
-      const row = document.createElement('div');
-      row.className = 'list-row';
-      row.innerHTML = `<input type="text" placeholder="${btn.dataset.placeholder || 'New item...'}">
-        <button class="icon-btn danger remove-row"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
-      container.appendChild(row);
+      const row = addListRow(container, btn.dataset.placeholder);
       row.querySelector('input').focus();
       markDirty();
     });
   });
 
-  /* ===== Image gallery: remove + add ===== */
+  /* ===== Image gallery: remove + real upload to Supabase Storage ===== */
   const imgGrid = document.getElementById('imgGrid');
+  const addImgTile = document.getElementById('addImgTile');
+  const imgFileInput = document.getElementById('imgFileInput');
+  const imgUploadStatus = document.getElementById('imgUploadStatus');
+  let currentImages = []; // public URLs, in display order — first is the cover
+
+  function renderImages(){
+    imgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      imgGrid.insertBefore(tile, addImgTile);
+    });
+  }
+
   imgGrid.addEventListener('click', (e) => {
     const removeBtn = e.target.closest('.remove-img');
-    if (removeBtn) {
-      const wasCover = removeBtn.closest('.img-tile').querySelector('.cover-tag');
-      removeBtn.closest('.img-tile').remove();
-      if (wasCover) {
-        const firstTile = imgGrid.querySelector('.img-tile:not(.add-tile)');
-        if (firstTile) {
-          const tag = document.createElement('span');
-          tag.className = 'cover-tag';
-          tag.textContent = 'Cover';
-          firstTile.prepend(tag);
-        }
-      }
-      markDirty();
-    }
+    if (!removeBtn) return;
+    const idx = Number(removeBtn.closest('.img-tile').dataset.idx);
+    currentImages.splice(idx, 1);
+    renderImages();
+    markDirty();
   });
 
-  const sampleGradients = [
-    'linear-gradient(155deg,#0F1F16,#2F6B4F)',
-    'linear-gradient(155deg,#12281B,#1B4332)',
-    'linear-gradient(155deg,#134A3A,#17331F)',
-    'linear-gradient(155deg,#1B4332,#0A140F)'
-  ];
-  document.getElementById('addImgTile').addEventListener('click', () => {
-    const tile = document.createElement('div');
-    tile.className = 'img-tile';
-    tile.style.background = sampleGradients[Math.floor(Math.random() * sampleGradients.length)];
-    tile.innerHTML = `<button class="remove-img" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
-    imgGrid.insertBefore(tile, document.getElementById('addImgTile'));
+  addImgTile.addEventListener('click', () => imgFileInput.click());
+
+  imgFileInput.addEventListener('change', async () => {
+    const files = Array.from(imgFileInput.files || []);
+    if (!files.length) return;
+    imgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      imgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `${currentSlug}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('package-images').upload(path, file, { upsert: false });
+      if (upErr) {
+        imgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`;
+        continue;
+      }
+      const { data: pub } = window.sb.storage.from('package-images').getPublicUrl(path);
+      currentImages.push(pub.publicUrl);
+    }
+    imgUploadStatus.style.display = 'none';
+    imgFileInput.value = '';
+    renderImages();
     markDirty();
+  });
+
+  /* ===== Package data: load, switch, save ===== */
+  const SLUG_LABEL = { '3day': '3-Day', '5day': '5-Day', '7day': '7-Day' };
+  let packagesCache = {};
+  let currentSlug = '3day';
+
+  const fieldTitle = document.getElementById('fieldTitle');
+  const fieldTagline = document.getElementById('fieldTagline');
+  const fieldShortDesc = document.getElementById('fieldShortDesc');
+  const fieldAboutHeading = document.getElementById('fieldAboutHeading');
+  const fieldAboutText = document.getElementById('fieldAboutText');
+  const fieldPrice = document.getElementById('fieldPrice');
+  const fieldCurrency = document.getElementById('fieldCurrency');
+  const fieldMinGuests = document.getElementById('fieldMinGuests');
+  const fieldMaxGuests = document.getElementById('fieldMaxGuests');
+  const fieldPricePerGuest = document.getElementById('fieldPricePerGuest');
+  const fieldDuration = document.getElementById('fieldDuration');
+  const inclusionsList = document.getElementById('inclusionsList');
+  const breadcrumbTitle = document.getElementById('breadcrumbTitle');
+  const pageTitle = document.getElementById('pageTitle');
+  const lastSaved = document.getElementById('lastSaved');
+
+  function populateForm(pkg){
+    fieldTitle.value = pkg.title || '';
+    fieldTagline.value = pkg.tagline || '';
+    fieldShortDesc.value = pkg.short_description || '';
+    fieldAboutHeading.value = pkg.about_title || '';
+    fieldAboutText.value = pkg.about_text || '';
+    fieldPrice.value = Number(pkg.price_base || 0).toFixed(2);
+    fieldCurrency.value = pkg.currency || 'USD';
+    fieldMinGuests.value = pkg.min_guests != null ? pkg.min_guests : 2;
+    fieldMaxGuests.value = pkg.max_guests != null ? pkg.max_guests : 10;
+    fieldPricePerGuest.value = Number(pkg.price_per_guest || 0).toFixed(2);
+    fieldDuration.value = pkg.duration_label || '';
+
+    fillListEditor(inclusionsList, pkg.inclusions);
+    const adv = pkg.adventures || {};
+    fillListEditor(document.querySelector('.list-editor[data-category="land"]'), adv.land);
+    fillListEditor(document.querySelector('.list-editor[data-category="water"]'), adv.water);
+    fillListEditor(document.querySelector('.list-editor[data-category="third"]'), adv.third);
+    fillListEditor(document.querySelector('.list-editor[data-category="night"]'), adv.night);
+
+    currentImages = Array.isArray(pkg.images) ? pkg.images.slice() : [];
+    renderImages();
+
+    breadcrumbTitle.textContent = pkg.title || SLUG_LABEL[currentSlug];
+    pageTitle.textContent = pkg.title || SLUG_LABEL[currentSlug];
+    lastSaved.textContent = pkg.updated_at
+      ? 'Last saved ' + new Date(pkg.updated_at).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})
+      : '';
+
+    unsavedIndicator.style.visibility = 'hidden';
+    dirty = false;
+  }
+
+  function collectFormAsUpdate(){
+    return {
+      title: fieldTitle.value.trim(),
+      tagline: fieldTagline.value.trim(),
+      short_description: fieldShortDesc.value.trim(),
+      about_title: fieldAboutHeading.value.trim(),
+      about_text: fieldAboutText.value.trim(),
+      price_base: parseFloat(fieldPrice.value.replace(/,/g, '')) || 0,
+      currency: fieldCurrency.value,
+      min_guests: parseInt(fieldMinGuests.value, 10) || 2,
+      max_guests: parseInt(fieldMaxGuests.value, 10) || 10,
+      price_per_guest: parseFloat(fieldPricePerGuest.value.replace(/,/g, '')) || 0,
+      duration_label: fieldDuration.value.trim(),
+      inclusions: readListEditor(inclusionsList),
+      adventures: {
+        land: readListEditor(document.querySelector('.list-editor[data-category="land"]')),
+        water: readListEditor(document.querySelector('.list-editor[data-category="water"]')),
+        third: readListEditor(document.querySelector('.list-editor[data-category="third"]')),
+        night: readListEditor(document.querySelector('.list-editor[data-category="night"]'))
+      },
+      images: currentImages
+    };
+  }
+
+  async function loadAllPackages(){
+    const { data, error } = await window.sb.from('packages').select('*');
+    if (error) {
+      alert("Couldn't load packages: " + error.message);
+      return;
+    }
+    (data || []).forEach(row => { packagesCache[row.slug] = row; });
+    populateForm(packagesCache[currentSlug] || {});
+  }
+
+  document.querySelectorAll('.pkg-switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.slug === currentSlug) return;
+      if (dirty && !confirm('You have unsaved changes for this package. Discard them and switch?')) return;
+      currentSlug = btn.dataset.slug;
+      document.querySelectorAll('.pkg-switch-btn').forEach(b => b.classList.toggle('active', b === btn));
+      populateForm(packagesCache[currentSlug] || {});
+    });
   });
 
   /* ===== Save / Discard ===== */
   const toast = document.getElementById('toast');
-  document.getElementById('saveBtn').addEventListener('click', () => {
+  const saveBtn = document.getElementById('saveBtn');
+  const saveBtnOriginalHtml = saveBtn.innerHTML;
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    const update = collectFormAsUpdate();
+    const { data, error } = await window.sb.from('packages').update(update).eq('slug', currentSlug).select().single();
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = saveBtnOriginalHtml;
+    if (error) {
+      alert("Couldn't save: " + error.message);
+      return;
+    }
+    packagesCache[currentSlug] = data;
     unsavedIndicator.style.visibility = 'hidden';
-    document.getElementById('lastSaved').textContent = 'Last saved just now';
+    dirty = false;
+    lastSaved.textContent = 'Last saved just now';
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2200);
   });
   document.getElementById('discardBtn').addEventListener('click', () => {
-    if (confirm('Discard unsaved changes?')) location.reload();
+    if (confirm('Discard unsaved changes?')) populateForm(packagesCache[currentSlug] || {});
   });
+
+  loadAllPackages();
 </script>
 
 <script type="module">

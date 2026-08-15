@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict; use warnings;
 
-my $dir = "C:\\Users\\TRAYEM~1\\AppData\\Local\\Temp\\claude\\C--Users-Tray-Emmanuel\\8d090954-fc52-4778-bbd4-89a56ef22f23\\scratchpad";
+my $dir = "C:\\Users\\Tray Emmanuel\\jamaica-guru-site";
 
 sub slurp { my ($f) = @_; open(my $fh, "<", $f) or die "open $f: $!"; local $/; my $d = <$fh>; close $fh; return $d; }
 
@@ -51,7 +51,7 @@ EXTRA
 
 my @packages = (
   {
-    file => "jamaica-guru-3day.html",
+    file => "package-3day.html",
     VIEW_ID => "3day",
     PKG_BADGE => "Fan Favorite",
     PKG_NAME => "3-Day Mini Jamaican Adventure",
@@ -77,7 +77,7 @@ my @packages = (
     DEFAULT_DATE => "2026-09-14",
   },
   {
-    file => "jamaica-guru-5day.html",
+    file => "package-5day.html",
     VIEW_ID => "5day",
     PKG_BADGE => "Most Booked",
     PKG_NAME => "5-Day Getaway Jamaican Adventure",
@@ -103,7 +103,7 @@ my @packages = (
     DEFAULT_DATE => "2026-09-21",
   },
   {
-    file => "jamaica-guru-7day.html",
+    file => "package-7day.html",
     VIEW_ID => "7day",
     PKG_BADGE => "Go All In",
     PKG_NAME => "7-Day Ultimate Jamaican Adventure",

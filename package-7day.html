@@ -489,10 +489,10 @@
 <div class="hero-shell">
   <div class="hero-card">
     <div class="hero-copy">
-      <div class="hero-badge">✦ Go All In</div>
-      <h2>7-Day Ultimate Jamaican Adventure</h2>
-      <div class="hero-tagline">Every corner of the island, at your pace.</div>
-      <p class="hero-desc">Eight days to see the whole island &mdash; Seven Mile Beach, the Blue Mountains, and everywhere worth seeing in between &mdash; with nothing left for you to plan.</p>
+      <div class="hero-badge">✦ <span class="jg-live-badge">Go All In</span></div>
+      <h2 class="jg-live-name">7-Day Ultimate Jamaican Adventure</h2>
+      <div class="hero-tagline" id="heroTagline">Every corner of the island, at your pace.</div>
+      <p class="hero-desc" id="heroDesc">Eight days to see the whole island &mdash; Seven Mile Beach, the Blue Mountains, and everywhere worth seeing in between &mdash; with nothing left for you to plan.</p>
       <div class="hero-feats">
         <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 18h18M5 9V6a2 2 0 012-2h10a2 2 0 012 2v3"/></svg></span><span>7 Nights Accommodation</span></div>
         <div class="hero-feat"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg></span><span>Private Transportation</span></div>
@@ -502,7 +502,7 @@
       <div class="hero-price-row">
         <div class="hero-price">
           <div class="label">Starting from</div>
-          <div class="amt">$1,450.00 <span>USD</span></div>
+          <div class="amt">$<span class="jg-live-price">1,450.00</span> <span>USD</span></div>
           <div class="forppl">For 2 People</div>
         </div>
         <a class="hero-cta" href="#pkg-details">View Full Details
@@ -625,12 +625,12 @@
 
   <div class="recap" id="pkg-details">
     <div>
-      <span class="eyebrow">Go All In</span>
-      <h1>7-Day Ultimate Jamaican Adventure</h1>
+      <span class="eyebrow jg-live-badge">Go All In</span>
+      <h1 class="jg-live-name">7-Day Ultimate Jamaican Adventure</h1>
     </div>
     <div class="price">
       <div class="label">Starting from</div>
-      <div class="amt">$1,450.00 <span>USD</span></div>
+      <div class="amt">$<span class="jg-live-price">1,450.00</span> <span>USD</span></div>
     </div>
   </div>
 
@@ -638,15 +638,17 @@
   <div class="pkg-desc">
     <div>
       <div class="step-tag">About this package</div>
-      <h2>Seven nights, four adventures, and the whole island in between</h2>
+      <h2 id="aboutTitle">Seven nights, four adventures, and the whole island in between</h2>
+      <div id="aboutParagraphs">
             <p>The 7-Day Ultimate Jamaican Adventure is our longest package &mdash; built for travelers who want to see it all without spending a single day of their trip planning it. A private driver is on call from touchdown to takeoff, running you between accommodation and every adventure on your list.</p>
       <p>With a full week on the ground, you&rsquo;ll pick four handpicked adventures instead of three &mdash; one each from land, water, and open-air categories, plus a bonus fourth pulled from our most-requested add-ons, from a guided weed farm tour to Dolphin Cove. That&rsquo;s enough variety to fill a week without repeating a day. Evenings are yours to relax, or opt into a night out at one of Ocho Rios&rsquo; clubs.</p>
       <p>Accommodation is arranged for seven nights at a vetted 5-star Airbnb, with room for larger groups at checkout. Every guide, entry fee, and transfer tied to your four selected adventures is already built into the package price.</p>
 
+      </div>
     </div>
     <div class="pkg-included">
       <div class="inc-title">What's included</div>
-      <ul>
+      <ul id="inclusionsListUl">
                 <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg> 7 nights accommodation for your full party</li>
         <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg> Private transportation to and from every activity</li>
         <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg> Entry fees and guides for all 4 chosen adventures</li>
@@ -692,7 +694,7 @@
     <div class="step-body">
       <div class="step-tag">Land adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your first adventure</div>
-      <div class="option-grid">
+      <div class="option-grid" id="advGridLand">
         <label class="opt-card">
           <input type="radio" name="adv1" checked>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20c2-4 4-6 8-6s6 2 8 6M9 14c-1-3 0-6 2-8m2 8c1-3 0-6-2-8m-3 0c1-1.5 3-2 4-2s3 .5 4 2"/></svg></span>
@@ -724,7 +726,7 @@
     <div class="step-body">
       <div class="step-tag">Water adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your second adventure</div>
-      <div class="option-grid">
+      <div class="option-grid" id="advGridWater">
         <label class="opt-card">
           <input type="radio" name="adv2" checked>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg></span>
@@ -756,7 +758,7 @@
     <div class="step-body">
       <div class="step-tag">Open-air adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your third adventure</div>
-      <div class="option-grid">
+      <div class="option-grid" id="advGridThird">
         <label class="opt-card">
           <input type="radio" name="adv3" checked>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg></span>
@@ -823,7 +825,7 @@
       <div class="step-tag">Choose one (1)</div>
       <div class="step-title">Night life <span class="optional-pill">Optional</span></div>
       <div class="step-sub">Select an option if you'd like to enjoy Jamaica's night life.</div>
-      <div class="option-grid">
+      <div class="option-grid" id="advGridNight">
         <label class="opt-card">
           <input type="radio" name="night" checked>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
@@ -854,7 +856,7 @@
     <div class="step-body">
       <div class="step-tag">Travel dates</div>
       <div class="step-title">Pick your start date</div>
-      <div class="step-sub">This package runs 7 nights, 8 days — choose the first day you'd like to travel and we'll fill in the rest.</div>
+      <div class="step-sub">This package runs <span id="tripLengthLabel">7 nights, 8 days</span> — choose the first day you'd like to travel and we'll fill in the rest.</div>
       <div class="date-panel">
         <div class="field-label">Arrival date</div>
         <input type="date" id="tripDate" value="2026-10-05">
@@ -913,20 +915,34 @@
 <script>
   /* ===== Hero image carousel ===== */
   const heroSlides = document.getElementById('heroSlides');
-  const heroDots = document.querySelectorAll('#heroDots button');
+  const heroDotsWrap = document.getElementById('heroDots');
   const heroPrev = document.getElementById('heroPrev');
   const heroNext = document.getElementById('heroNext');
+  let heroDots = document.querySelectorAll('#heroDots button');
   let heroIndex = 0;
-  const heroSlideCount = heroDots.length;
+  let heroSlideCount = heroDots.length;
 
   function goToSlide(i){
     heroIndex = (i + heroSlideCount) % heroSlideCount;
     heroSlides.style.transform = `translateX(-${heroIndex * 100}%)`;
     heroDots.forEach((d, idx) => d.classList.toggle('on', idx === heroIndex));
   }
+  // (Re)bind carousel dots/count to whatever is currently in the DOM —
+  // called once at load, and again if the overlay script below swaps in
+  // real photos for the illustrated placeholder slides.
+  function bindHeroCarousel(){
+    heroDots = document.querySelectorAll('#heroDots button');
+    heroSlideCount = heroDots.length;
+    heroIndex = 0;
+    heroSlides.style.transform = 'translateX(0%)';
+    heroDots.forEach((dot, idx) => {
+      dot.classList.toggle('on', idx === 0);
+      dot.addEventListener('click', () => goToSlide(idx));
+    });
+  }
   heroPrev.addEventListener('click', () => goToSlide(heroIndex - 1));
   heroNext.addEventListener('click', () => goToSlide(heroIndex + 1));
-  heroDots.forEach((dot, idx) => dot.addEventListener('click', () => goToSlide(idx)));
+  bindHeroCarousel();
 
   // touch swipe support
   let heroTouchStartX = null;
@@ -939,9 +955,10 @@
     heroTouchStartX = null;
   }, {passive:true});
 
-  const PKG_NAME = "7-Day Ultimate Jamaican Adventure";
-  const BASE_PRICE = 1450;
-  const PER_EXTRA_GUEST = 320;
+  let PKG_NAME = "7-Day Ultimate Jamaican Adventure";
+  let BASE_PRICE = 1450;
+  let PER_EXTRA_GUEST = 320;
+  let MIN_GUESTS = 2;
   const NIGHTS_OFFSET = 7;
   const guestSelect = document.getElementById('guestSelect');
   const depositAmt = document.getElementById('depositAmt');
@@ -952,7 +969,7 @@
 
   function totalPrice(){
     const guests = parseInt(guestSelect.value, 10);
-    const extra = Math.max(0, guests - 2);
+    const extra = Math.max(0, guests - MIN_GUESTS);
     return BASE_PRICE + extra * PER_EXTRA_GUEST;
   }
   function fmt(n){ return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
@@ -993,7 +1010,7 @@
     menuToggle.setAttribute('aria-expanded', isOpen);
   });
 
-  const PKG_BADGE = "Go All In";
+  let PKG_BADGE = "Go All In";
   const VIEW_ID = "7day";
   const confirmBtn = document.getElementById('confirmBtn');
 
@@ -1043,6 +1060,144 @@
       jgNav(el.dataset.jgNav);
     });
   });
+</script>
+
+<!-- ===== Live data overlay =====
+     Fetches this package's row from Supabase and, if present, swaps it
+     in over the baked-in text above. If the fetch fails for any reason
+     (offline, viewing the file locally, Supabase down) this silently
+     does nothing and the static content already on the page stands —
+     the page never depends on this succeeding. -->
+<script>
+(async function(){
+  const CHECK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+  const LAND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20c2-4 4-6 8-6s6 2 8 6M9 14c-1-3 0-6 2-8m2 8c1-3 0-6-2-8m-3 0c1-1.5 3-2 4-2s3 .5 4 2"/></svg>';
+  const WATER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg>';
+  const THIRD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg>';
+  const NIGHT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>';
+
+  function fmtPrice(n){ return Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  function buildOptionCard(name, radioName, iconSvg, checked){
+    const label = document.createElement('label');
+    label.className = 'opt-card';
+    label.innerHTML = '<input type="radio" name="' + radioName + '"' + (checked ? ' checked' : '') + '>' +
+      '<span class="icon">' + iconSvg + '</span>' +
+      '<span class="text"><span class="name"></span></span>' +
+      '<span class="check"></span>';
+    label.querySelector('.name').textContent = name; // textContent, not innerHTML — admin-entered text is never parsed as markup
+    return label;
+  }
+
+  function rebuildGrid(gridId, radioName, names, iconSvg, keepTrailingNoneOpt){
+    const grid = document.getElementById(gridId);
+    if (!grid || !Array.isArray(names) || names.length === 0) return;
+    const trailing = keepTrailingNoneOpt ? grid.querySelector('.opt-card.none-opt') : null;
+    grid.querySelectorAll('.opt-card').forEach(c => c.remove());
+    names.forEach((name, idx) => grid.appendChild(buildOptionCard(name, radioName, iconSvg, idx === 0)));
+    if (trailing) grid.appendChild(trailing);
+  }
+
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const sb = createClient(
+      'https://fgzfpeewbcccxaakpmty.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
+    );
+    const { data: pkg, error } = await sb.from('packages').select('*').eq('slug', VIEW_ID).single();
+    if (error || !pkg) return;
+
+    if (pkg.title) {
+      document.title = pkg.title + ' — Jamaica Guru';
+      document.querySelectorAll('.jg-live-name').forEach(el => { el.textContent = pkg.title; });
+      PKG_NAME = pkg.title;
+    }
+    if (pkg.tagline) document.getElementById('heroTagline').textContent = pkg.tagline;
+    if (pkg.short_description) document.getElementById('heroDesc').textContent = pkg.short_description;
+    if (pkg.duration_label) document.getElementById('tripLengthLabel').textContent = pkg.duration_label;
+    if (pkg.about_title) document.getElementById('aboutTitle').textContent = pkg.about_title;
+
+    if (pkg.about_text) {
+      const container = document.getElementById('aboutParagraphs');
+      container.innerHTML = '';
+      pkg.about_text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).forEach(text => {
+        const p = document.createElement('p');
+        p.textContent = text;
+        container.appendChild(p);
+      });
+    }
+
+    if (Array.isArray(pkg.inclusions) && pkg.inclusions.length) {
+      const ul = document.getElementById('inclusionsListUl');
+      ul.innerHTML = '';
+      pkg.inclusions.forEach(text => {
+        const li = document.createElement('li');
+        li.innerHTML = CHECK_SVG + ' ';
+        const span = document.createElement('span');
+        span.textContent = text;
+        li.appendChild(span);
+        ul.appendChild(li);
+      });
+    }
+
+    if (pkg.price_base != null) {
+      BASE_PRICE = Number(pkg.price_base);
+      document.querySelectorAll('.jg-live-price').forEach(el => { el.textContent = fmtPrice(BASE_PRICE); });
+    }
+    if (pkg.price_per_guest != null) PER_EXTRA_GUEST = Number(pkg.price_per_guest);
+    if (pkg.min_guests != null) MIN_GUESTS = Number(pkg.min_guests);
+
+    if (pkg.min_guests != null && pkg.max_guests != null) {
+      const sel = document.getElementById('guestSelect');
+      const min = Number(pkg.min_guests), max = Number(pkg.max_guests);
+      if (max > min) {
+        sel.innerHTML = '';
+        for (let g = min; g <= max; g++) {
+          const opt = document.createElement('option');
+          opt.value = String(g);
+          opt.textContent = g + (g === 1 ? ' Guest' : ' Guests');
+          if (g === min) opt.selected = true;
+          sel.appendChild(opt);
+        }
+      }
+    }
+    recalc();
+
+    if (pkg.adventures) {
+      rebuildGrid('advGridLand', 'adv1', pkg.adventures.land, LAND_ICON, false);
+      rebuildGrid('advGridWater', 'adv2', pkg.adventures.water, WATER_ICON, false);
+      rebuildGrid('advGridThird', 'adv3', pkg.adventures.third, THIRD_ICON, false);
+      rebuildGrid('advGridNight', 'night', pkg.adventures.night, NIGHT_ICON, true);
+    }
+
+    if (Array.isArray(pkg.images) && pkg.images.length) {
+      const slidesWrap = document.getElementById('heroSlides');
+      const dotsWrap = document.getElementById('heroDots');
+      slidesWrap.innerHTML = '';
+      dotsWrap.innerHTML = '';
+      pkg.images.forEach((url, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'hero-slide';
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '';
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+        slide.appendChild(img);
+        slidesWrap.appendChild(slide);
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', 'Slide ' + (idx + 1));
+        dotsWrap.appendChild(dot);
+      });
+      const note = document.querySelector('.photo-note');
+      if (note) note.remove();
+      bindHeroCarousel();
+    }
+  } catch (e) {
+    // Supabase unreachable or errored — the static, baked-in content
+    // already rendered on the page stays exactly as it was.
+  }
+})();
 </script>
 
 </body>
