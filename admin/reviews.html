@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>html:not(.jg-authed){visibility:hidden;}</style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient('https://fgzfpeewbcccxaakpmty.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs');
+  const { data } = await window.sb.auth.getSession();
+  if (!data.session) {
+    window.location.href = 'login.html';
+  } else {
+    document.documentElement.classList.add('jg-authed');
+  }
+</script>
+<title>Jamaica Guru — Reviews</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sidebar: #12281B;
+    --sidebar-hover: #1B4332;
+    --green: #1B4332;
+    --green-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-vivid: #FFD100;
+    --bg: #F7F7F5;
+    --card: #FFFFFF;
+    --border: #E4E2DC;
+    --ink: #1A1A1A;
+    --muted: #6B675E;
+    --danger: #C0392B;
+    --danger-bg: #FBEAE8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit; text-decoration:none;}
+  button{font:inherit; cursor:pointer;}
+  input, textarea, select{font:inherit;}
+
+  /* ===== Mobile top bar ===== */
+  .mobile-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--sidebar); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:60;
+  }
+  .mobile-topbar .brand{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .mobile-topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff; width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    background:var(--sidebar); color:#EFEDE6; width:100%;
+    display:none; flex-direction:column; padding:18px 12px; gap:2px;
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar .brand{
+    display:flex; align-items:center; justify-content:space-between; padding:6px 10px 18px;
+  }
+  .sidebar .brand-name{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#fff;}
+  .sidebar .close-btn{background:none; border:none; color:#fff; width:32px; height:32px;}
+  .nav-group-label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(239,237,230,0.45);
+    padding:14px 12px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px;
+    color:rgba(239,237,230,0.75); font-size:14px; font-weight:500;
+  }
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .nav-item.active{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active svg{color:var(--gold-vivid);}
+  .nav-item .soon{
+    margin-left:auto; font-size:9.5px; text-transform:uppercase; letter-spacing:0.05em;
+    color:rgba(239,237,230,0.4); border:1px solid rgba(239,237,230,0.2); border-radius:8px; padding:2px 6px;
+  }
+  .sidebar-footer{
+    margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,0.1);
+    display:flex; align-items:center; gap:10px; font-size:13px;
+  }
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--gold-vivid); color:#12281B;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;
+  }
+
+  /* ===== Main ===== */
+  .main{flex:1; padding:20px 16px 100px;}
+  .page-header{margin-bottom:18px;}
+  .breadcrumb{font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .breadcrumb a{color:var(--green); font-weight:600;}
+  .page-header h1{font-size:22px; font-weight:600;}
+  .page-header .sub{font-size:13px; color:var(--muted); margin-top:5px;}
+
+  .status-row{display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap;}
+  .status-pill{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    padding:5px 11px; border-radius:20px; background:rgba(27,67,50,0.10); color:var(--green);
+    display:flex; align-items:center; gap:6px;
+  }
+  .status-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
+  .last-saved{font-size:12px; color:var(--muted);}
+
+  /* ===== Package switcher ===== */
+  .pkg-switcher{display:flex; gap:8px; margin:18px 0 4px; flex-wrap:wrap;}
+  .pkg-switch-btn{
+    background:#fff; border:1px solid var(--border); color:var(--muted); border-radius:20px;
+    padding:9px 16px; font-size:13px; font-weight:600;
+  }
+  .pkg-switch-btn.active{background:var(--green); border-color:var(--green); color:#fff;}
+  .pkg-switch-btn:disabled{opacity:0.5;}
+
+  /* ===== Tabs ===== */
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:20px 0 22px; overflow-x:auto;}
+  .tab-btn{
+    background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600;
+    color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .tab-btn.active{color:var(--green); border-bottom-color:var(--green);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ===== Form elements ===== */
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px;}
+  .card h3{font-size:14.5px; font-weight:600; margin-bottom:3px;}
+  .card .card-sub{font-size:12px; color:var(--muted); margin-bottom:16px;}
+
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px; font-weight:600;}
+  .field .hint{font-weight:400; color:var(--muted); font-size:11px;}
+  .field input, .field textarea, .field select{
+    width:100%; border:1px solid var(--border); border-radius:10px; padding:12px 14px;
+    font-size:14.5px; background:#fff; color:var(--ink); min-height:46px;
+  }
+  .field textarea{min-height:90px; resize:vertical; line-height:1.5;}
+  .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible{
+    outline:2px solid var(--green); outline-offset:1px;
+  }
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .price-input{position:relative;}
+  .price-input span{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:14.5px;}
+  .price-input input{padding-left:26px;}
+
+  /* ===== Inclusions checklist ===== */
+  .list-editor{display:flex; flex-direction:column; gap:8px;}
+  .list-row{display:flex; align-items:center; gap:8px;}
+  .list-row input[type="text"]{flex:1;}
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:9px; border:1px solid var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .icon-btn.danger{color:var(--danger); border-color:var(--danger-bg);}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
+  .add-row-btn{
+    display:flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:var(--green);
+    background:none; border:none; padding:9px 2px; margin-top:2px; align-self:flex-start;
+  }
+
+  /* ===== Adventure category editor ===== */
+  .adv-category{margin-bottom:22px;}
+  .adv-category:last-child{margin-bottom:0;}
+  .adv-category-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .adv-category-head h4{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted);}
+  .adv-category-head .req-tag{
+    font-size:10px; text-transform:uppercase; font-weight:700; color:var(--gold); background:rgba(154,107,0,0.08);
+    padding:3px 8px; border-radius:10px;
+  }
+  .adv-category-head .opt-tag{
+    font-size:10px; text-transform:uppercase; font-weight:700; color:var(--muted); background:var(--bg);
+    padding:3px 8px; border-radius:10px;
+  }
+
+  /* ===== Image gallery ===== */
+  .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
+  .img-tile{
+    position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff;
+  }
+  .img-tile .remove-img{
+    position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center;
+  }
+  .img-tile .cover-tag{
+    position:absolute; bottom:6px; left:6px; font-size:9.5px; font-weight:700; text-transform:uppercase;
+    background:var(--gold-vivid); color:#12281B; padding:3px 7px; border-radius:8px;
+  }
+  .img-tile.add-tile{
+    background:var(--bg); border:2px dashed var(--border); color:var(--muted); flex-direction:column; gap:8px;
+    cursor:pointer;
+  }
+  .img-tile.add-tile:hover{border-color:var(--green); color:var(--green);}
+
+  /* ===== Sticky save bar ===== */
+  .save-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:#fff; border-top:1px solid var(--border); padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    box-shadow:0 -6px 20px rgba(0,0,0,0.06);
+  }
+  .save-bar .unsaved{font-size:12.5px; color:var(--gold); font-weight:600; display:flex; align-items:center; gap:6px;}
+  .save-bar .unsaved .dot{width:6px; height:6px; border-radius:50%; background:var(--gold-vivid);}
+  .save-bar .actions{display:flex; gap:8px;}
+  .btn-discard{
+    background:none; border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600;
+  }
+  .btn-save{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;
+  }
+
+  /* ===== toast ===== */
+  .toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-140%);
+    background:var(--green); color:#fff; padding:12px 20px; border-radius:12px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px; z-index:100; transition:transform 0.3s ease; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ===== Reviews list + star picker ===== */
+  .star-picker{display:flex; gap:6px;}
+  .star-picker button{
+    background:none; border:none; padding:2px; width:34px; height:34px; color:var(--border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .star-picker button svg{width:24px; height:24px;}
+  .star-picker button.filled{color:var(--gold-vivid);}
+
+  .review-list{display:flex; flex-direction:column; gap:12px;}
+  .review-row{
+    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px;
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .review-row .avatar{
+    width:38px; height:38px; min-width:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:13px;
+  }
+  .review-row .body{flex:1; min-width:0;}
+  .review-row .top-line{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:4px;}
+  .review-row .name{font-weight:700; font-size:13.5px;}
+  .review-row .handle{color:var(--muted); font-size:12px;}
+  .review-row .pkg-chip{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.02em;
+    color:var(--green); background:rgba(27,67,50,0.08); padding:3px 8px; border-radius:20px;
+  }
+  .review-row .stars{color:var(--gold-vivid); font-size:13px; letter-spacing:0.03em;}
+  .review-row .stars .empty{color:var(--border);}
+  .review-row .text{font-size:13px; color:var(--ink); line-height:1.55; margin-top:6px;}
+  .review-row .row-actions{display:flex; gap:6px; flex-shrink:0;}
+  .review-row .row-actions .icon-btn{width:32px; height:32px; min-width:32px;}
+  .reviews-empty-state{text-align:center; color:var(--muted); font-size:13px; padding:32px 16px;}
+
+  /* ===================== DESKTOP ===================== */
+  @media (min-width:960px){
+    .mobile-topbar{display:none;}
+    body{flex-direction:row;}
+    .sidebar{
+      display:flex; position:sticky; top:0; height:100vh; width:250px; flex-shrink:0; inset:auto;
+    }
+    .sidebar .close-btn{display:none;}
+    .main{flex:1; padding:32px 40px 100px; max-width:1000px;}
+    .save-bar{left:250px; padding:16px 40px;}
+    .img-grid{grid-template-columns:repeat(3, 1fr);}
+    .two-col{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div class="mobile-topbar">
+  <div class="brand">🌴 Jamaica Guru Admin</div>
+  <button id="menuToggle" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-name">🌴 Jamaica Guru</div>
+    <button class="close-btn" id="closeSidebar" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-group-label">Overview</div>
+  <a class="nav-item" href="dashboard-home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+
+  <div class="nav-group-label">Operations</div>
+  <a class="nav-item" href="bookings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Bookings</a>
+  <a class="nav-item" href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg>Customers</a>
+
+  <div class="nav-group-label">Catalog</div>
+  <a class="nav-item" href="admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
+  <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6.2 6.6.7-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.7L12 2.5z"/></svg>Reviews</a>
+  <a class="nav-item" href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
+  <a class="nav-item" href="transportation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg>Transportation</a>
+
+  <div class="nav-group-label">Site</div>
+  <a class="nav-item" href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
+  <a class="nav-item" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M8 17V10m5 7V6m5 11v-5"/></svg>Analytics</a>
+  <a class="nav-item" href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">T</div>
+    <div style="flex:1;">
+      <div style="font-weight:600; color:#fff;">Tray</div>
+      <div style="font-size:11.5px; color:rgba(239,237,230,0.55);">Admin</div>
+    </div>
+    <a href="#" id="logoutLink" style="font-size:11.5px; color:rgba(239,237,230,0.5); text-decoration:underline;">Log out</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <div class="page-header">
+    <div class="breadcrumb">Catalog / <span>Reviews</span></div>
+    <h1>Reviews</h1>
+    <div class="sub">Manage the testimonials shown on the homepage and the public Reviews page. Changes go live the moment you save.</div>
+    <div class="status-row">
+      <span class="status-pill"><span class="dot"></span> Live</span>
+      <span class="last-saved" id="reviewCount">&nbsp;</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 id="formHeading">Add a review</h3>
+    <div class="card-sub" id="formHeadingSub">Enter the reviewer's details, pick which package it's for, and set a star rating.</div>
+
+    <div class="two-col">
+      <div class="field">
+        <label>Reviewer name</label>
+        <input type="text" id="fieldName" placeholder="e.g. Amelia Sterling">
+      </div>
+      <div class="field">
+        <label>Handle <span class="hint">— optional</span></label>
+        <input type="text" id="fieldHandle" placeholder="e.g. @AmeliaTravels">
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label>Package</label>
+        <select id="fieldPackage">
+          <option value="3day">3-Day Package</option>
+          <option value="5day">5-Day Package</option>
+          <option value="7day">7-Day Package</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Rating</label>
+        <div class="star-picker" id="starPicker">
+          <button type="button" data-val="1" aria-label="1 star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.8l3.1 6.7 7.3.8-5.4 5 1.5 7.2L12 17.9l-6.5 3.6 1.5-7.2-5.4-5 7.3-.8L12 1.8z"/></svg></button>
+          <button type="button" data-val="2" aria-label="2 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.8l3.1 6.7 7.3.8-5.4 5 1.5 7.2L12 17.9l-6.5 3.6 1.5-7.2-5.4-5 7.3-.8L12 1.8z"/></svg></button>
+          <button type="button" data-val="3" aria-label="3 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.8l3.1 6.7 7.3.8-5.4 5 1.5 7.2L12 17.9l-6.5 3.6 1.5-7.2-5.4-5 7.3-.8L12 1.8z"/></svg></button>
+          <button type="button" data-val="4" aria-label="4 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.8l3.1 6.7 7.3.8-5.4 5 1.5 7.2L12 17.9l-6.5 3.6 1.5-7.2-5.4-5 7.3-.8L12 1.8z"/></svg></button>
+          <button type="button" data-val="5" aria-label="5 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.8l3.1 6.7 7.3.8-5.4 5 1.5 7.2L12 17.9l-6.5 3.6 1.5-7.2-5.4-5 7.3-.8L12 1.8z"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Review text</label>
+      <textarea id="fieldText" placeholder="What did they say about their trip?"></textarea>
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="btn-discard" id="cancelEditBtn" type="button" style="display:none;">Cancel</button>
+      <button class="btn-save" id="saveReviewBtn" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        Add Review
+      </button>
+    </div>
+  </div>
+
+  <div class="review-list" id="reviewList">
+    <div class="reviews-empty-state">Loading reviews&hellip;</div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastText">Saved</span>
+</div>
+<script type="module">
+  /* ===== Mobile sidebar toggle ===== */
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
+  document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
+
+  /* ===== Reviews: load, add, edit, delete ===== */
+  const SLUG_LABEL = { '3day': '3-Day Package', '5day': '5-Day Package', '7day': '7-Day Package' };
+  const AVATAR_COLORS = ['var(--green)', '#9A6B00', '#7A4FBF', '#2F6B4F'];
+
+  const fieldName = document.getElementById('fieldName');
+  const fieldHandle = document.getElementById('fieldHandle');
+  const fieldPackage = document.getElementById('fieldPackage');
+  const fieldText = document.getElementById('fieldText');
+  const starPicker = document.getElementById('starPicker');
+  const saveBtn = document.getElementById('saveReviewBtn');
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  const formHeading = document.getElementById('formHeading');
+  const formHeadingSub = document.getElementById('formHeadingSub');
+  const reviewList = document.getElementById('reviewList');
+  const reviewCount = document.getElementById('reviewCount');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+
+  let selectedRating = 5;
+  let editingId = null;
+  let reviewsCache = [];
+
+  function setStars(val) {
+    selectedRating = val;
+    starPicker.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('filled', Number(btn.dataset.val) <= val);
+    });
+  }
+  starPicker.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (btn) setStars(Number(btn.dataset.val));
+  });
+  setStars(5);
+
+  function initials(name) {
+    return (name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+  function starString(rating) {
+    const full = Math.max(0, Math.min(5, Math.round(rating)));
+    return '<span class="stars">' + '★'.repeat(full) +
+      '<span class="empty">' + '★'.repeat(5 - full) + '</span></span>';
+  }
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function resetForm() {
+    editingId = null;
+    fieldName.value = '';
+    fieldHandle.value = '';
+    fieldPackage.value = '3day';
+    fieldText.value = '';
+    setStars(5);
+    formHeading.textContent = 'Add a review';
+    formHeadingSub.textContent = "Enter the reviewer's details, pick which package it's for, and set a star rating.";
+    saveBtn.lastChild.textContent = ' Add Review';
+    cancelBtn.style.display = 'none';
+  }
+
+  function startEdit(review) {
+    editingId = review.id;
+    fieldName.value = review.reviewer_name || '';
+    fieldHandle.value = review.reviewer_handle || '';
+    fieldPackage.value = review.package_slug;
+    fieldText.value = review.review_text || '';
+    setStars(review.rating);
+    formHeading.textContent = 'Edit review';
+    formHeadingSub.textContent = 'Update this reviewer’s details below, then save.';
+    saveBtn.lastChild.textContent = ' Update Review';
+    cancelBtn.style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  cancelBtn.addEventListener('click', resetForm);
+
+  function renderList() {
+    reviewCount.textContent = reviewsCache.length + (reviewsCache.length === 1 ? ' review' : ' reviews');
+    if (!reviewsCache.length) {
+      reviewList.innerHTML = '<div class="reviews-empty-state">No reviews yet — add your first one above.</div>';
+      return;
+    }
+    reviewList.innerHTML = reviewsCache.map((r, i) => {
+      const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+      return '<div class="review-row" data-id="' + r.id + '">' +
+        '<div class="avatar" style="background:' + color + '"></div>' +
+        '<div class="body">' +
+          '<div class="top-line">' +
+            '<span class="name"></span>' +
+            '<span class="handle"></span>' +
+            '<span class="pkg-chip"></span>' +
+            '<span class="stars-row">' + starString(r.rating) + '</span>' +
+          '</div>' +
+          '<div class="text"></div>' +
+        '</div>' +
+        '<div class="row-actions">' +
+          '<button class="icon-btn edit-btn" type="button" aria-label="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>' +
+          '<button class="icon-btn danger delete-btn" type="button" aria-label="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    // Names/handles/text set via textContent, not string concatenation —
+    // admin-entered review content is never parsed as markup.
+    reviewList.querySelectorAll('.review-row').forEach((row, i) => {
+      const r = reviewsCache[i];
+      row.querySelector('.avatar').textContent = initials(r.reviewer_name);
+      row.querySelector('.name').textContent = r.reviewer_name || '';
+      row.querySelector('.handle').textContent = r.reviewer_handle || '';
+      row.querySelector('.pkg-chip').textContent = SLUG_LABEL[r.package_slug] || r.package_slug;
+      row.querySelector('.text').textContent = r.review_text || '';
+      row.querySelector('.edit-btn').addEventListener('click', () => startEdit(r));
+      row.querySelector('.delete-btn').addEventListener('click', () => deleteReview(r.id));
+    });
+  }
+
+  async function loadReviews() {
+    const { data, error } = await window.sb.from('reviews').select('*').order('created_at', { ascending: false });
+    if (error) {
+      alert("Couldn't load reviews: " + error.message);
+      return;
+    }
+    reviewsCache = data || [];
+    renderList();
+  }
+
+  async function deleteReview(id) {
+    if (!confirm('Delete this review? This can’t be undone.')) return;
+    const { error } = await window.sb.from('reviews').delete().eq('id', id);
+    if (error) {
+      alert("Couldn't delete: " + error.message);
+      return;
+    }
+    if (editingId === id) resetForm();
+    await loadReviews();
+    showToast('Review deleted');
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    const name = fieldName.value.trim();
+    const text = fieldText.value.trim();
+    if (!name || !text) {
+      alert('Please enter a reviewer name and review text.');
+      return;
+    }
+    const payload = {
+      package_slug: fieldPackage.value,
+      reviewer_name: name,
+      reviewer_handle: fieldHandle.value.trim() || null,
+      rating: selectedRating,
+      review_text: text
+    };
+    saveBtn.disabled = true;
+    const { error } = editingId
+      ? await window.sb.from('reviews').update(payload).eq('id', editingId)
+      : await window.sb.from('reviews').insert(payload);
+    saveBtn.disabled = false;
+    if (error) {
+      alert("Couldn't save: " + error.message);
+      return;
+    }
+    const wasEditing = !!editingId;
+    resetForm();
+    await loadReviews();
+    showToast(wasEditing ? 'Review updated' : 'Review added');
+  });
+
+  loadReviews();
+</script>
+
+<script type="module">
+  document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await window.sb.auth.signOut();
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>
