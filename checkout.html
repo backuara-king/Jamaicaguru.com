@@ -452,6 +452,7 @@
     const { error } = await window.sb.from('bookings').insert({
       booking_ref: ref,
       package_name: (order && order.packageName) || (trip && trip.pkg) || 'Unknown package',
+      package_slug: val(trip && trip.viewId),
       guests: trip ? parseInt(trip.guests, 10) || 2 : 2,
       land_adventure: val(trip && trip.land),
       water_adventure: val(trip && trip.water),

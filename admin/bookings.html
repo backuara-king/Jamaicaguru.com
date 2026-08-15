@@ -143,6 +143,17 @@
   .kv .k{font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600;}
   .kv .v{font-size:14px; font-weight:600;}
 
+  .review-link-box{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:18px;
+  }
+  .review-link-box .rl-info{font-size:12.5px; color:var(--muted);}
+  .review-link-box .rl-info b{color:var(--ink); font-weight:600;}
+  .review-link-box button{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:8px 14px;
+    font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+
   .timeline{display:flex; flex-direction:column; gap:0;}
   .tl-day{padding:12px 0; border-top:1px solid var(--border);}
   .tl-day:first-child{border-top:none;}
@@ -295,6 +306,14 @@
           <div class="kv"><span class="k">Remaining</span><span class="v" id="dOutstanding">—</span></div>
         </div>
 
+        <div class="review-link-box" id="reviewLinkBox" style="display:none;">
+          <div class="rl-info" id="reviewLinkInfo"></div>
+          <button type="button" id="copyReviewLinkBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Review Link
+          </button>
+        </div>
+
         <h3 style="margin-bottom:10px;">Selections</h3>
         <div class="timeline" id="dSelections"></div>
       </div>
@@ -383,6 +402,31 @@
     });
   });
 
+  function renderReviewLink(b) {
+    const box = document.getElementById('reviewLinkBox');
+    if (b.status !== 'completed' || !b.review_token) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = '';
+    const url = location.origin + location.pathname.replace(/admin\/.*$/, '') + 'submit-review.html?token=' + b.review_token;
+    document.getElementById('reviewLinkInfo').innerHTML = b.review_submitted
+      ? '<b>Review already submitted</b> for this trip.'
+      : 'Review not requested by email yet — <b>share this link</b> directly with the guest.';
+    const copyBtn = document.getElementById('copyReviewLinkBtn');
+    copyBtn.style.display = b.review_submitted ? 'none' : '';
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1800);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    };
+  }
+
   function selectBooking(i, row) {
     const b = bookings[i];
     document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
@@ -404,17 +448,22 @@
     document.getElementById('dPhone').textContent = b.phone || '—';
     document.getElementById('dPaid').textContent = fmt(due);
     document.getElementById('dOutstanding').textContent = fmt(remaining);
+    renderReviewLink(b);
 
     const sel = document.getElementById('dStatusSelect');
     sel.value = b.status || 'new';
     sel.onchange = async () => {
       const newStatus = sel.value;
-      const { error: updateError } = await window.sb.from('bookings').update({ status: newStatus }).eq('id', b.id);
+      // .select().single() so we get back the review_token the database
+      // trigger generates the moment status flips to "completed".
+      const { data: updated, error: updateError } = await window.sb.from('bookings')
+        .update({ status: newStatus }).eq('id', b.id).select().single();
       if (updateError) { alert("Couldn't update status: " + updateError.message); return; }
-      b.status = newStatus;
+      Object.assign(b, updated);
       row.dataset.status = newStatus;
       row.querySelector('.badge').textContent = STATUS_LABEL[newStatus];
       row.querySelector('.badge').className = 'badge ' + STATUS_BADGE[newStatus];
+      renderReviewLink(b);
     };
 
     const items = [
