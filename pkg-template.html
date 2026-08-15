@@ -1124,10 +1124,22 @@
     recalc();
 
     if (pkg.adventures) {
-      rebuildGrid('advGridLand', 'adv1', pkg.adventures.land, LAND_ICON, false);
-      rebuildGrid('advGridWater', 'adv2', pkg.adventures.water, WATER_ICON, false);
-      rebuildGrid('advGridThird', 'adv3', pkg.adventures.third, THIRD_ICON, false);
-      rebuildGrid('advGridNight', 'night', pkg.adventures.night, NIGHT_ICON, true);
+      // adventures.{land,water,third,night} hold experience ids, not names —
+      // resolve them against the public experiences view so a rename in the
+      // Experiences catalog shows up here without touching this package.
+      const allIds = ['land', 'water', 'third', 'night']
+        .flatMap(cat => Array.isArray(pkg.adventures[cat]) ? pkg.adventures[cat] : []);
+      let nameById = {};
+      if (allIds.length) {
+        const { data: exps } = await sb.from('experiences_public').select('id, name').in('id', allIds);
+        (exps || []).forEach(e => { nameById[e.id] = e.name; });
+      }
+      const resolve = (ids) => (Array.isArray(ids) ? ids : []).map(id => nameById[id]).filter(Boolean);
+
+      rebuildGrid('advGridLand', 'adv1', resolve(pkg.adventures.land), LAND_ICON, false);
+      rebuildGrid('advGridWater', 'adv2', resolve(pkg.adventures.water), WATER_ICON, false);
+      rebuildGrid('advGridThird', 'adv3', resolve(pkg.adventures.third), THIRD_ICON, false);
+      rebuildGrid('advGridNight', 'night', resolve(pkg.adventures.night), NIGHT_ICON, true);
     }
 
     if (Array.isArray(pkg.images) && pkg.images.length) {

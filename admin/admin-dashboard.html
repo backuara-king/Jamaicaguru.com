@@ -178,6 +178,16 @@
     padding:3px 8px; border-radius:10px;
   }
 
+  .checkbox-list{display:flex; flex-direction:column; gap:2px;}
+  .check-row{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; cursor:pointer;
+  }
+  .check-row:hover{background:var(--bg);}
+  .check-row input{width:16px; height:16px; accent-color:var(--green); flex-shrink:0;}
+  .check-row .check-name{flex:1; font-size:13.5px;}
+  .check-row .check-price{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .checkbox-list-empty{font-size:12.5px; color:var(--muted); padding:8px 10px;}
+
   /* ===== Image gallery ===== */
   .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
   .img-tile{
@@ -388,38 +398,26 @@
 
     <div class="card">
       <h3>Adventure options</h3>
-      <div class="card-sub">The choices guests pick from when booking. Add, remove, or rename options in each category.</div>
+      <div class="card-sub">Choices guests pick from when booking, pulled from your <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences catalog</a>. Check every option this package should offer — to add a brand new activity, add it in Experiences first.</div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Land Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="land"></div>
-        <button class="add-row-btn" data-target-category="land" data-placeholder="New land adventure...">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
-        </button>
+        <div class="checkbox-list" data-category="land"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Water Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="water"></div>
-        <button class="add-row-btn" data-target-category="water" data-placeholder="New water adventure...">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
-        </button>
+        <div class="checkbox-list" data-category="water"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Third Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="list-editor" data-category="third"></div>
-        <button class="add-row-btn" data-target-category="third" data-placeholder="New adventure...">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
-        </button>
+        <div class="checkbox-list" data-category="third"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Night Life</h4><span class="opt-tag">Choose 1 · Optional</span></div>
-        <div class="list-editor" data-category="night"></div>
-        <button class="add-row-btn" data-target-category="night" data-placeholder="New night life option...">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Add option
-        </button>
+        <div class="checkbox-list" data-category="night"></div>
       </div>
     </div>
   </div>
@@ -500,6 +498,43 @@
   }
   function readListEditor(container){
     return Array.from(container.querySelectorAll('.list-row input')).map(i => i.value.trim()).filter(Boolean);
+  }
+
+  /* ===== Adventure options: checkboxes sourced from the Experiences catalog ===== */
+  let experiencesCache = []; // all active experiences, loaded once
+  const ADV_CATEGORIES = ['land', 'water', 'third', 'night'];
+
+  async function loadExperiencesCache(){
+    const { data, error } = await window.sb.from('experiences').select('id, name, category, sell_price').eq('active', true).order('name');
+    if (error) { console.error("Couldn't load experiences: " + error.message); return; }
+    experiencesCache = data || [];
+  }
+
+  function fillAdventureCheckboxes(selectedIds){
+    const selected = new Set(selectedIds || []);
+    ADV_CATEGORIES.forEach(cat => {
+      const container = document.querySelector(`.checkbox-list[data-category="${cat}"]`);
+      const options = experiencesCache.filter(e => e.category === cat);
+      if (!options.length) {
+        container.innerHTML = '<div class="checkbox-list-empty">No active experiences in this category yet — add one in <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences</a>.</div>';
+        return;
+      }
+      container.innerHTML = '';
+      options.forEach(e => {
+        const label = document.createElement('label');
+        label.className = 'check-row';
+        label.innerHTML = `<input type="checkbox" value="${e.id}"><span class="check-name"></span><span class="check-price"></span>`;
+        label.querySelector('input').checked = selected.has(e.id);
+        label.querySelector('.check-name').textContent = e.name;
+        label.querySelector('.check-price').textContent = '$' + Number(e.sell_price || 0).toFixed(0);
+        label.querySelector('input').addEventListener('change', markDirty);
+        container.appendChild(label);
+      });
+    });
+  }
+
+  function readAdventureCheckboxes(cat){
+    return Array.from(document.querySelectorAll(`.checkbox-list[data-category="${cat}"] input:checked`)).map(i => i.value);
   }
 
   /* ===== Remove list rows (inclusions + adventure options) ===== */
@@ -619,10 +654,7 @@
 
     fillListEditor(inclusionsList, pkg.inclusions);
     const adv = pkg.adventures || {};
-    fillListEditor(document.querySelector('.list-editor[data-category="land"]'), adv.land);
-    fillListEditor(document.querySelector('.list-editor[data-category="water"]'), adv.water);
-    fillListEditor(document.querySelector('.list-editor[data-category="third"]'), adv.third);
-    fillListEditor(document.querySelector('.list-editor[data-category="night"]'), adv.night);
+    fillAdventureCheckboxes([...(adv.land || []), ...(adv.water || []), ...(adv.third || []), ...(adv.night || [])]);
 
     currentImages = Array.isArray(pkg.images) ? pkg.images.slice() : [];
     renderImages();
@@ -652,10 +684,10 @@
       duration_label: fieldDuration.value.trim(),
       inclusions: readListEditor(inclusionsList),
       adventures: {
-        land: readListEditor(document.querySelector('.list-editor[data-category="land"]')),
-        water: readListEditor(document.querySelector('.list-editor[data-category="water"]')),
-        third: readListEditor(document.querySelector('.list-editor[data-category="third"]')),
-        night: readListEditor(document.querySelector('.list-editor[data-category="night"]'))
+        land: readAdventureCheckboxes('land'),
+        water: readAdventureCheckboxes('water'),
+        third: readAdventureCheckboxes('third'),
+        night: readAdventureCheckboxes('night')
       },
       images: currentImages
     };
@@ -707,7 +739,10 @@
     if (confirm('Discard unsaved changes?')) populateForm(packagesCache[currentSlug] || {});
   });
 
-  loadAllPackages();
+  (async () => {
+    await loadExperiencesCache();
+    await loadAllPackages();
+  })();
 </script>
 
 <script type="module">

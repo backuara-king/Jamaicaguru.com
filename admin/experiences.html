@@ -184,6 +184,29 @@
     font-size:12.5px; color:var(--warn); margin-bottom:16px; line-height:1.5;
   }
 
+  .rlrow-empty{padding:24px 16px; font-size:13px; color:var(--muted); text-align:center;}
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:9px; border:1px solid var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .icon-btn.danger{color:var(--danger); border-color:var(--danger-bg);}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
+  .btn-discard{
+    background:none; border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600;
+  }
+  .btn-save{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;
+  }
+  .usage-note{font-size:12px; color:var(--muted); margin-bottom:14px;}
+  .toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-140%);
+    background:var(--green); color:#fff; padding:12px 20px; border-radius:12px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px; z-index:100; transition:transform 0.3s ease; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
   @media (min-width:960px){
     .mobile-topbar{display:none;}
     body{flex-direction:row;}
@@ -247,101 +270,261 @@
 
   <div class="page-header">
     <div><h1>Experiences</h1><div class="sub">The activity database that your packages pull from.</div></div>
-    <button class="btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Activity</button>
+    <button class="btn-primary" id="addActivityBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Activity</button>
   </div>
 
   <div class="note-banner">
-    Activities live here once, and packages reference them — so updating a price or supplier here updates it everywhere it's used, instead of editing every package by hand.
+    Activities live here once, and packages reference them by category (Land / Water / Third / Night) — so renaming or repricing an activity here updates it everywhere it's used, instead of editing every package by hand.
+  </div>
+
+  <div class="filter-row" id="expFilters">
+    <button class="filter-pill active" data-filter="all" type="button">All</button>
+    <button class="filter-pill" data-filter="land" type="button">Land</button>
+    <button class="filter-pill" data-filter="water" type="button">Water</button>
+    <button class="filter-pill" data-filter="third" type="button">Third</button>
+    <button class="filter-pill" data-filter="night" type="button">Night Life</button>
   </div>
 
   <div class="rowlist" id="expList">
-
-    <div class="rlrow selected" data-name="Dunn's River Falls" data-desc="Guided climb up the famous cascading falls in Ocho Rios." data-location="Ocho Rios" data-duration="3 hours" data-cost="28" data-sell="55" data-supplier="Island Falls Tours" data-capacity="20 per group">
-      <div class="rl-top"><span class="rl-title">Dunn's River Falls</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Water adventure · Ocho Rios</div>
-      <div class="rl-meta"><span class="m">Cost <b>$28</b></span><span class="m">Sell <b>$55</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="Horseback Riding" data-desc="Guided beach and trail ride along the coast." data-location="Rose Hall" data-duration="2 hours" data-cost="35" data-sell="70" data-supplier="Rose Hall Stables" data-capacity="12 per group">
-      <div class="rl-top"><span class="rl-title">Horseback Riding</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Land adventure · Rose Hall</div>
-      <div class="rl-meta"><span class="m">Cost <b>$35</b></span><span class="m">Sell <b>$70</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="Bamboo Rafting" data-desc="Calm river drift on a traditional bamboo raft." data-location="Martha Brae" data-duration="1.5 hours" data-cost="22" data-sell="48" data-supplier="Martha Brae Rafters Assoc." data-capacity="2 per raft">
-      <div class="rl-top"><span class="rl-title">Bamboo Rafting</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Land adventure · Martha Brae</div>
-      <div class="rl-meta"><span class="m">Cost <b>$22</b></span><span class="m">Sell <b>$48</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="Ziplining" data-desc="Canopy-line course above the rainforest." data-location="Ocho Rios" data-duration="2 hours" data-cost="40" data-sell="79" data-supplier="Canopy Adventures Jamaica" data-capacity="10 per group">
-      <div class="rl-top"><span class="rl-title">Ziplining</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Land adventure · Ocho Rios</div>
-      <div class="rl-meta"><span class="m">Cost <b>$40</b></span><span class="m">Sell <b>$79</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="Blue Hole" data-desc="Cliff jumps and swimming in mineral pools." data-location="Ocho Rios" data-duration="3 hours" data-cost="25" data-sell="52" data-supplier="Island Falls Tours" data-capacity="15 per group">
-      <div class="rl-top"><span class="rl-title">Blue Hole</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Water adventure · Ocho Rios</div>
-      <div class="rl-meta"><span class="m">Cost <b>$25</b></span><span class="m">Sell <b>$52</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="ATV" data-desc="Off-road ride through backcountry trails." data-location="Montego Bay" data-duration="2 hours" data-cost="45" data-sell="89" data-supplier="Backcountry ATV Co." data-capacity="8 per group">
-      <div class="rl-top"><span class="rl-title">ATV</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Third adventure · Montego Bay</div>
-      <div class="rl-meta"><span class="m">Cost <b>$45</b></span><span class="m">Sell <b>$89</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
-    <div class="rlrow" data-name="8 Rivaz Night Club" data-desc="Live DJ, dancing and island nightlife." data-location="Ocho Rios" data-duration="4 hours" data-cost="15" data-sell="35" data-supplier="8 Rivaz Ent." data-capacity="Unlimited">
-      <div class="rl-top"><span class="rl-title">8 Rivaz Night Club</span><span class="badge ok">Active</span></div>
-      <div class="rl-sub">Night life · Ocho Rios</div>
-      <div class="rl-meta"><span class="m">Cost <b>$15</b></span><span class="m">Sell <b>$35</b></span><span class="m">Used in <b>1 package</b></span></div>
-    </div>
-
+    <div class="rlrow-empty">Loading activities&hellip;</div>
   </div>
 
-  <div class="card" id="expEditCard" style="margin-top:20px;">
-    <h3>Edit activity — <span id="eName">Dunn's River Falls</span></h3>
-    <div class="card-sub">Changes here apply everywhere this activity is offered.</div>
-    <div class="field"><label>Description</label><textarea id="eDesc">Guided climb up the famous cascading falls in Ocho Rios.</textarea></div>
+  <div class="card" id="expEditCard" style="margin-top:20px; display:none;">
+    <h3 id="editCardTitle">Edit activity — <span id="eName">&nbsp;</span></h3>
+    <div class="card-sub" id="editCardSub">Changes here apply everywhere this activity is offered.</div>
+
+    <div class="field"><label>Activity name</label><input type="text" id="eNameInput" placeholder="e.g. Dunn's River Falls"></div>
     <div class="two-col">
-      <div class="field"><label>Location</label><input type="text" id="eLocation" value="Ocho Rios"></div>
-      <div class="field"><label>Duration</label><input type="text" id="eDuration" value="3 hours"></div>
+      <div class="field">
+        <label>Category</label>
+        <select id="eCategory">
+          <option value="land">Land Adventure</option>
+          <option value="water">Water Adventure</option>
+          <option value="third">Third Adventure</option>
+          <option value="night">Night Life</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="eActive">
+          <option value="true">Active — offered in Packages</option>
+          <option value="false">Inactive — hidden from Packages</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="eDesc"></textarea></div>
+    <div class="two-col">
+      <div class="field"><label>Location</label><input type="text" id="eLocation"></div>
+      <div class="field"><label>Duration</label><input type="text" id="eDuration"></div>
     </div>
     <div class="two-col">
-      <div class="field"><label>Cost (what you pay)</label><input type="text" id="eCost" value="28"></div>
-      <div class="field"><label>Selling price</label><input type="text" id="eSell" value="55"></div>
+      <div class="field"><label>Cost (what you pay)</label><input type="text" id="eCost"></div>
+      <div class="field"><label>Selling price</label><input type="text" id="eSell"></div>
     </div>
     <div class="two-col">
-      <div class="field"><label>Supplier</label><input type="text" id="eSupplier" value="Island Falls Tours"></div>
-      <div class="field"><label>Capacity</label><input type="text" id="eCapacity" value="20 per group"></div>
+      <div class="field"><label>Supplier</label><input type="text" id="eSupplier"></div>
+      <div class="field"><label>Capacity</label><input type="text" id="eCapacity"></div>
+    </div>
+
+    <div class="usage-note" id="usageNote" style="display:none;"></div>
+
+    <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
+      <button class="icon-btn danger" id="deleteActivityBtn" type="button" aria-label="Delete">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-discard" id="cancelActivityBtn" type="button">Cancel</button>
+        <button class="btn-save" id="saveActivityBtn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+          Save
+        </button>
+      </div>
     </div>
   </div>
 
 </main>
-<script>
 
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+  <span id="toastText">Saved</span>
+</div><script type="module">
   const sidebar = document.getElementById('sidebar');
   document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
   document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
 
+  /* ===== Experiences: load, add, edit, delete ===== */
+  const CATEGORY_LABEL = { land: 'Land adventure', water: 'Water adventure', third: 'Third adventure', night: 'Night life' };
+  let experiences = [];
+  let packagesUsage = {}; // experience id -> count of packages referencing it
+  let activeFilter = 'all';
+  let editingId = null;
 
-  document.querySelectorAll('#expList .rlrow').forEach(row => {
-    row.addEventListener('click', () => {
-      document.querySelectorAll('#expList .rlrow').forEach(r => r.classList.remove('selected'));
-      row.classList.add('selected');
-      document.getElementById('eName').textContent = row.dataset.name;
-      document.getElementById('eDesc').value = row.dataset.desc;
-      document.getElementById('eLocation').value = row.dataset.location;
-      document.getElementById('eDuration').value = row.dataset.duration;
-      document.getElementById('eCost').value = row.dataset.cost;
-      document.getElementById('eSell').value = row.dataset.sell;
-      document.getElementById('eSupplier').value = row.dataset.supplier;
-      document.getElementById('eCapacity').value = row.dataset.capacity;
-      document.getElementById('expEditCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+  const expList = document.getElementById('expList');
+  const editCard = document.getElementById('expEditCard');
+  const eNameInput = document.getElementById('eNameInput');
+  const eName = document.getElementById('eName');
+  const eCategory = document.getElementById('eCategory');
+  const eActive = document.getElementById('eActive');
+  const eDesc = document.getElementById('eDesc');
+  const eLocation = document.getElementById('eLocation');
+  const eDuration = document.getElementById('eDuration');
+  const eCost = document.getElementById('eCost');
+  const eSell = document.getElementById('eSell');
+  const eSupplier = document.getElementById('eSupplier');
+  const eCapacity = document.getElementById('eCapacity');
+  const usageNote = document.getElementById('usageNote');
+  const deleteBtn = document.getElementById('deleteActivityBtn');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function renderList() {
+    const visible = activeFilter === 'all' ? experiences : experiences.filter(e => e.category === activeFilter);
+    if (!visible.length) {
+      expList.innerHTML = '<div class="rlrow-empty">No activities yet — click "Add Activity" to create your first one.</div>';
+      return;
+    }
+    expList.innerHTML = visible.map(e => {
+      const used = packagesUsage[e.id] || 0;
+      return '<div class="rlrow' + (e.id === editingId ? ' selected' : '') + '" data-id="' + e.id + '">' +
+        '<div class="rl-top"><span class="rl-title"></span><span class="badge ' + (e.active ? 'ok' : 'neutral') + '">' + (e.active ? 'Active' : 'Inactive') + '</span></div>' +
+        '<div class="rl-sub"></div>' +
+        '<div class="rl-meta"><span class="m">Cost <b>$' + Number(e.cost || 0).toFixed(0) + '</b></span><span class="m">Sell <b>$' + Number(e.sell_price || 0).toFixed(0) + '</b></span><span class="m">Used in <b>' + used + (used === 1 ? ' package' : ' packages') + '</b></span></div>' +
+      '</div>';
+    }).join('');
+    expList.querySelectorAll('.rlrow').forEach(row => {
+      const e = experiences.find(x => x.id === row.dataset.id);
+      row.querySelector('.rl-title').textContent = e.name;
+      row.querySelector('.rl-sub').textContent = CATEGORY_LABEL[e.category] + (e.location ? ' · ' + e.location : '');
+      row.addEventListener('click', () => openEditor(e));
+    });
+  }
+
+  function openEditor(e) {
+    editingId = e.id;
+    eName.textContent = e.name;
+    document.getElementById('editCardTitle').firstChild.textContent = 'Edit activity — ';
+    document.getElementById('editCardSub').textContent = 'Changes here apply everywhere this activity is offered.';
+    eNameInput.value = e.name || '';
+    eCategory.value = e.category;
+    eActive.value = String(e.active);
+    eDesc.value = e.description || '';
+    eLocation.value = e.location || '';
+    eDuration.value = e.duration || '';
+    eCost.value = e.cost != null ? e.cost : '';
+    eSell.value = e.sell_price != null ? e.sell_price : '';
+    eSupplier.value = e.supplier || '';
+    eCapacity.value = e.capacity || '';
+    const used = packagesUsage[e.id] || 0;
+    usageNote.style.display = '';
+    usageNote.textContent = used
+      ? 'Currently offered in ' + used + (used === 1 ? ' package.' : ' packages.')
+      : 'Not currently offered in any package.';
+    deleteBtn.style.display = '';
+    editCard.style.display = '';
+    renderList();
+    editCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function openNew() {
+    editingId = null;
+    eName.textContent = 'New activity';
+    document.getElementById('editCardTitle').firstChild.textContent = 'Add activity — ';
+    document.getElementById('editCardSub').textContent = 'This will be selectable in the Packages editor once saved.';
+    eNameInput.value = '';
+    eCategory.value = 'land';
+    eActive.value = 'true';
+    eDesc.value = '';
+    eLocation.value = '';
+    eDuration.value = '';
+    eCost.value = '';
+    eSell.value = '';
+    eSupplier.value = '';
+    eCapacity.value = '';
+    usageNote.style.display = 'none';
+    deleteBtn.style.display = 'none';
+    editCard.style.display = '';
+    renderList();
+    editCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('addActivityBtn').addEventListener('click', openNew);
+  document.getElementById('cancelActivityBtn').addEventListener('click', () => { editCard.style.display = 'none'; editingId = null; renderList(); });
+
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b === btn));
+      renderList();
     });
   });
 
+  async function computeUsage() {
+    const { data } = await window.sb.from('packages').select('adventures');
+    packagesUsage = {};
+    (data || []).forEach(pkg => {
+      const adv = pkg.adventures || {};
+      ['land', 'water', 'third', 'night'].forEach(cat => {
+        (adv[cat] || []).forEach(id => { packagesUsage[id] = (packagesUsage[id] || 0) + 1; });
+      });
+    });
+  }
+
+  async function loadExperiences() {
+    const { data, error } = await window.sb.from('experiences').select('*').order('category').order('name');
+    if (error) { alert("Couldn't load experiences: " + error.message); return; }
+    experiences = data || [];
+    await computeUsage();
+    renderList();
+  }
+
+  document.getElementById('saveActivityBtn').addEventListener('click', async () => {
+    const name = eNameInput.value.trim();
+    if (!name) { alert('Please enter an activity name.'); return; }
+    const payload = {
+      name,
+      category: eCategory.value,
+      active: eActive.value === 'true',
+      description: eDesc.value.trim() || null,
+      location: eLocation.value.trim() || null,
+      duration: eDuration.value.trim() || null,
+      cost: parseFloat(eCost.value) || 0,
+      sell_price: parseFloat(eSell.value) || 0,
+      supplier: eSupplier.value.trim() || null,
+      capacity: eCapacity.value.trim() || null
+    };
+    const { error } = editingId
+      ? await window.sb.from('experiences').update(payload).eq('id', editingId)
+      : await window.sb.from('experiences').insert(payload);
+    if (error) { alert("Couldn't save: " + error.message); return; }
+    const wasEditing = !!editingId;
+    editCard.style.display = 'none';
+    editingId = null;
+    await loadExperiences();
+    showToast(wasEditing ? 'Activity updated' : 'Activity added');
+  });
+
+  deleteBtn.addEventListener('click', async () => {
+    if (!editingId) return;
+    const used = packagesUsage[editingId] || 0;
+    const msg = used
+      ? 'This activity is used in ' + used + (used === 1 ? ' package' : ' packages') + '. Deleting it will remove it from those packages\' adventure options. Delete anyway?'
+      : 'Delete this activity? This can’t be undone.';
+    if (!confirm(msg)) return;
+    const { error } = await window.sb.from('experiences').delete().eq('id', editingId);
+    if (error) { alert("Couldn't delete: " + error.message); return; }
+    editCard.style.display = 'none';
+    editingId = null;
+    await loadExperiences();
+    showToast('Activity deleted');
+  });
+
+  loadExperiences();
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
