@@ -405,7 +405,7 @@
               <b>4.56</b><span>(183 reviews)</span>
             </div>
             <p class="excerpt">Discover the heart of Jamaica in a long weekend &mdash; bamboo rafting, local eats, and just enough sun to reset.</p>
-            <div class="price-row"><del>$949</del><ins>$820</ins></div>
+            <div class="price-row"><del>$949</del><ins id="homeCardPrice-3day">$820</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="3day">Book Now</a></div>
           </div>
         </article>
@@ -424,7 +424,7 @@
               <b>4.57</b><span>(159 reviews)</span>
             </div>
             <p class="excerpt">Dive deep into the island &mdash; climb Dunn&rsquo;s River Falls, wander Ocho Rios, and settle into island time.</p>
-            <div class="price-row"><del>$1,352</del><ins>$1,210.55</ins></div>
+            <div class="price-row"><del>$1,352</del><ins id="homeCardPrice-5day">$1,210.55</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="5day">Book Now</a></div>
           </div>
         </article>
@@ -443,7 +443,7 @@
               <b>4.51</b><span>(157 reviews)</span>
             </div>
             <p class="excerpt">Experience the full island &mdash; Seven Mile Beach, the Blue Mountains, and everywhere worth seeing in between.</p>
-            <div class="price-row"><del>$1,612</del><ins>$1,450</ins></div>
+            <div class="price-row"><del>$1,612</del><ins id="homeCardPrice-7day">$1,450</ins></div>
             <div class="card-cta"><a class="btn btn-solid" href="#" data-jg-nav="7day">Book Now</a></div>
           </div>
         </article>
@@ -725,4 +725,31 @@
       if (window.parent && window.parent.jgShowView) window.parent.jgShowView(el.dataset.jgNav);
     });
   });
+</script>
+
+<script>
+  // Live data overlay — pull each package's current price from Supabase and
+  // swap it into the pick-your-trip cards. If Supabase is unreachable for any
+  // reason, the static prices already in the page stay exactly as they are.
+  function fmtHomePrice(n) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  (async () => {
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      const sb = createClient(
+        'https://fgzfpeewbcccxaakpmty.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs'
+      );
+      const { data, error } = await sb.from('packages').select('slug, price_base');
+      if (error || !data) return;
+      data.forEach(pkg => {
+        const el = document.getElementById('homeCardPrice-' + pkg.slug);
+        if (el) el.textContent = '$' + fmtHomePrice(pkg.price_base);
+      });
+    } catch (e) {
+      // Supabase unreachable — static fallback prices already in the page stand.
+    }
+  })();
 </script>
