@@ -5,9 +5,7 @@
 <title>{{PKG_NAME}} — Jamaica Guru</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  @font-face { font-family:'Fraunces'; font-style:normal; font-weight:300 600; font-display:swap; src:url(data:font/woff2;base64,__FRAUNCES_ROMAN__) format('woff2'); }
-  @font-face { font-family:'Fraunces'; font-style:italic; font-weight:500; font-display:swap; src:url(data:font/woff2;base64,__FRAUNCES_ITALIC__) format('woff2'); }
-  @font-face { font-family:'Inter'; font-style:normal; font-weight:100 900; font-display:swap; src:url(data:font/woff2;base64,__INTER__) format('woff2'); }
+  __POPPINS_FACES__
 
   :root{
     --bg: #FFFFFF;
@@ -28,11 +26,11 @@
   body{
     margin:0;
     background: radial-gradient(ellipse 1000px 650px at 50% -5%, #FFEDA8 0%, transparent 65%), var(--bg);
-    font-family:'Inter',sans-serif;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     color:var(--white);
     padding-bottom:96px;
   }
-  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  h1,h2,h3{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; margin:0;}
   a{color:inherit;}
   button{font:inherit;}
   :focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
@@ -59,7 +57,7 @@
     padding:16px 18px; background:rgba(255,225,120,0.55); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line);
   }
-  .logo{display:flex; align-items:center; gap:7px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; letter-spacing:0.02em; text-decoration:none; color:var(--white);}
+  .logo{display:flex; align-items:center; gap:7px; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight:600; font-size:16px; letter-spacing:0.02em; text-decoration:none; color:var(--white);}
   .logo .palm{color:var(--purple-accent); font-size:15px;}
   .nav-links{display:none; gap:30px; font-size:14.5px; color:var(--muted);}
   .nav-links a{text-decoration:none;}
@@ -67,7 +65,7 @@
   .nav-book{
     display:none;
     background:var(--white); border:1px solid var(--white); color:var(--gold-soft);
-    border-radius:24px; padding:10px 18px; font-size:13.5px; font-family:'Inter',sans-serif;
+    border-radius:24px; padding:10px 18px; font-size:13.5px; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     align-items:center; gap:7px; cursor:pointer; font-weight:600; text-decoration:none;
   }
   .menu-btn{
@@ -133,13 +131,13 @@
   .hero-feat span{font-size:12px; color:var(--muted); line-height:1.3;}
   .hero-price-row{display:flex; flex-direction:column; gap:16px;}
   .hero-price .label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;}
-  .hero-price .amt{font-family:'Fraunces',serif; font-size:32px; line-height:1.1; color:var(--white);}
-  .hero-price .amt span{font-size:13px; color:#FFD100; font-family:'Inter',sans-serif;}
+  .hero-price .amt{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:32px; line-height:1.1; color:var(--white);}
+  .hero-price .amt span{font-size:13px; color:#FFD100; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;}
   .hero-price .forppl{font-size:12.5px; color:var(--muted);}
   .hero-cta{
     width:100%; background:#FFD100;
     color:#12281B; border:none; border-radius:28px; padding:16px 24px;
-    font-family:'Inter',sans-serif; font-weight:700; font-size:15px; cursor:pointer;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight:700; font-size:15px; cursor:pointer;
     display:flex; align-items:center; justify-content:center; gap:8px;
     box-shadow:0 6px 20px rgba(0,0,0,0.25); min-height:52px; text-decoration:none;
   }
@@ -156,7 +154,7 @@
   .hero-slide svg{position:absolute; inset:0; width:100%; height:100%;}
   .hero-visual .cap{
     position:absolute; top:18px; left:18px; right:18px; z-index:2;
-    font-family:'Fraunces',serif; font-style:italic; font-size:19px; line-height:1.25; color:#FFFFFF;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-style:italic; font-size:19px; line-height:1.25; color:#FFFFFF;
   }
   .hero-visual .cap u{text-decoration:none; border-bottom:2px solid #FFD100;}
   .hero-arrow{
@@ -214,8 +212,8 @@
   .recap h1{font-size:26px; font-weight:500; line-height:1.1;}
   .recap .eyebrow{color:var(--gold); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:7px; display:block;}
   .recap .price .label{color:var(--muted); font-size:11px; letter-spacing:0.1em; text-transform:uppercase;}
-  .recap .price .amt{font-family:'Fraunces',serif; font-size:24px; color:var(--white);}
-  .recap .price .amt span{color:var(--gold); font-size:14px; font-family:'Inter',sans-serif;}
+  .recap .price .amt{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:24px; color:var(--white);}
+  .recap .price .amt span{color:var(--gold); font-size:14px; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;}
 
   /* ===== step scaffolding ===== */
   .step{ display:flex; gap:14px; margin-bottom:10px; }
@@ -224,7 +222,7 @@
     width:28px; height:28px; border-radius:50%;
     background:var(--card-soft); border:1px solid var(--card-border);
     display:flex; align-items:center; justify-content:center;
-    font-family:'Fraunces',serif; font-size:12.5px; color:var(--gold-soft); flex-shrink:0;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:12.5px; color:var(--gold-soft); flex-shrink:0;
   }
   .step-num.done{background:var(--gold); color:#FFFFFF; border-color:var(--gold);}
   .step-line{width:1px; flex:1; background:linear-gradient(var(--card-border), transparent); margin:6px 0;}
@@ -237,7 +235,7 @@
   .optional-pill{
     display:inline-block; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase;
     color:var(--gold-soft); border:1px solid var(--card-border); border-radius:20px;
-    padding:2px 8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; font-weight:600;
+    padding:2px 8px; margin-left:6px; vertical-align:middle; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight:600;
   }
 
   /* guest dropdown */
@@ -245,7 +243,7 @@
   select{
     width:100%; appearance:none; background:var(--card); color:var(--white);
     border:1px solid var(--card-border); border-radius:12px; padding:15px 42px 15px 16px;
-    font-size:16px; font-family:'Inter',sans-serif; cursor:pointer; min-height:52px;
+    font-size:16px; font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; cursor:pointer; min-height:52px;
   }
   select:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .select-shell::after{
@@ -284,7 +282,7 @@
     position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end;
     padding:16px; background:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.72) 100%);
   }
-  .slider-title{font-family:'Fraunces',serif; color:#fff; font-size:19px; font-weight:600; line-height:1.25;}
+  .slider-title{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; color:#fff; font-size:19px; font-weight:600; line-height:1.25;}
   .slider-learn{
     background:none; border:none; padding:0; margin-top:5px; color:var(--gold-soft); font-size:12.5px;
     font-weight:700; display:inline-flex; align-items:center; gap:4px; cursor:pointer;
@@ -370,7 +368,7 @@
     background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   .adv-modal-body{padding:22px;}
-  .adv-modal-title{font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin-bottom:12px;}
+  .adv-modal-title{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:22px; font-weight:600; margin-bottom:12px;}
   .adv-modal-tags{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
   .adv-modal-tag{
     font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
@@ -390,7 +388,7 @@
   input[type="date"]{
     width:100%; background:var(--card-soft); color:var(--white);
     border:1px solid var(--card-border); border-radius:10px; padding:14px;
-    font-family:'Inter',sans-serif; font-size:16px; color-scheme:light; min-height:50px;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:16px; color-scheme:light; min-height:50px;
   }
   input[type="date"]:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .trip-range{
@@ -414,7 +412,7 @@
   .pay-card input{position:absolute; opacity:0; pointer-events:none;}
   .pay-card:has(input:checked){border-color:var(--gold); background:linear-gradient(160deg, rgba(230,183,77,0.14), var(--card));}
   .pay-card .pay-name{font-size:14px; font-weight:600; margin-bottom:4px;}
-  .pay-card .pay-amt{font-family:'Fraunces',serif; font-size:22px; color:var(--gold-soft);}
+  .pay-card .pay-amt{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:22px; color:var(--gold-soft);}
   .pay-card .pay-note{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4;}
   .pay-card .check{
     position:absolute; top:16px; right:14px; width:18px; height:18px; border-radius:50%;
@@ -436,12 +434,12 @@
     box-shadow:0 -10px 30px rgba(0,0,0,0.35);
   }
   .summary-left .sum-label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;}
-  .summary-left .sum-amt{font-family:'Fraunces',serif; font-size:21px; color:var(--white);}
-  .summary-left .sum-amt span{font-size:12px; color:var(--gold); font-family:'Inter',sans-serif;}
+  .summary-left .sum-amt{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:21px; color:var(--white);}
+  .summary-left .sum-amt span{font-size:12px; color:var(--gold); font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;}
   .cta-btn{
     background:linear-gradient(135deg, var(--purple-accent), var(--purple-accent-2));
     color:#FFD100; border:none; border-radius:26px; padding:14px 20px;
-    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer;
+    font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight:600; font-size:13.5px; cursor:pointer;
     display:flex; align-items:center; gap:7px; box-shadow:0 6px 20px rgba(27,67,50,0.35);
     white-space:nowrap; min-height:48px; text-decoration:none;
   }

@@ -5,9 +5,7 @@ my $dir = "C:\\Users\\Tray Emmanuel\\jamaica-guru-site";
 
 sub slurp { my ($f) = @_; open(my $fh, "<", $f) or die "open $f: $!"; local $/; my $d = <$fh>; close $fh; return $d; }
 
-my $fraunces_roman  = slurp("/tmp/fraunces.b64");
-my $fraunces_italic = slurp("/tmp/fraunces-italic.b64");
-my $inter           = slurp("/tmp/inter.b64");
+my $poppins_faces   = slurp("/tmp/poppins-faces.txt"); # the 5 @font-face blocks (400-800), site-wide font
 my $template        = slurp("$dir/pkg-template.html");
 
 my $CHECK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
@@ -132,9 +130,7 @@ my @packages = (
 
 for my $p (@packages) {
   my $out = $template;
-  $out =~ s/\Q__FRAUNCES_ROMAN__\E/$fraunces_roman/;
-  $out =~ s/\Q__FRAUNCES_ITALIC__\E/$fraunces_italic/;
-  $out =~ s/\Q__INTER__\E/$inter/;
+  $out =~ s/\Q__POPPINS_FACES__\E/$poppins_faces/;
   for my $key (keys %$p) {
     next if $key eq 'file';
     my $val = $p->{$key};
