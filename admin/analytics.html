@@ -246,48 +246,230 @@
 <main class="main">
 
   <div class="page-header">
-    <div><h1>Analytics</h1><div class="sub">How people find and move through the Jamaica Guru site.</div></div>
+    <div><h1>Analytics</h1><div class="sub">Real numbers from your actual bookings — revenue, popularity, and how guests book.</div></div>
   </div>
 
-  <div class="note-banner">
-    Only aggregate, non-identifying traffic data is tracked here — no individual visitor profiles. Collecting more than what actually helps the business isn't the goal.
-  </div>
+  <div class="note-banner" id="rangeBanner">Loading&hellip;</div>
 
-  <div class="stat-grid">
-    <div class="stat-card"><div class="label">Visitors this month</div><div class="value">4,210</div><div class="trend up">↑ 18% vs last month</div></div>
-    <div class="stat-card"><div class="label">Package views</div><div class="value">2,860</div><div class="trend up">↑ 9%</div></div>
-    <div class="stat-card"><div class="label">Checkout starts</div><div class="value">146</div><div class="trend">3.4% of package views</div></div>
-    <div class="stat-card"><div class="label">Conversion rate</div><div class="value">12.8%</div><div class="trend up">↑ 1.2pt</div></div>
+  <div class="stat-grid" id="statGrid">
+    <div class="stat-card"><div class="label">Total Revenue</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Total Bookings</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Avg. Booking Value</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Avg. Review Rating</div><div class="value">—</div><div class="trend"></div></div>
   </div>
 
   <div class="two-up">
     <div>
       <div class="card">
-        <h3>Traffic sources</h3>
-        <div class="card-sub">Where visitors came from this month.</div>
-        <div class="bar-row"><div class="br-top"><b>Instagram</b><span>41%</span></div><div class="bar-track"><div class="bar-fill" style="width:41%;"></div></div></div>
-        <div class="bar-row"><div class="br-top"><b>Direct</b><span>28%</span></div><div class="bar-track"><div class="bar-fill" style="width:28%;"></div></div></div>
-        <div class="bar-row"><div class="br-top"><b>Google</b><span>19%</span></div><div class="bar-track"><div class="bar-fill" style="width:19%;"></div></div></div>
-        <div class="bar-row"><div class="br-top"><b>Referral</b><span>12%</span></div><div class="bar-track"><div class="bar-fill" style="width:12%;"></div></div></div>
+        <h3>Package popularity</h3>
+        <div class="card-sub">Bookings and revenue per package (cancelled bookings excluded).</div>
+        <div id="packagePopularity"></div>
       </div>
     </div>
     <div>
       <div class="card">
-        <h3>Package popularity</h3>
-        <div class="card-sub">Views vs. bookings this month.</div>
-        <div class="bar-row"><div class="br-top"><b>3 Day Island Escape</b><span>2,860 views · 146 booked</span></div><div class="bar-track"><div class="bar-fill" style="width:65%;"></div></div></div>
+        <h3>Bookings by status</h3>
+        <div class="card-sub">Where every booking currently stands.</div>
+        <div id="statusBreakdown"></div>
       </div>
     </div>
   </div>
 
-</main>
-<script>
+  <div class="two-up" style="margin-top:20px;">
+    <div>
+      <div class="card">
+        <h3>Bookings over time</h3>
+        <div class="card-sub">Last 6 months, by the date each booking was placed.</div>
+        <div id="bookingsOverTime"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Top add-ons</h3>
+        <div class="card-sub">Most chosen extras across all bookings.</div>
+        <div id="topAddons"></div>
+      </div>
+    </div>
+  </div>
 
+  <div class="two-up" style="margin-top:20px;">
+    <div>
+      <div class="card">
+        <h3>Payment method</h3>
+        <div class="card-sub">Deposit vs. pay-in-full at checkout.</div>
+        <div id="paymentSplit"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Party size</h3>
+        <div class="card-sub">How many guests per booking.</div>
+        <div id="partySizeBreakdown"></div>
+      </div>
+    </div>
+  </div>
+
+</main><script type="module">
   const sidebar = document.getElementById('sidebar');
   document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
   document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
 
+  const STATUS_LABEL = { new: 'New', pending: 'Pending Payment', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled' };
+  const fmt = (n) => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const monthKey = (d) => d.getFullYear() + '-' + d.getMonth();
+  const monthLabel = (d) => d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 
+  function barRow(label, valueText, pct){
+    return '<div class="bar-row"><div class="br-top"><b></b><span></span></div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(0, Math.min(100, pct)) + '%;"></div></div></div>'
+      .replace('<b></b>', '<b>' + label + '</b>').replace('<span></span>', '<span>' + valueText + '</span>');
+  }
+  function emptyState(msg){ return '<div style="font-size:12.5px; color:var(--muted); padding:8px 0;">' + msg + '</div>'; }
+
+  async function loadAnalytics(){
+    const [bookingsRes, packagesRes, reviewsRes] = await Promise.all([
+      window.sb.from('bookings').select('*'),
+      window.sb.from('packages').select('slug, title'),
+      window.sb.from('reviews').select('package_slug, rating')
+    ]);
+    if (bookingsRes.error) { alert("Couldn't load analytics: " + bookingsRes.error.message); return; }
+
+    const all = bookingsRes.data || [];
+    const packages = packagesRes.data || [];
+    const reviews = reviewsRes.data || [];
+    const pkgTitle = {};
+    packages.forEach(p => { pkgTitle[p.slug] = p.title; });
+    const active = all.filter(b => b.status !== 'cancelled'); // revenue/popularity exclude cancelled
+
+    document.getElementById('rangeBanner').textContent = all.length
+      ? 'Based on all ' + all.length + ' booking' + (all.length === 1 ? '' : 's') + ' recorded to date.'
+      : 'No bookings recorded yet — these numbers will fill in as real bookings come through.';
+
+    renderStatCards(active, reviews);
+    renderPackagePopularity(active, pkgTitle);
+    renderStatusBreakdown(all);
+    renderBookingsOverTime(all);
+    renderTopAddons(active);
+    renderPaymentSplit(active);
+    renderPartySize(active);
+  }
+
+  function renderStatCards(active, reviews){
+    const cards = document.querySelectorAll('#statGrid .stat-card');
+    const totalRevenue = active.reduce((sum, b) => sum + Number(b.total || 0), 0);
+    const totalBookings = active.length;
+    const avgValue = totalBookings ? totalRevenue / totalBookings : 0;
+    const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
+
+    const now = new Date();
+    const thisKey = monthKey(now);
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastKey = monthKey(lastMonthDate);
+    const thisMonth = active.filter(b => monthKey(new Date(b.created_at)) === thisKey);
+    const lastMonth = active.filter(b => monthKey(new Date(b.created_at)) === lastKey);
+    const thisRevenue = thisMonth.reduce((s, b) => s + Number(b.total || 0), 0);
+    const lastRevenue = lastMonth.reduce((s, b) => s + Number(b.total || 0), 0);
+
+    function trendText(curr, prev, currCount, prevCount){
+      if (!prevCount) return curr ? 'New this month' : '';
+      const pct = ((curr - prev) / prev) * 100;
+      const arrow = pct >= 0 ? '↑' : '↓';
+      return arrow + ' ' + Math.abs(pct).toFixed(0) + '% vs last month';
+    }
+
+    cards[0].querySelector('.value').textContent = fmt(totalRevenue);
+    const rev = trendText(thisRevenue, lastRevenue, thisMonth.length, lastMonth.length);
+    cards[0].querySelector('.trend').textContent = rev;
+    cards[0].querySelector('.trend').classList.toggle('up', thisRevenue >= lastRevenue && !!rev);
+
+    cards[1].querySelector('.value').textContent = totalBookings;
+    const bkg = trendText(thisMonth.length, lastMonth.length, thisMonth.length, lastMonth.length);
+    cards[1].querySelector('.trend').textContent = bkg;
+    cards[1].querySelector('.trend').classList.toggle('up', thisMonth.length >= lastMonth.length && !!bkg);
+
+    cards[2].querySelector('.value').textContent = totalBookings ? fmt(avgValue) : '—';
+
+    cards[3].querySelector('.value').textContent = avgRating != null ? avgRating.toFixed(2) + ' ★' : '—';
+    cards[3].querySelector('.trend').textContent = reviews.length ? reviews.length + ' review' + (reviews.length === 1 ? '' : 's') : 'No reviews yet';
+  }
+
+  function renderPackagePopularity(active, pkgTitle){
+    const el = document.getElementById('packagePopularity');
+    if (!active.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    const bySlug = {};
+    active.forEach(b => {
+      const slug = b.package_slug || b.package_name || 'unknown';
+      if (!bySlug[slug]) bySlug[slug] = { count: 0, revenue: 0, label: pkgTitle[slug] || b.package_name || slug };
+      bySlug[slug].count++;
+      bySlug[slug].revenue += Number(b.total || 0);
+    });
+    const rows = Object.values(bySlug).sort((a, b) => b.count - a.count);
+    const max = Math.max(...rows.map(r => r.count));
+    el.innerHTML = rows.map(r => barRow(r.label, r.count + ' booked · ' + fmt(r.revenue), (r.count / max) * 100)).join('');
+  }
+
+  function renderStatusBreakdown(all){
+    const el = document.getElementById('statusBreakdown');
+    if (!all.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    const counts = {};
+    all.forEach(b => { const s = b.status || 'new'; counts[s] = (counts[s] || 0) + 1; });
+    const order = ['new', 'pending', 'confirmed', 'completed', 'cancelled'];
+    const max = Math.max(...Object.values(counts));
+    el.innerHTML = order.filter(s => counts[s]).map(s =>
+      barRow(STATUS_LABEL[s], counts[s] + ' (' + Math.round(counts[s] / all.length * 100) + '%)', (counts[s] / max) * 100)
+    ).join('');
+  }
+
+  function renderBookingsOverTime(all){
+    const el = document.getElementById('bookingsOverTime');
+    if (!all.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) months.push(new Date(now.getFullYear(), now.getMonth() - i, 1));
+    const counts = months.map(d => all.filter(b => monthKey(new Date(b.created_at)) === monthKey(d)).length);
+    const max = Math.max(1, ...counts);
+    el.innerHTML = months.map((d, i) => barRow(monthLabel(d), counts[i] + ' booking' + (counts[i] === 1 ? '' : 's'), (counts[i] / max) * 100)).join('');
+  }
+
+  function renderTopAddons(active){
+    const el = document.getElementById('topAddons');
+    const withAddons = active.filter(b => Array.isArray(b.addons) && b.addons.length);
+    if (!active.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    if (!withAddons.length) { el.innerHTML = emptyState('No add-ons chosen yet.'); return; }
+    const tally = {};
+    withAddons.forEach(b => {
+      b.addons.forEach(a => { tally[a.name] = (tally[a.name] || 0) + (Number(a.qty) || 1); });
+    });
+    const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const max = Math.max(...rows.map(r => r[1]));
+    const attachRate = Math.round(withAddons.length / active.length * 100);
+    el.innerHTML = '<div style="font-size:12px; color:var(--muted); margin-bottom:12px;">' + attachRate + '% of bookings include at least one add-on.</div>' +
+      rows.map(([name, qty]) => barRow(name, qty + '×', (qty / max) * 100)).join('');
+  }
+
+  function renderPaymentSplit(active){
+    const el = document.getElementById('paymentSplit');
+    if (!active.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    const deposit = active.filter(b => b.payment_method !== 'full').length;
+    const full = active.length - deposit;
+    const max = Math.max(deposit, full, 1);
+    el.innerHTML =
+      barRow('Deposit', deposit + ' (' + Math.round(deposit / active.length * 100) + '%)', (deposit / max) * 100) +
+      barRow('Pay in Full', full + ' (' + Math.round(full / active.length * 100) + '%)', (full / max) * 100);
+  }
+
+  function renderPartySize(active){
+    const el = document.getElementById('partySizeBreakdown');
+    if (!active.length) { el.innerHTML = emptyState('No bookings yet.'); return; }
+    const counts = {};
+    active.forEach(b => { const g = Number(b.guests) || 0; counts[g] = (counts[g] || 0) + 1; });
+    const sizes = Object.keys(counts).map(Number).sort((a, b) => a - b);
+    const max = Math.max(...Object.values(counts));
+    const avg = active.reduce((s, b) => s + (Number(b.guests) || 0), 0) / active.length;
+    el.innerHTML = '<div style="font-size:12px; color:var(--muted); margin-bottom:12px;">Average ' + avg.toFixed(1) + ' guests per booking.</div>' +
+      sizes.map(g => barRow(g + (g === 1 ? ' guest' : ' guests'), counts[g] + ' booking' + (counts[g] === 1 ? '' : 's'), (counts[g] / max) * 100)).join('');
+  }
+
+  loadAnalytics();
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
