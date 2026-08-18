@@ -352,11 +352,13 @@
           </select>
         </div>
       </div>
-      <div class="field"><label>Description</label><textarea id="eDesc"></textarea></div>
+      <div class="field"><label>Card description <span class="hint">— one short line, shown on the option card itself</span></label><input type="text" id="eCardDesc" placeholder="e.g. Guided beach & trail ride along the coast."></div>
+      <div class="field"><label>Full description <span class="hint">— 2&ndash;4 sentences, shown in the "Learn more" popup</span></label><textarea id="eDesc"></textarea></div>
       <div class="two-col">
         <div class="field"><label>Location</label><input type="text" id="eLocation"></div>
-        <div class="field"><label>Duration</label><input type="text" id="eDuration"></div>
+        <div class="field"><label>Duration</label><input type="text" id="eDuration" placeholder="e.g. 2 hours"></div>
       </div>
+      <div class="field"><label>Difficulty / content tag <span class="hint">— shown as a badge in the "Learn more" popup</span></label><input type="text" id="eDifficulty" placeholder="e.g. Easy, Moderate, or 18+ Only"></div>
       <div class="two-col">
         <div class="field"><label>Cost (what you pay)</label><input type="text" id="eCost"></div>
         <div class="field"><label>Selling price</label><input type="text" id="eSell"></div>
@@ -364,6 +366,18 @@
       <div class="two-col">
         <div class="field"><label>Supplier</label><input type="text" id="eSupplier"></div>
         <div class="field"><label>Capacity</label><input type="text" id="eCapacity"></div>
+      </div>
+
+      <div class="field">
+        <label>Photo <span class="hint">— shown on the option card and in the "Learn more" popup. Leave empty to keep the placeholder.</span></label>
+        <div class="img-grid" id="expImgGrid">
+          <div class="img-tile add-tile" id="addExpImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
+        </div>
+        <input type="file" id="expImgFileInput" accept="image/*" multiple style="display:none;">
+        <div class="img-upload-status" id="expImgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
       </div>
 
       <div class="usage-note" id="usageNote" style="display:none;"></div>
@@ -477,9 +491,11 @@
   const eName = document.getElementById('eName');
   const eCategory = document.getElementById('eCategory');
   const eActive = document.getElementById('eActive');
+  const eCardDesc = document.getElementById('eCardDesc');
   const eDesc = document.getElementById('eDesc');
   const eLocation = document.getElementById('eLocation');
   const eDuration = document.getElementById('eDuration');
+  const eDifficulty = document.getElementById('eDifficulty');
   const eCost = document.getElementById('eCost');
   const eSell = document.getElementById('eSell');
   const eSupplier = document.getElementById('eSupplier');
@@ -488,6 +504,50 @@
   const deleteBtn = document.getElementById('deleteActivityBtn');
   const toast = document.getElementById('toast');
   const toastText = document.getElementById('toastText');
+
+  let currentExpImages = [];
+  const expImgGrid = document.getElementById('expImgGrid');
+  const addExpImgTile = document.getElementById('addExpImgTile');
+  const expImgFileInput = document.getElementById('expImgFileInput');
+  const expImgUploadStatus = document.getElementById('expImgUploadStatus');
+
+  function renderExpImages(){
+    expImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentExpImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      expImgGrid.insertBefore(tile, addExpImgTile);
+    });
+  }
+  expImgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (!removeBtn) return;
+    currentExpImages.splice(Number(removeBtn.closest('.img-tile').dataset.idx), 1);
+    renderExpImages();
+  });
+  addExpImgTile.addEventListener('click', () => expImgFileInput.click());
+  expImgFileInput.addEventListener('change', async () => {
+    const files = Array.from(expImgFileInput.files || []);
+    if (!files.length) return;
+    expImgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      expImgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('experience-images').upload(path, file, { upsert: false });
+      if (upErr) { expImgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`; continue; }
+      const { data: pub } = window.sb.storage.from('experience-images').getPublicUrl(path);
+      currentExpImages.push(pub.publicUrl);
+    }
+    expImgUploadStatus.style.display = 'none';
+    expImgFileInput.value = '';
+    renderExpImages();
+  });
 
   function showToast(msg) {
     toastText.textContent = msg;
@@ -525,13 +585,17 @@
     eNameInput.value = e.name || '';
     eCategory.value = e.category;
     eActive.value = String(e.active);
+    eCardDesc.value = e.card_description || '';
     eDesc.value = e.description || '';
     eLocation.value = e.location || '';
     eDuration.value = e.duration || '';
+    eDifficulty.value = e.difficulty || '';
     eCost.value = e.cost != null ? e.cost : '';
     eSell.value = e.sell_price != null ? e.sell_price : '';
     eSupplier.value = e.supplier || '';
     eCapacity.value = e.capacity || '';
+    currentExpImages = Array.isArray(e.images) ? e.images.slice() : [];
+    renderExpImages();
     const used = packagesUsage[e.id] || 0;
     usageNote.style.display = '';
     usageNote.textContent = used
@@ -551,13 +615,17 @@
     eNameInput.value = '';
     eCategory.value = 'land';
     eActive.value = 'true';
+    eCardDesc.value = '';
     eDesc.value = '';
     eLocation.value = '';
     eDuration.value = '';
+    eDifficulty.value = '';
     eCost.value = '';
     eSell.value = '';
     eSupplier.value = '';
     eCapacity.value = '';
+    currentExpImages = [];
+    renderExpImages();
     usageNote.style.display = 'none';
     deleteBtn.style.display = 'none';
     editCard.style.display = '';
@@ -602,13 +670,16 @@
       name,
       category: eCategory.value,
       active: eActive.value === 'true',
+      card_description: eCardDesc.value.trim() || null,
       description: eDesc.value.trim() || null,
       location: eLocation.value.trim() || null,
       duration: eDuration.value.trim() || null,
+      difficulty: eDifficulty.value.trim() || null,
       cost: parseFloat(eCost.value) || 0,
       sell_price: parseFloat(eSell.value) || 0,
       supplier: eSupplier.value.trim() || null,
-      capacity: eCapacity.value.trim() || null
+      capacity: eCapacity.value.trim() || null,
+      images: currentExpImages
     };
     const { error } = editingId
       ? await window.sb.from('experiences').update(payload).eq('id', editingId)

@@ -254,39 +254,133 @@
     transform:translateY(-65%) rotate(45deg); pointer-events:none;
   }
 
-  /* option cards — single column on mobile for full-width tap targets */
-  .option-grid{display:grid; grid-template-columns:1fr; gap:10px;}
-  .opt-card{
-    position:relative; background:var(--card); border:1px solid var(--card-border);
-    border-radius:14px; padding:14px 44px 14px 14px; cursor:pointer;
-    transition:border-color .15s, background .15s;
-    display:flex; align-items:center; gap:13px; min-height:64px;
-  }
-  .opt-card:active{border-color:rgba(230,183,77,0.5);}
+  /* option cards — shared base every adventure-selection card builds on,
+     regardless of which visual pattern (slider / product row) it uses.
+     Keeps the radio-button semantics + :has(input:checked) selected-state
+     trick that gatherTripState()/pickedName() and the CSS below rely on. */
+  .opt-card{ position:relative; cursor:pointer; display:block; }
   .opt-card input{position:absolute; opacity:0; pointer-events:none;}
-  .opt-card .icon{
-    width:38px; height:38px; min-width:38px; border-radius:10px; background:var(--card-soft);
-    display:flex; align-items:center; justify-content:center; color:var(--gold);
+  .opt-card .name{ /* kept off-pattern so pickedName() always has a plain-text home to read */ }
+
+  .placeholder-photo{
+    background:linear-gradient(155deg, #0F1F16 0%, #17331F 55%, var(--purple-accent) 100%);
+    display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.85);
   }
-  .opt-card .icon svg{width:18px; height:18px;}
-  .opt-card .text{display:flex; flex-direction:column; gap:2px; min-width:0;}
-  .opt-card .name{font-size:14.5px; font-weight:600; line-height:1.3;}
-  .opt-card .desc{font-size:12px; color:var(--muted); line-height:1.4;}
-  .opt-card .check{
+
+  /* ===== Pattern A: image slider (Land Adventure only) ===== */
+  .slider-track{
+    display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px;
+  }
+  .slider-track::-webkit-scrollbar{display:none;}
+  .slider-card{
+    flex:0 0 78%; aspect-ratio:4/5; border-radius:16px; overflow:hidden;
+    scroll-snap-align:start; background-size:cover; background-position:center;
+  }
+  .slider-card .placeholder-photo{position:absolute; inset:0;}
+  .slider-card .placeholder-photo svg{width:34px; height:34px;}
+  .slider-card{position:relative;}
+  .slider-overlay{
+    position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end;
+    padding:16px; background:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.72) 100%);
+  }
+  .slider-title{font-family:'Fraunces',serif; color:#fff; font-size:19px; font-weight:600; line-height:1.25;}
+  .slider-learn{
+    background:none; border:none; padding:0; margin-top:5px; color:var(--gold-soft); font-size:12.5px;
+    font-weight:700; display:inline-flex; align-items:center; gap:4px; cursor:pointer;
+  }
+  .slider-badge{
+    position:absolute; top:12px; right:12px; width:28px; height:28px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.75); background:rgba(0,0,0,0.25);
+  }
+  .slider-card:has(input:checked) .slider-badge{background:var(--gold-soft); border-color:var(--gold-soft);}
+  .slider-card:has(input:checked) .slider-badge::after{
+    content:''; display:block; width:6px; height:11px; border-right:2px solid #1A1A1A; border-bottom:2px solid #1A1A1A;
+    transform:translate(10px,7px) rotate(45deg);
+  }
+  .slider-hint{text-align:center; font-size:12px; color:var(--muted); margin-top:10px; display:flex; align-items:center; justify-content:center; gap:4px;}
+
+  /* ===== Pattern B: horizontal product card (Water / Third / Night) ===== */
+  .product-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+  .product-card{
+    display:flex; align-items:stretch; gap:12px; padding:10px; border-radius:14px;
+    background:var(--card); border:1px solid var(--card-border); transition:border-color .15s, background .15s;
+  }
+  .product-card:has(input:checked){
+    border-color:var(--gold-soft); background:linear-gradient(160deg, rgba(255,209,0,0.12), var(--card));
+  }
+  .product-photo{
+    position:relative; width:64px; height:64px; flex:0 0 64px; border-radius:10px; overflow:hidden;
+    background-size:cover; background-position:center;
+  }
+  .product-photo .placeholder-photo{position:absolute; inset:0;}
+  .product-photo .placeholder-photo svg{width:22px; height:22px;}
+  .product-badge{
+    position:absolute; top:5px; right:5px; width:19px; height:19px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,0.85); background:rgba(0,0,0,0.2);
+  }
+  .product-card:has(input:checked) .product-badge{background:var(--gold-soft); border-color:var(--gold-soft);}
+  .product-card:has(input:checked) .product-badge::after{
+    content:''; display:block; width:4px; height:8px; border-right:1.5px solid #1A1A1A; border-bottom:1.5px solid #1A1A1A;
+    transform:translate(6.5px,4.5px) rotate(45deg);
+  }
+  .product-body{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:3px;}
+  .product-title{font-size:14.5px; font-weight:700; line-height:1.3;}
+  .product-desc{
+    font-size:12px; color:var(--muted); line-height:1.4;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .product-learn{
+    align-self:flex-start; background:none; border:none; padding:0; margin-top:2px;
+    color:var(--purple-accent); font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:3px; cursor:pointer;
+  }
+  .opt-card.none-opt{
+    display:flex; align-items:center; gap:13px; padding:14px 44px 14px 14px; min-height:64px;
+    background:var(--card); border:1px solid var(--card-border); border-radius:14px;
+  }
+  .opt-card.none-opt .name{font-size:14.5px; font-weight:500; color:var(--muted);}
+  .opt-card.none-opt .check{
     position:absolute; top:50%; right:14px; transform:translateY(-50%);
-    width:20px; height:20px; border-radius:50%;
-    border:1.5px solid rgba(255,255,255,0.3); background:transparent; flex-shrink:0;
+    width:20px; height:20px; border-radius:50%; border:1.5px solid rgba(0,0,0,0.2); background:transparent;
   }
-  .opt-card:has(input:checked){
-    border-color:var(--gold); background:linear-gradient(160deg, rgba(230,183,77,0.14), var(--card));
-  }
-  .opt-card:has(input:checked) .check{ background:var(--gold); border-color:var(--gold); }
-  .opt-card:has(input:checked) .check::after{
-    content:''; display:block; width:5px; height:10px; border-right:2px solid #FFFFFF; border-bottom:2px solid #FFFFFF;
+  .opt-card.none-opt:has(input:checked){border-color:var(--gold-soft); background:linear-gradient(160deg, rgba(255,209,0,0.12), var(--card));}
+  .opt-card.none-opt:has(input:checked) .check{background:var(--gold-soft); border-color:var(--gold-soft);}
+  .opt-card.none-opt:has(input:checked) .check::after{
+    content:''; display:block; width:5px; height:10px; border-right:2px solid #1A1A1A; border-bottom:2px solid #1A1A1A;
     transform:translate(7px,4px) rotate(45deg);
   }
-  .opt-card.none-opt{justify-content:flex-start;}
-  .opt-card.none-opt .name{color:var(--muted); font-weight:500;}
+
+  /* ===== Shared "Learn more" modal ===== */
+  .adv-modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .adv-modal-backdrop.open{display:flex;}
+  .adv-modal{
+    background:var(--card); width:100%; max-height:88vh; overflow-y:auto;
+    border-radius:20px 20px 0 0; position:relative;
+  }
+  .adv-modal-photo{
+    aspect-ratio:16/9; background-size:cover; background-position:center; position:relative;
+  }
+  .adv-modal-photo .placeholder-photo{position:absolute; inset:0;}
+  .adv-modal-photo .placeholder-photo svg{width:40px; height:40px;}
+  .adv-modal-close{
+    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
+    background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .adv-modal-body{padding:22px;}
+  .adv-modal-title{font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin-bottom:12px;}
+  .adv-modal-tags{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .adv-modal-tag{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+    background:var(--card-soft); color:var(--gold); padding:4px 10px; border-radius:20px;
+  }
+  .adv-modal-desc{font-size:14px; color:var(--muted); line-height:1.65; margin-bottom:22px;}
+  .adv-modal-select-btn{
+    width:100%; background:var(--purple-accent); color:#fff; border:none; border-radius:12px;
+    padding:15px; font-size:15px; font-weight:700; cursor:pointer;
+  }
 
   /* date picker */
   .date-panel{
@@ -360,10 +454,13 @@
     .hero-card{padding:34px; border-radius:26px;}
     .hero-copy h2{font-size:38px;}
     .hero-feats{grid-template-columns:1fr 1fr; gap:18px;}
-    .option-grid{grid-template-columns:1fr 1fr;}
-    .option-grid .opt-card{flex-direction:column; align-items:flex-start; padding:16px; min-height:120px;}
-    .option-grid .opt-card .check{top:14px; right:14px; transform:none;}
-    .opt-card.none-opt{grid-column:1 / -1; flex-direction:row; align-items:center;}
+    .slider-card{flex:0 0 45%;}
+    .product-grid{grid-template-columns:1fr 1fr;}
+    .product-photo{width:120px; height:120px; flex-basis:120px;}
+    .product-photo .placeholder-photo svg{width:30px; height:30px;}
+    .opt-card.none-opt{grid-column:1 / -1;}
+    .adv-modal-backdrop{align-items:center;}
+    .adv-modal{max-width:460px; max-height:80vh; border-radius:20px;}
     .pay-grid{grid-template-columns:1fr 1fr;}
     .recap{flex-direction:row; align-items:flex-end; justify-content:space-between;}
     .recap .price{text-align:right;}
@@ -433,12 +530,10 @@
     .select-shell{max-width:280px;}
     select{padding:14px 42px 14px 16px; font-size:15px;}
 
-    .option-grid{grid-template-columns:repeat(3, 1fr); gap:12px;}
-    .opt-card{flex-direction:column; align-items:stretch; gap:10px; padding:16px; min-height:120px;}
-    .opt-card .text{display:contents;}
-    .opt-card .icon{width:34px; height:34px; border-radius:9px;}
-    .opt-card .check{top:12px; right:12px; transform:none;}
-    .opt-card.none-opt{grid-column:1 / -1; flex-direction:row; align-items:center; justify-content:center; text-align:center;}
+    .slider-card{flex:0 0 31%;}
+    .slider-hint{display:none;} /* three cards fit without scrolling at this width */
+    .product-grid{grid-template-columns:repeat(3, 1fr); gap:12px;}
+    .opt-card.none-opt{grid-column:1 / -1; justify-content:center; text-align:center;}
 
     .date-panel{max-width:340px; padding:20px;}
     input[type="date"]{padding:12px 14px; font-size:14.5px; min-height:auto;}
@@ -694,25 +789,38 @@
     <div class="step-body">
       <div class="step-tag">Land adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your first adventure</div>
-      <div class="option-grid" id="advGridLand">
-        <label class="opt-card">
+      <div class="slider-track" id="advGridLand">
+        <label class="opt-card slider-card" data-activity-id="horseback">
           <input type="radio" name="adv1" checked>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20c2-4 4-6 8-6s6 2 8 6M9 14c-1-3 0-6 2-8m2 8c1-3 0-6-2-8m-3 0c1-1.5 3-2 4-2s3 .5 4 2"/></svg></span>
-          <span class="text"><span class="name">Horseback Riding</span><span class="desc">Guided beach &amp; trail ride along the coast.</span></span>
-          <span class="check"></span>
+          <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20c2-4 4-6 8-6s6 2 8 6M9 14c-1-3 0-6 2-8m2 8c1-3 0-6-2-8m-3 0c1-1.5 3-2 4-2s3 .5 4 2"/></svg></span>
+          <span class="slider-overlay">
+            <span class="text"><span class="name slider-title">Horseback Riding</span></span>
+            <button type="button" class="slider-learn">Learn more &rarr;</button>
+          </span>
+          <span class="slider-badge"></span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card slider-card" data-activity-id="bamboo">
           <input type="radio" name="adv1">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16l6-10 3 5 3-4 6 9M3 16h18"/></svg></span>
-          <span class="text"><span class="name">Bamboo Rafting</span><span class="desc">Calm river drift on a traditional raft.</span></span>
-          <span class="check"></span>
+          <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 16l6-10 3 5 3-4 6 9M3 16h18"/></svg></span>
+          <span class="slider-overlay">
+            <span class="text"><span class="name slider-title">Bamboo Rafting</span></span>
+            <button type="button" class="slider-learn">Learn more &rarr;</button>
+          </span>
+          <span class="slider-badge"></span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card slider-card" data-activity-id="zipline">
           <input type="radio" name="adv1">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20l7-7M4 6l16 12M8 4l12 12M14 4l6 6"/></svg></span>
-          <span class="text"><span class="name">Ziplining</span><span class="desc">Canopy-line course above the rainforest.</span></span>
-          <span class="check"></span>
+          <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20l7-7M4 6l16 12M8 4l12 12M14 4l6 6"/></svg></span>
+          <span class="slider-overlay">
+            <span class="text"><span class="name slider-title">Ziplining</span></span>
+            <button type="button" class="slider-learn">Learn more &rarr;</button>
+          </span>
+          <span class="slider-badge"></span>
         </label>
+      </div>
+      <div class="slider-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+        Swipe to see all options
       </div>
     </div>
   </div>
@@ -726,24 +834,42 @@
     <div class="step-body">
       <div class="step-tag">Water adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your second adventure</div>
-      <div class="option-grid" id="advGridWater">
-        <label class="opt-card">
+      <div class="product-grid" id="advGridWater">
+        <label class="opt-card product-card" data-activity-id="dunns">
           <input type="radio" name="adv2" checked>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg></span>
-          <span class="text"><span class="name">Dunn's River Falls</span><span class="desc">Guided climb up the famous cascading falls.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Dunn's River Falls</span>
+            <span class="product-desc">Guided climb up the famous cascading falls.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card product-card" data-activity-id="bluehole">
           <input type="radio" name="adv2">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="11" r="7"/><path d="M6 20c1.5-1 3-1 6-1s4.5 0 6 1"/></svg></span>
-          <span class="text"><span class="name">Blue Hole</span><span class="desc">Cliff jumps and swimming in mineral pools.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="11" r="7"/><path d="M6 20c1.5-1 3-1 6-1s4.5 0 6 1"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Blue Hole</span>
+            <span class="product-desc">Cliff jumps and swimming in mineral pools.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card product-card" data-activity-id="tubing">
           <input type="radio" name="adv2">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="6"/><path d="M2 12h4m12 0h4M12 2v4m0 12v4"/></svg></span>
-          <span class="text"><span class="name">River Tubing</span><span class="desc">Leisurely float down the river current.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="6"/><path d="M2 12h4m12 0h4M12 2v4m0 12v4"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">River Tubing</span>
+            <span class="product-desc">Leisurely float down the river current.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
       </div>
     </div>
@@ -758,24 +884,42 @@
     <div class="step-body">
       <div class="step-tag">Open-air adventure &middot; choose one (1)</div>
       <div class="step-title">Pick your third adventure</div>
-      <div class="option-grid" id="advGridThird">
-        <label class="opt-card">
+      <div class="product-grid" id="advGridThird">
+        <label class="opt-card product-card" data-activity-id="atv">
           <input type="radio" name="adv3" checked>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg></span>
-          <span class="text"><span class="name">ATV</span><span class="desc">Off-road ride through backcountry trails.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">ATV</span>
+            <span class="product-desc">Off-road ride through backcountry trails.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card product-card" data-activity-id="catamaran">
           <input type="radio" name="adv3">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15h18l-2 4H5l-2-4zM7 15V8l5-3 5 3v7M12 5v3"/></svg></span>
-          <span class="text"><span class="name">Catamaran / Party Cruise</span><span class="desc">Music, drinks and swimming stops at sea.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15h18l-2 4H5l-2-4zM7 15V8l5-3 5 3v7M12 5v3"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Catamaran / Party Cruise</span>
+            <span class="product-desc">Music, drinks and swimming stops at sea.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card product-card" data-activity-id="jetski">
           <input type="radio" name="adv3">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17c3-6 7-9 12-9l3-3M9 13l6-6M3 17c2 2 4 2 6 0"/></svg></span>
-          <span class="text"><span class="name">Jet Skiing</span><span class="desc">Guided open-water jet ski run.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17c3-6 7-9 12-9l3-3M9 13l6-6M3 17c2 2 4 2 6 0"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Jet Skiing</span>
+            <span class="product-desc">Guided open-water jet ski run.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
       </div>
     </div>
@@ -825,22 +969,34 @@
       <div class="step-tag">Choose one (1)</div>
       <div class="step-title">Night life <span class="optional-pill">Optional</span></div>
       <div class="step-sub">Select an option if you'd like to enjoy Jamaica's night life.</div>
-      <div class="option-grid" id="advGridNight">
-        <label class="opt-card">
+      <div class="product-grid" id="advGridNight">
+        <label class="opt-card product-card" data-activity-id="nightclub1">
           <input type="radio" name="night" checked>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
-          <span class="text"><span class="name">8 Rivaz Night Club</span><span class="desc">Live DJ, dancing &amp; island nightlife.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">8 Rivaz Night Club</span>
+            <span class="product-desc">Live DJ, dancing &amp; island nightlife.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
-        <label class="opt-card">
+        <label class="opt-card product-card" data-activity-id="nightclub2">
           <input type="radio" name="night">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
-          <span class="text"><span class="name">Taboo Night Club <span style="font-weight:400;color:var(--muted);">(Strip Club)</span></span><span class="desc">Adults-only entertainment, 18+.</span></span>
-          <span class="check"></span>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Taboo Night Club <span style="font-weight:400;color:var(--muted);">(Strip Club)</span></span>
+            <span class="product-desc">Adults-only entertainment, 18+.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
         </label>
         <label class="opt-card none-opt">
           <input type="radio" name="night">
-          <span class="text"><span class="name">No thank you — skip the night life add-on</span></span>
+          <span class="name">No thank you — skip the night life add-on</span>
           <span class="check"></span>
         </label>
       </div>
@@ -900,6 +1056,29 @@
     </div>
   </div>
 
+</div>
+
+<!-- Shared "Learn more" modal — one instance, reused by every adventure
+     option across all 4 sections via a data-driven lookup keyed by
+     data-activity-id. -->
+<div class="adv-modal-backdrop" id="advModalBackdrop">
+  <div class="adv-modal">
+    <div class="adv-modal-photo" id="advModalPhotoWrap">
+      <span class="placeholder-photo" id="advModalPlaceholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg></span>
+      <button type="button" class="adv-modal-close" id="advModalClose" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="adv-modal-body">
+      <div class="adv-modal-title" id="advModalTitle"></div>
+      <div class="adv-modal-tags">
+        <span class="adv-modal-tag" id="advModalDuration"></span>
+        <span class="adv-modal-tag" id="advModalDifficulty"></span>
+      </div>
+      <p class="adv-modal-desc" id="advModalDesc"></p>
+      <button type="button" class="adv-modal-select-btn" id="advModalSelectBtn">Select this adventure</button>
+    </div>
+  </div>
 </div>
 
 <div class="summary-bar">
@@ -1041,6 +1220,83 @@
     };
   }
 
+  /* ===== Shared "Learn more" modal =====
+     One modal, reused by every adventure option across all 4 sections.
+     ACTIVITY_DATA starts as placeholder copy matching the static fallback
+     cards already in the page, then gets replaced with real rows (keyed by
+     their real database id) once the live overlay below successfully
+     fetches the Experiences catalog — at that point the grids are rebuilt
+     with real ids anyway, so the two never mix. */
+  const FALLBACK_ACTIVITY_DATA = {
+    horseback:  { name: 'Horseback Riding', duration: '2 hours', difficulty: 'Easy', description: 'A relaxed guided ride along the beach and coastal trails, suited to complete beginners as well as experienced riders. Your guide keeps the pace easy and points out the best photo spots along the way.' },
+    bamboo:     { name: 'Bamboo Rafting', duration: '1.5 hours', difficulty: 'Easy', description: 'Drift down a calm stretch of river on a traditional two-person bamboo raft, poled by a local captain who knows every bend. Quiet, scenic, and about as low-key as an excursion gets.' },
+    zipline:    { name: 'Ziplining', duration: '2 hours', difficulty: 'Moderate', description: 'A multi-line canopy course strung through the rainforest, with platforms connected by suspension bridges. All safety gear and a full briefing are included before you take the first line.' },
+    dunns:      { name: "Dunn's River Falls", duration: '3 hours', difficulty: 'Moderate', description: 'A guided, hand-in-hand climb up Jamaica’s most famous waterfall — hundreds of feet of stepped limestone terraces with pools to pause in along the way. Water shoes recommended.' },
+    bluehole:   { name: 'Blue Hole', duration: '3 hours', difficulty: 'Moderate', description: 'A series of blue-green mineral pools connected by small waterfalls, rope swings, and cliff jumps of varying heights — jump as much or as little as you like.' },
+    tubing:     { name: 'River Tubing', duration: '2 hours', difficulty: 'Easy', description: 'A leisurely float down a gentle river current on an inner tube, guided the whole way. No experience or swimming ability required beyond comfort in shallow water.' },
+    atv:        { name: 'ATV', duration: '2 hours', difficulty: 'Moderate', description: 'A guided off-road ride through backcountry trails, farmland, and small villages on a single or double ATV. A short driving briefing is included before you set off.' },
+    catamaran:  { name: 'Catamaran / Party Cruise', duration: '3 hours', difficulty: 'Easy', description: 'An open-bar catamaran cruise along the coast with music, swimming stops, and plenty of deck space to relax. A festive, social way to spend an afternoon on the water.' },
+    jetski:     { name: 'Jet Skiing', duration: '1 hour', difficulty: 'Moderate', description: 'A guided open-water jet ski run along the shoreline, single or double rider. Life jackets and a safety briefing are included; no prior experience necessary.' },
+    nightclub1: { name: '8 Rivaz Night Club', duration: '4 hours', difficulty: '18+ Only', description: 'Live DJ sets and dancing at one of Ocho Rios’ best-known nightclubs — the go-to spot for a proper night out during your stay.' },
+    nightclub2: { name: 'Taboo Night Club (Strip Club)', duration: '4 hours', difficulty: '18+ Only', description: 'Adults-only entertainment venue and nightclub. Valid ID required at the door; this option is intended for guests 18 and over.' }
+  };
+  let ACTIVITY_DATA = Object.assign({}, FALLBACK_ACTIVITY_DATA);
+
+  const advModalBackdrop = document.getElementById('advModalBackdrop');
+  const advModalPhotoWrap = document.getElementById('advModalPhotoWrap');
+  const advModalPlaceholder = document.getElementById('advModalPlaceholder');
+  const advModalTitle = document.getElementById('advModalTitle');
+  const advModalDuration = document.getElementById('advModalDuration');
+  const advModalDifficulty = document.getElementById('advModalDifficulty');
+  const advModalDesc = document.getElementById('advModalDesc');
+  const advModalSelectBtn = document.getElementById('advModalSelectBtn');
+  let advModalRadioName = null; // which radio group to check when "Select this adventure" is clicked
+
+  function openAdvModal(card){
+    const id = card.dataset.activityId;
+    const activity = id && ACTIVITY_DATA[id];
+    if (!activity) return;
+    advModalRadioName = card.querySelector('input').name;
+    advModalTitle.textContent = activity.name || card.querySelector('.name').textContent.trim();
+    advModalDuration.textContent = activity.duration || '';
+    advModalDuration.style.display = activity.duration ? '' : 'none';
+    advModalDifficulty.textContent = activity.difficulty || '';
+    advModalDifficulty.style.display = activity.difficulty ? '' : 'none';
+    advModalDesc.textContent = activity.description || '';
+    if (Array.isArray(activity.images) && activity.images.length) {
+      advModalPhotoWrap.style.backgroundImage = 'url("' + activity.images[0] + '")';
+      advModalPhotoWrap.style.backgroundSize = 'cover';
+      advModalPhotoWrap.style.backgroundPosition = 'center';
+      advModalPlaceholder.style.display = 'none';
+    } else {
+      advModalPhotoWrap.style.backgroundImage = 'none';
+      advModalPlaceholder.style.display = '';
+    }
+    advModalSelectBtn.dataset.activityId = id;
+    advModalBackdrop.classList.add('open');
+  }
+  function closeAdvModal(){ advModalBackdrop.classList.remove('open'); advModalRadioName = null; }
+
+  // Event delegation (not per-card listeners) so this keeps working even
+  // after the live overlay below replaces a grid's cards with real data.
+  document.addEventListener('click', (e) => {
+    const learnBtn = e.target.closest('.slider-learn, .product-learn');
+    if (learnBtn) {
+      e.preventDefault();
+      e.stopPropagation(); // must not also select the card underneath
+      openAdvModal(learnBtn.closest('.opt-card'));
+    }
+  });
+  document.getElementById('advModalClose').addEventListener('click', closeAdvModal);
+  advModalBackdrop.addEventListener('click', (e) => { if (e.target === advModalBackdrop) closeAdvModal(); });
+  advModalSelectBtn.addEventListener('click', () => {
+    if (!advModalRadioName) return;
+    const card = document.querySelector('.opt-card[data-activity-id="' + advModalSelectBtn.dataset.activityId + '"]');
+    const input = card && card.querySelector('input[name="' + advModalRadioName + '"]');
+    if (input) { input.checked = true; recalc(); }
+    closeAdvModal();
+  });
+
   // This page lives inside an iframe of the single Jamaica Guru site
   // document (same window hierarchy, same origin) — so selections hand off
   // as a direct, same-window function call on the parent rather than a URL
@@ -1078,23 +1334,71 @@
 
   function fmtPrice(n){ return Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
-  function buildOptionCard(name, radioName, iconSvg, checked){
+  // Photo (or the same placeholder gradient + icon the static markup uses)
+  // for a card's image area — shared by both card patterns.
+  function photoStyleAttr(exp){
+    if (Array.isArray(exp.images) && exp.images.length) {
+      return ' style="background-image:url(\'' + exp.images[0] + '\')"';
+    }
+    return '';
+  }
+  function placeholderHtml(iconSvg, exp){
+    if (Array.isArray(exp.images) && exp.images.length) return '';
+    return '<span class="placeholder-photo">' + iconSvg + '</span>';
+  }
+
+  function buildSliderCard(exp, radioName, iconSvg, checked){
     const label = document.createElement('label');
-    label.className = 'opt-card';
-    label.innerHTML = '<input type="radio" name="' + radioName + '"' + (checked ? ' checked' : '') + '>' +
-      '<span class="icon">' + iconSvg + '</span>' +
-      '<span class="text"><span class="name"></span></span>' +
-      '<span class="check"></span>';
-    label.querySelector('.name').textContent = name; // textContent, not innerHTML — admin-entered text is never parsed as markup
+    label.className = 'opt-card slider-card';
+    label.dataset.activityId = exp.id;
+    if (Array.isArray(exp.images) && exp.images.length) {
+      label.style.backgroundImage = 'url("' + exp.images[0] + '")';
+    }
+    label.innerHTML =
+      '<input type="radio" name="' + radioName + '"' + (checked ? ' checked' : '') + '>' +
+      placeholderHtml(iconSvg, exp) +
+      '<span class="slider-overlay">' +
+        '<span class="text"><span class="name slider-title"></span></span>' +
+        '<button type="button" class="slider-learn">Learn more &rarr;</button>' +
+      '</span>' +
+      '<span class="slider-badge"></span>';
+    label.querySelector('.name').textContent = exp.name; // textContent — admin-entered text is never parsed as markup
     return label;
   }
 
-  function rebuildGrid(gridId, radioName, names, iconSvg, keepTrailingNoneOpt){
+  function buildProductCard(exp, radioName, iconSvg, checked){
+    const label = document.createElement('label');
+    label.className = 'opt-card product-card';
+    label.dataset.activityId = exp.id;
+    label.innerHTML =
+      '<input type="radio" name="' + radioName + '"' + (checked ? ' checked' : '') + '>' +
+      '<span class="product-photo"' + photoStyleAttr(exp) + '>' +
+        placeholderHtml(iconSvg, exp) +
+        '<span class="product-badge"></span>' +
+      '</span>' +
+      '<span class="product-body">' +
+        '<span class="name product-title"></span>' +
+        '<span class="product-desc"></span>' +
+        '<button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>' +
+      '</span>';
+    label.querySelector('.name').textContent = exp.name;
+    label.querySelector('.product-desc').textContent = exp.card_description || exp.description || '';
+    return label;
+  }
+
+  function rebuildSliderGrid(gridId, radioName, exps, iconSvg){
     const grid = document.getElementById(gridId);
-    if (!grid || !Array.isArray(names) || names.length === 0) return;
+    if (!grid || !exps.length) return;
+    grid.querySelectorAll('.opt-card').forEach(c => c.remove());
+    exps.forEach((exp, idx) => grid.appendChild(buildSliderCard(exp, radioName, iconSvg, idx === 0)));
+  }
+
+  function rebuildProductGrid(gridId, radioName, exps, iconSvg, keepTrailingNoneOpt){
+    const grid = document.getElementById(gridId);
+    if (!grid || !exps.length) return;
     const trailing = keepTrailingNoneOpt ? grid.querySelector('.opt-card.none-opt') : null;
     grid.querySelectorAll('.opt-card').forEach(c => c.remove());
-    names.forEach((name, idx) => grid.appendChild(buildOptionCard(name, radioName, iconSvg, idx === 0)));
+    exps.forEach((exp, idx) => grid.appendChild(buildProductCard(exp, radioName, iconSvg, idx === 0)));
     if (trailing) grid.appendChild(trailing);
   }
 
@@ -1165,21 +1469,28 @@
 
     if (pkg.adventures) {
       // adventures.{land,water,third,night} hold experience ids, not names —
-      // resolve them against the public experiences view so a rename in the
-      // Experiences catalog shows up here without touching this package.
+      // resolve them against the public experiences view (name, both
+      // descriptions, duration, difficulty, photos — never cost/supplier)
+      // so edits in the Experiences catalog show up here automatically.
       const allIds = ['land', 'water', 'third', 'night']
         .flatMap(cat => Array.isArray(pkg.adventures[cat]) ? pkg.adventures[cat] : []);
-      let nameById = {};
+      let expById = {};
       if (allIds.length) {
-        const { data: exps } = await sb.from('experiences_public').select('id, name').in('id', allIds);
-        (exps || []).forEach(e => { nameById[e.id] = e.name; });
+        const { data: exps } = await sb.from('experiences_public')
+          .select('id, name, card_description, description, duration, difficulty, images')
+          .in('id', allIds);
+        (exps || []).forEach(e => { expById[e.id] = e; });
       }
-      const resolve = (ids) => (Array.isArray(ids) ? ids : []).map(id => nameById[id]).filter(Boolean);
+      const resolve = (ids) => (Array.isArray(ids) ? ids : []).map(id => expById[id]).filter(Boolean);
+      // Fresh ACTIVITY_DATA replaces the fallback wholesale — real ids only
+      // from this point on, so the modal always looks up real data.
+      ACTIVITY_DATA = {};
+      Object.values(expById).forEach(e => { ACTIVITY_DATA[e.id] = e; });
 
-      rebuildGrid('advGridLand', 'adv1', resolve(pkg.adventures.land), LAND_ICON, false);
-      rebuildGrid('advGridWater', 'adv2', resolve(pkg.adventures.water), WATER_ICON, false);
-      rebuildGrid('advGridThird', 'adv3', resolve(pkg.adventures.third), THIRD_ICON, false);
-      rebuildGrid('advGridNight', 'night', resolve(pkg.adventures.night), NIGHT_ICON, true);
+      rebuildSliderGrid('advGridLand', 'adv1', resolve(pkg.adventures.land), LAND_ICON);
+      rebuildProductGrid('advGridWater', 'adv2', resolve(pkg.adventures.water), WATER_ICON, false);
+      rebuildProductGrid('advGridThird', 'adv3', resolve(pkg.adventures.third), THIRD_ICON, false);
+      rebuildProductGrid('advGridNight', 'night', resolve(pkg.adventures.night), NIGHT_ICON, true);
     }
 
     if (Array.isArray(pkg.images) && pkg.images.length) {
