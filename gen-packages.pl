@@ -12,41 +12,6 @@ my $CHECK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke=
 
 sub included_li { my ($text) = @_; return "        <li>$CHECK $text</li>\n"; }
 
-my $bonus_step = <<'EXTRA';
-  <!-- Step 5: Bonus Adventure -->
-  <div class="step">
-    <div class="step-rail">
-      <div class="step-num done">5</div>
-      <div class="step-line"></div>
-    </div>
-    <div class="step-body">
-      <div class="step-tag">Bonus adventure &middot; choose one (1)</div>
-      <div class="step-title">Pick your fourth adventure</div>
-      <div class="step-sub">A full week means room for one more &mdash; pulled from our most-requested add-ons.</div>
-      <div class="option-grid">
-        <label class="opt-card">
-          <input type="radio" name="adv4" checked>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13c3 3 15 3 18 0M6 13c1-4 3-6 6-6s5 2 6 6"/></svg></span>
-          <span class="text"><span class="name">Dolphin Cove</span><span class="desc">Swim with dolphins at Ocho Rios&rsquo; Dolphin Cove.</span></span>
-          <span class="check"></span>
-        </label>
-        <label class="opt-card">
-          <input type="radio" name="adv4">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12c3-5 15-5 18 0M6 12v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-5"/></svg></span>
-          <span class="text"><span class="name">Sea Tubing</span><span class="desc">Jamaican jerk and a lazy float down the river.</span></span>
-          <span class="check"></span>
-        </label>
-        <label class="opt-card">
-          <input type="radio" name="adv4">
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22V12M12 12c-4 0-7-3-7-7 4 0 7 1 7 5 0-4 3-5 7-5 0 4-3 7-7 7Z"/></svg></span>
-          <span class="text"><span class="name">Weed Farm Tour</span><span class="desc">A guided tour through Jamaica&rsquo;s green culture.</span></span>
-          <span class="check"></span>
-        </label>
-      </div>
-    </div>
-  </div>
-EXTRA
-
 my @packages = (
   {
     file => "package-3day.html",
@@ -69,9 +34,6 @@ my @packages = (
       included_li("Entry fees and guides for all 3 chosen adventures") .
       included_li("Optional night life add-on, booked separately below") .
       included_li("24/7 support from your Jamaica Guru contact"),
-    EXTRA_STEP => "",
-    ADV_NAMES_JS => "['adv1','adv2','adv3']",
-    NIGHTLIFE_STEP_NUM => 5, DATES_STEP_NUM => 6, PAY_STEP_NUM => 7,
     DEFAULT_DATE => "2026-09-14",
   },
   {
@@ -95,9 +57,6 @@ my @packages = (
       included_li("Entry fees and guides for all 3 chosen adventures") .
       included_li("Optional night life add-on, booked separately below") .
       included_li("24/7 support from your Jamaica Guru contact"),
-    EXTRA_STEP => "",
-    ADV_NAMES_JS => "['adv1','adv2','adv3']",
-    NIGHTLIFE_STEP_NUM => 5, DATES_STEP_NUM => 6, PAY_STEP_NUM => 7,
     DEFAULT_DATE => "2026-09-21",
   },
   {
@@ -121,9 +80,6 @@ my @packages = (
       included_li("Entry fees and guides for all 4 chosen adventures") .
       included_li("Optional night life add-on, booked separately below") .
       included_li("24/7 support from your Jamaica Guru contact"),
-    EXTRA_STEP => $bonus_step,
-    ADV_NAMES_JS => "['adv1','adv2','adv3','adv4']",
-    NIGHTLIFE_STEP_NUM => 6, DATES_STEP_NUM => 7, PAY_STEP_NUM => 8,
     DEFAULT_DATE => "2026-10-05",
   },
 );

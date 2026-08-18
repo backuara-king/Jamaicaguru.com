@@ -178,15 +178,33 @@
     padding:3px 8px; border-radius:10px;
   }
 
-  .checkbox-list{display:flex; flex-direction:column; gap:2px;}
-  .check-row{
-    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; cursor:pointer;
+  .adv-picker{display:flex; flex-direction:column; gap:6px;}
+  .adv-selected-row{
+    display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:9px;
+    background:var(--bg); border:1px solid var(--border);
   }
-  .check-row:hover{background:var(--bg);}
-  .check-row input{width:16px; height:16px; accent-color:var(--green); flex-shrink:0;}
-  .check-row .check-name{flex:1; font-size:13.5px;}
-  .check-row .check-price{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .checkbox-list-empty{font-size:12.5px; color:var(--muted); padding:8px 10px;}
+  .adv-selected-row .adv-default-tag{
+    font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:#fff;
+    background:var(--green); padding:2px 6px; border-radius:6px; flex-shrink:0;
+  }
+  .adv-selected-row .adv-name{flex:1; font-size:13.5px; min-width:0;}
+  .adv-selected-row .adv-price{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0;}
+  .adv-selected-row .adv-move-btns{display:flex; gap:2px; flex-shrink:0;}
+  .adv-selected-row button{
+    width:26px; height:26px; border-radius:6px; border:1px solid var(--border); background:#fff;
+    color:var(--muted); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .adv-selected-row button:hover:not(:disabled){color:var(--green); border-color:var(--green);}
+  .adv-selected-row button:disabled{opacity:0.3;}
+  .adv-selected-row .adv-remove-btn:hover:not(:disabled){color:var(--danger); border-color:var(--danger-bg); background:var(--danger-bg);}
+  .adv-add-row{display:flex; gap:8px; margin-top:2px;}
+  .adv-add-row select{flex:1; min-height:38px; padding:8px 10px; font-size:13px;}
+  .adv-add-row button{
+    flex-shrink:0; background:var(--green); color:#fff; border:none; border-radius:9px; padding:0 14px;
+    font-size:13px; font-weight:600;
+  }
+  .adv-add-row button:disabled{opacity:0.4;}
+  .adv-picker-empty{font-size:12.5px; color:var(--muted); padding:8px 2px;}
 
   /* ===== Image gallery ===== */
   .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
@@ -398,26 +416,32 @@
 
     <div class="card">
       <h3>Adventure options</h3>
-      <div class="card-sub">Choices guests pick from when booking, pulled from your <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences catalog</a>. Check every option this package should offer — to add a brand new activity, add it in Experiences first.</div>
+      <div class="card-sub">Choices guests pick from when booking, pulled from your <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences catalog</a>. The top item in each list is the default selection — drag with the arrows to reorder, or swap one out entirely.</div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Land Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="checkbox-list" data-category="land"></div>
+        <div class="adv-picker" data-category="land"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Water Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="checkbox-list" data-category="water"></div>
+        <div class="adv-picker" data-category="water"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Third Adventure</h4><span class="req-tag">Choose 1 · Required</span></div>
-        <div class="checkbox-list" data-category="third"></div>
+        <div class="adv-picker" data-category="third"></div>
       </div>
 
       <div class="adv-category">
         <div class="adv-category-head"><h4>Night Life</h4><span class="opt-tag">Choose 1 · Optional</span></div>
-        <div class="checkbox-list" data-category="night"></div>
+        <div class="adv-picker" data-category="night"></div>
+      </div>
+
+      <div class="adv-category">
+        <div class="adv-category-head"><h4>Bonus Adventure</h4><span class="opt-tag">Optional &middot; extra step</span></div>
+        <div class="card-sub" style="margin-bottom:10px;">Leave empty to skip this step on the package page entirely — add options here to give this specific package an extra 4th adventure choice.</div>
+        <div class="adv-picker" data-category="bonus"></div>
       </div>
     </div>
   </div>
@@ -500,9 +524,13 @@
     return Array.from(container.querySelectorAll('.list-row input')).map(i => i.value.trim()).filter(Boolean);
   }
 
-  /* ===== Adventure options: checkboxes sourced from the Experiences catalog ===== */
+  /* ===== Adventure options: ordered picker sourced from the Experiences catalog =====
+     advSelections[cat] is the source of truth — an ordered array of experience ids.
+     The first id in each array is the option that's checked by default on the
+     package page, and display order there matches this order too. */
   let experiencesCache = []; // all active experiences, loaded once
-  const ADV_CATEGORIES = ['land', 'water', 'third', 'night'];
+  const ADV_CATEGORIES = ['land', 'water', 'third', 'night', 'bonus'];
+  let advSelections = { land: [], water: [], third: [], night: [], bonus: [] };
 
   async function loadExperiencesCache(){
     const { data, error } = await window.sb.from('experiences').select('id, name, category, sell_price').eq('active', true).order('name');
@@ -510,31 +538,85 @@
     experiencesCache = data || [];
   }
 
-  function fillAdventureCheckboxes(selectedIds){
-    const selected = new Set(selectedIds || []);
-    ADV_CATEGORIES.forEach(cat => {
-      const container = document.querySelector(`.checkbox-list[data-category="${cat}"]`);
-      const options = experiencesCache.filter(e => e.category === cat);
-      if (!options.length) {
-        container.innerHTML = '<div class="checkbox-list-empty">No active experiences in this category yet — add one in <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences</a>.</div>';
-        return;
-      }
-      container.innerHTML = '';
-      options.forEach(e => {
-        const label = document.createElement('label');
-        label.className = 'check-row';
-        label.innerHTML = `<input type="checkbox" value="${e.id}"><span class="check-name"></span><span class="check-price"></span>`;
-        label.querySelector('input').checked = selected.has(e.id);
-        label.querySelector('.check-name').textContent = e.name;
-        label.querySelector('.check-price').textContent = '$' + Number(e.sell_price || 0).toFixed(0);
-        label.querySelector('input').addEventListener('change', markDirty);
-        container.appendChild(label);
+  function expById(id){ return experiencesCache.find(e => e.id === id); }
+
+  function renderAdvPicker(cat){
+    const container = document.querySelector(`.adv-picker[data-category="${cat}"]`);
+    const selectedIds = advSelections[cat];
+    const options = experiencesCache.filter(e => e.category === cat);
+    if (!options.length) {
+      container.innerHTML = '<div class="adv-picker-empty">No active experiences in this category yet — add one in <a href="experiences.html" style="color:var(--green); font-weight:600;">Experiences</a>.</div>';
+      return;
+    }
+
+    const rowsHtml = selectedIds.map((id, idx) => {
+      const e = expById(id);
+      if (!e) return ''; // experience was deleted/deactivated since this package last saved
+      return '<div class="adv-selected-row" data-id="' + id + '">' +
+        (idx === 0 ? '<span class="adv-default-tag">Default</span>' : '') +
+        '<span class="adv-name"></span>' +
+        '<span class="adv-price"></span>' +
+        '<span class="adv-move-btns">' +
+          '<button type="button" class="adv-up-btn" ' + (idx === 0 ? 'disabled' : '') + ' aria-label="Move up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg></button>' +
+          '<button type="button" class="adv-down-btn" ' + (idx === selectedIds.length - 1 ? 'disabled' : '') + ' aria-label="Move down"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>' +
+          '<button type="button" class="adv-remove-btn" aria-label="Remove"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>' +
+        '</span>' +
+      '</div>';
+    }).join('');
+
+    const available = options.filter(e => !selectedIds.includes(e.id));
+    const addRowHtml = '<div class="adv-add-row">' +
+      '<select' + (available.length ? '' : ' disabled') + '>' +
+        (available.length
+          ? available.map(e => '<option value="' + e.id + '"></option>').join('')
+          : '<option>Everything in this category is already added</option>') +
+      '</select>' +
+      '<button type="button" class="adv-add-btn"' + (available.length ? '' : ' disabled') + '>Add</button>' +
+    '</div>';
+
+    container.innerHTML = rowsHtml + addRowHtml;
+
+    container.querySelectorAll('.adv-selected-row').forEach(row => {
+      const e = expById(row.dataset.id);
+      row.querySelector('.adv-name').textContent = e.name;
+      row.querySelector('.adv-price').textContent = '$' + Number(e.sell_price || 0).toFixed(0);
+    });
+    if (available.length) {
+      container.querySelectorAll('.adv-add-row option').forEach((opt, i) => { opt.textContent = available[i].name; });
+    }
+
+    container.querySelectorAll('.adv-up-btn').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        [selectedIds[idx - 1], selectedIds[idx]] = [selectedIds[idx], selectedIds[idx - 1]];
+        renderAdvPicker(cat); markDirty();
       });
+    });
+    container.querySelectorAll('.adv-down-btn').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        [selectedIds[idx], selectedIds[idx + 1]] = [selectedIds[idx + 1], selectedIds[idx]];
+        renderAdvPicker(cat); markDirty();
+      });
+    });
+    container.querySelectorAll('.adv-remove-btn').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        selectedIds.splice(idx, 1);
+        renderAdvPicker(cat); markDirty();
+      });
+    });
+    const addBtn = container.querySelector('.adv-add-btn');
+    if (addBtn) addBtn.addEventListener('click', () => {
+      const select = container.querySelector('.adv-add-row select');
+      if (!select.value) return;
+      selectedIds.push(select.value);
+      renderAdvPicker(cat); markDirty();
     });
   }
 
-  function readAdventureCheckboxes(cat){
-    return Array.from(document.querySelectorAll(`.checkbox-list[data-category="${cat}"] input:checked`)).map(i => i.value);
+  function fillAdventurePickers(adventures){
+    ADV_CATEGORIES.forEach(cat => {
+      advSelections[cat] = Array.isArray(adventures[cat]) ? adventures[cat].slice() : [];
+      renderAdvPicker(cat);
+    });
   }
 
   /* ===== Remove list rows (inclusions + adventure options) ===== */
@@ -653,8 +735,7 @@
     fieldDuration.value = pkg.duration_label || '';
 
     fillListEditor(inclusionsList, pkg.inclusions);
-    const adv = pkg.adventures || {};
-    fillAdventureCheckboxes([...(adv.land || []), ...(adv.water || []), ...(adv.third || []), ...(adv.night || [])]);
+    fillAdventurePickers(pkg.adventures || {});
 
     currentImages = Array.isArray(pkg.images) ? pkg.images.slice() : [];
     renderImages();
@@ -684,10 +765,11 @@
       duration_label: fieldDuration.value.trim(),
       inclusions: readListEditor(inclusionsList),
       adventures: {
-        land: readAdventureCheckboxes('land'),
-        water: readAdventureCheckboxes('water'),
-        third: readAdventureCheckboxes('third'),
-        night: readAdventureCheckboxes('night')
+        land: advSelections.land.slice(),
+        water: advSelections.water.slice(),
+        third: advSelections.third.slice(),
+        night: advSelections.night.slice(),
+        bonus: advSelections.bonus.slice()
       },
       images: currentImages
     };

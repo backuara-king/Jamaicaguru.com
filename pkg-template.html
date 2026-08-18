@@ -915,12 +915,64 @@
     </div>
   </div>
 
-  {{EXTRA_STEP}}
+  <!-- Step: Bonus Adventure (optional, per-package — hidden unless the
+       admin has added at least one option to this package's "Bonus"
+       category; shown/populated and step numbers below renumbered by the
+       live overlay script). -->
+  <div class="step" id="bonusStep" style="display:none;">
+    <div class="step-rail">
+      <div class="step-num done">5</div>
+      <div class="step-line"></div>
+    </div>
+    <div class="step-body">
+      <div class="step-tag">Bonus adventure &middot; choose one (1)</div>
+      <div class="step-title">Pick your bonus adventure</div>
+      <div class="step-sub">A little something extra for this trip.</div>
+      <div class="product-grid" id="advGridBonus">
+        <label class="opt-card product-card" data-activity-id="dolphincove">
+          <input type="radio" name="adv4" checked>
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13c3 3 15 3 18 0M6 13c1-4 3-6 6-6s5 2 6 6"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Dolphin Cove</span>
+            <span class="product-desc">Swim with dolphins at Ocho Rios&rsquo; Dolphin Cove.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
+        </label>
+        <label class="opt-card product-card" data-activity-id="seatubing">
+          <input type="radio" name="adv4">
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12c3-5 15-5 18 0M6 12v5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-5"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Sea Tubing</span>
+            <span class="product-desc">Jamaican jerk and a lazy float down the river.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
+        </label>
+        <label class="opt-card product-card" data-activity-id="weedfarm">
+          <input type="radio" name="adv4">
+          <span class="product-photo">
+            <span class="placeholder-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22V12M12 12c-4 0-7-3-7-7 4 0 7 1 7 5 0-4 3-5 7-5 0 4-3 7-7 7Z"/></svg></span>
+            <span class="product-badge"></span>
+          </span>
+          <span class="product-body">
+            <span class="name product-title">Weed Farm Tour</span>
+            <span class="product-desc">A guided tour through Jamaica&rsquo;s green culture.</span>
+            <button type="button" class="product-learn">Learn more <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
 
   <!-- Step: Nightlife (optional) -->
   <div class="step">
     <div class="step-rail">
-      <div class="step-num done">{{NIGHTLIFE_STEP_NUM}}</div>
+      <div class="step-num done">6</div>
       <div class="step-line"></div>
     </div>
     <div class="step-body">
@@ -964,7 +1016,7 @@
   <!-- Step: Dates -->
   <div class="step">
     <div class="step-rail">
-      <div class="step-num done">{{DATES_STEP_NUM}}</div>
+      <div class="step-num done">7</div>
       <div class="step-line"></div>
     </div>
     <div class="step-body">
@@ -990,7 +1042,7 @@
   <!-- Step: Payment -->
   <div class="step">
     <div class="step-rail">
-      <div class="step-num done">{{PAY_STEP_NUM}}</div>
+      <div class="step-num done">8</div>
     </div>
     <div class="step-body">
       <div class="step-tag">Secure your spot</div>
@@ -1080,6 +1132,7 @@
   heroPrev.addEventListener('click', () => goToSlide(heroIndex - 1));
   heroNext.addEventListener('click', () => goToSlide(heroIndex + 1));
   bindHeroCarousel();
+  renumberSteps(); // correct step numbers immediately — the Bonus step starts hidden
 
   // touch swipe support
   let heroTouchStartX = null;
@@ -1170,7 +1223,7 @@
       land: pickedName('adv1'),
       water: pickedName('adv2'),
       open: pickedName('adv3'),
-      bonus: pickedName('adv4'),
+      bonus: document.getElementById('bonusStep').style.display === 'none' ? '' : pickedName('adv4'),
       night: pickedName('night'),
       arrive: dateInput.value,
       depart: end.toISOString().slice(0, 10),
@@ -1196,7 +1249,10 @@
     catamaran:  { name: 'Catamaran / Party Cruise', duration: '3 hours', difficulty: 'Easy', description: 'An open-bar catamaran cruise along the coast with music, swimming stops, and plenty of deck space to relax. A festive, social way to spend an afternoon on the water.' },
     jetski:     { name: 'Jet Skiing', duration: '1 hour', difficulty: 'Moderate', description: 'A guided open-water jet ski run along the shoreline, single or double rider. Life jackets and a safety briefing are included; no prior experience necessary.' },
     nightclub1: { name: '8 Rivaz Night Club', duration: '4 hours', difficulty: '18+ Only', description: 'Live DJ sets and dancing at one of Ocho Rios’ best-known nightclubs — the go-to spot for a proper night out during your stay.' },
-    nightclub2: { name: 'Taboo Night Club (Strip Club)', duration: '4 hours', difficulty: '18+ Only', description: 'Adults-only entertainment venue and nightclub. Valid ID required at the door; this option is intended for guests 18 and over.' }
+    nightclub2: { name: 'Taboo Night Club (Strip Club)', duration: '4 hours', difficulty: '18+ Only', description: 'Adults-only entertainment venue and nightclub. Valid ID required at the door; this option is intended for guests 18 and over.' },
+    dolphincove: { name: 'Dolphin Cove', duration: '3 hours', difficulty: 'Easy', description: 'A guided swim and interaction session with dolphins at Ocho Rios’ Dolphin Cove, plus time to explore the park’s beach and trails.' },
+    seatubing:  { name: 'Sea Tubing', duration: '1.5 hours', difficulty: 'Easy', description: 'A relaxed, guided float down the river on an inner tube, capped off with a Jamaican jerk lunch. Low-key and family-friendly.' },
+    weedfarm:   { name: 'Weed Farm Tour', duration: '2 hours', difficulty: 'Easy', description: 'A guided walking tour through a working Jamaican cannabis farm, covering cultivation and local culture, with a tasting for guests 21+.' }
   };
   let ACTIVITY_DATA = Object.assign({}, FALLBACK_ACTIVITY_DATA);
 
@@ -1234,6 +1290,21 @@
     advModalBackdrop.classList.add('open');
   }
   function closeAdvModal(){ advModalBackdrop.classList.remove('open'); advModalRadioName = null; }
+
+  // The Bonus Adventure step is hidden by default in the static markup and
+  // only shown per-package if the live overlay finds real bonus options —
+  // so every other step's number needs to shift by one whenever that
+  // happens. Re-walks all .step blocks and renumbers whichever are
+  // currently visible, in document order.
+  function renumberSteps(){
+    let n = 1;
+    document.querySelectorAll('.step').forEach(step => {
+      if (step.style.display === 'none') return;
+      const badge = step.querySelector('.step-num');
+      if (badge) badge.textContent = String(n);
+      n++;
+    });
+  }
 
   // Event delegation (not per-card listeners) so this keeps working even
   // after the live overlay below replaces a grid's cards with real data.
@@ -1289,6 +1360,7 @@
   const WATER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0M6 12l3-8 3 8 3-6 3 6"/></svg>';
   const THIRD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="M7 17h6l2-6h3M11 11L9 6H6"/></svg>';
   const NIGHT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3zM4 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>';
+  const BONUS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>';
 
   function fmtPrice(n){ return Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
@@ -1430,7 +1502,7 @@
       // resolve them against the public experiences view (name, both
       // descriptions, duration, difficulty, photos — never cost/supplier)
       // so edits in the Experiences catalog show up here automatically.
-      const allIds = ['land', 'water', 'third', 'night']
+      const allIds = ['land', 'water', 'third', 'night', 'bonus']
         .flatMap(cat => Array.isArray(pkg.adventures[cat]) ? pkg.adventures[cat] : []);
       let expById = {};
       if (allIds.length) {
@@ -1449,6 +1521,19 @@
       rebuildProductGrid('advGridWater', 'adv2', resolve(pkg.adventures.water), WATER_ICON, false);
       rebuildProductGrid('advGridThird', 'adv3', resolve(pkg.adventures.third), THIRD_ICON, false);
       rebuildProductGrid('advGridNight', 'night', resolve(pkg.adventures.night), NIGHT_ICON, true);
+
+      // Bonus Adventure only exists for packages the admin has actually
+      // configured one for — stays hidden (and out of the step count)
+      // otherwise.
+      const bonusOptions = resolve(pkg.adventures.bonus);
+      const bonusStep = document.getElementById('bonusStep');
+      if (bonusOptions.length) {
+        rebuildProductGrid('advGridBonus', 'adv4', bonusOptions, BONUS_ICON, false);
+        bonusStep.style.display = '';
+      } else {
+        bonusStep.style.display = 'none';
+      }
+      renumberSteps();
     }
 
     if (Array.isArray(pkg.images) && pkg.images.length) {
