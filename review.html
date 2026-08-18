@@ -605,7 +605,29 @@
       // Supabase unreachable — the static fallback cards already in the page stand.
     }
     document.querySelectorAll('.addon-card').forEach(bindAddonCard);
+    applyAddonCart();
   })();
+
+  // ===== Shared add-on cart (localStorage) — anything added via "Add to
+  // Package" on the homepage, the Add-Ons page, or an add-on's own page
+  // shows up here already selected. Cleared once applied so it doesn't
+  // reapply if the guest browses more add-ons after reaching this step. =====
+  function applyAddonCart(){
+    const JG_CART_KEY = 'jgAddonCart';
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem(JG_CART_KEY) || '[]'); } catch (e) { return; }
+    if (!cart.length) return;
+    cart.forEach(item => {
+      const card = Array.from(document.querySelectorAll('.addon-card')).find(c => c.dataset.name === item.name);
+      if (!card) return;
+      const addBtn = card.querySelector('.addon-add-btn');
+      if (!addBtn) return; // already applied (shouldn't happen on first load, but safe)
+      addBtn.click(); // adds qty 1 and swaps in the stepper
+      const stepper = card.querySelector('.addon-stepper');
+      for (let n = 1; n < item.qty && stepper; n++) stepper.querySelector('.inc').click();
+    });
+    localStorage.removeItem(JG_CART_KEY);
+  }
 
   const payDeskDeposit = document.getElementById('payDeskDeposit');
   const payDeskFull = document.getElementById('payDeskFull');

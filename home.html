@@ -251,6 +251,8 @@
   .price-row .price-note { color: var(--ink-soft); font-size: 0.78rem; font-weight: 500; }
   .card-cta { margin-top: 0.4rem; }
   .card-cta .btn { width: 100%; justify-content: center; }
+  .card-cta-dual { display: flex; gap: 0.5rem; }
+  .card-cta-dual .btn { width: auto; flex: 1; }
 
   /* ---------- Gallery ---------- */
   .gallery-strip { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
@@ -476,6 +478,10 @@
             <h3 id="homeAddonName-0">Weed Farm</h3>
             <p class="excerpt" id="homeAddonDesc-0">Explore Jamaica&rsquo;s green culture with a guided farm tour.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-0">$35</span></div>
+            <div class="card-cta card-cta-dual" data-addon-idx="0">
+              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+            </div>
           </div>
         </article>
         <article class="card">
@@ -484,6 +490,10 @@
             <h3 id="homeAddonName-1">Sea Tubing</h3>
             <p class="excerpt" id="homeAddonDesc-1">Jamaican jerk &amp; a lazy float down the river &mdash; the easiest afternoon on the island.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-1">$30</span></div>
+            <div class="card-cta card-cta-dual" data-addon-idx="1">
+              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+            </div>
           </div>
         </article>
         <article class="card">
@@ -492,6 +502,10 @@
             <h3 id="homeAddonName-2">Jet Skiing</h3>
             <p class="excerpt" id="homeAddonDesc-2">Jet ski blast along the coast &mdash; open throttle, open water.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-2">$100</span></div>
+            <div class="card-cta card-cta-dual" data-addon-idx="2">
+              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+            </div>
           </div>
         </article>
         <article class="card">
@@ -500,6 +514,10 @@
             <h3 id="homeAddonName-3">Dolphin Cove</h3>
             <p class="excerpt" id="homeAddonDesc-3">Swim with smiles at Ocho Rios&rsquo; Dolphin Cove &mdash; a must for animal lovers.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-3">$189</span></div>
+            <div class="card-cta card-cta-dual" data-addon-idx="3">
+              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+            </div>
           </div>
         </article>
       </div>
@@ -849,6 +867,23 @@
 </script>
 
 <script>
+  // ===== Shared add-on cart (localStorage, shared across every view) —
+  // also duplicated in addons-page.html, addon-detail.html, review.html,
+  // and checkout.html. =====
+  const JG_CART_KEY = 'jgAddonCart';
+  function jgCartGet() {
+    try { return JSON.parse(localStorage.getItem(JG_CART_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function jgCartSet(items) { localStorage.setItem(JG_CART_KEY, JSON.stringify(items)); }
+  function jgCartAdd(addon) {
+    const items = jgCartGet();
+    const existing = items.find(i => i.id === addon.id);
+    if (existing) { existing.qty += 1; }
+    else { items.push({ id: addon.id, name: addon.name, price: Number(addon.price), price_unit: addon.price_unit, qty: 1 }); }
+    jgCartSet(items);
+    return items;
+  }
+
   // Add-ons teaser — shows the 4 "featured" add-ons from the real catalog.
   // Falls back to the static content already in the page if unreachable.
   (async () => {
@@ -878,6 +913,19 @@
           tileEl.style.backgroundPosition = 'center';
           const icon = tileEl.querySelector('.tile-icon');
           if (icon) icon.style.display = 'none';
+        }
+        const ctaEl = document.querySelector('.card-cta-dual[data-addon-idx="' + i + '"]');
+        if (ctaEl) {
+          ctaEl.querySelector('.learn-more-btn').addEventListener('click', () => {
+            if (window.parent && window.parent.jgShowAddonDetail) window.parent.jgShowAddonDetail(a.id);
+          });
+          const addBtn = ctaEl.querySelector('.add-to-pkg-btn');
+          addBtn.addEventListener('click', () => {
+            jgCartAdd(a);
+            addBtn.textContent = 'Added ✓';
+            addBtn.disabled = true;
+            setTimeout(() => { addBtn.textContent = 'Add'; addBtn.disabled = false; }, 2000);
+          });
         }
       });
     } catch (e) {

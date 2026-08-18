@@ -478,6 +478,8 @@
       return;
     }
 
+    try { localStorage.removeItem('jgAddonCart'); } catch (e) {} // defensive — review.html already clears this on apply
+
     document.getElementById('confirmName').textContent =
       `Thanks, ${first} — a confirmation is on its way to your inbox.`;
     document.getElementById('confirmRef').textContent = 'Booking Ref: ' + ref;
