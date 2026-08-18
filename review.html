@@ -540,6 +540,12 @@
 
     addBtn.addEventListener('click', () => {
       addons[name] = { price, qty: 1 };
+      // Skip tracking when this click was synthesized by applyAddonCart()
+      // restoring a cart the visitor already built elsewhere — that add
+      // was already logged at the point they first added it there.
+      if (!jgApplyingCart && window.parent && window.parent.jgTrack) {
+        window.parent.jgTrack('add_to_cart', 'review', price, { name });
+      }
       const stepper = document.createElement('div');
       stepper.className = 'addon-stepper';
       stepper.innerHTML = `<button class="dec" aria-label="Remove one">–</button><span class="qty">1</span><button class="inc" aria-label="Add one">+</button>`;
@@ -614,11 +620,13 @@
   // Package" on the homepage, the Add-Ons page, or an add-on's own page
   // shows up here already selected. Cleared once applied so it doesn't
   // reapply if the guest browses more add-ons after reaching this step. =====
+  let jgApplyingCart = false;
   function applyAddonCart(){
     const JG_CART_KEY = 'jgAddonCart';
     let cart = [];
     try { cart = JSON.parse(localStorage.getItem(JG_CART_KEY) || '[]'); } catch (e) { return; }
     if (!cart.length) return;
+    jgApplyingCart = true;
     cart.forEach(item => {
       const card = Array.from(document.querySelectorAll('.addon-card')).find(c => c.dataset.name === item.name);
       if (!card) return;
@@ -628,6 +636,7 @@
       const stepper = card.querySelector('.addon-stepper');
       for (let n = 1; n < item.qty && stepper; n++) stepper.querySelector('.inc').click();
     });
+    jgApplyingCart = false;
     localStorage.removeItem(JG_CART_KEY);
   }
 

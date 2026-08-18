@@ -309,6 +309,70 @@
     </div>
   </div>
 
+  <div class="page-header" style="margin-top:36px;">
+    <div><h1 style="font-size:19px;">Visitor &amp; Marketing</h1><div class="sub">Anonymous, aggregate visitor behavior — where people come from, where they're located, and how far they get through booking.</div></div>
+  </div>
+
+  <div class="note-banner" id="visitorRangeBanner">Loading&hellip;</div>
+
+  <div class="stat-grid" id="visitorStatGrid">
+    <div class="stat-card"><div class="label">Unique Visitors</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Total Visits</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Returning Visitors</div><div class="value">—</div><div class="trend"></div></div>
+    <div class="stat-card"><div class="label">Avg. Pages / Visit</div><div class="value">—</div><div class="trend"></div></div>
+  </div>
+
+  <div class="two-up">
+    <div>
+      <div class="card">
+        <h3>Traffic sources</h3>
+        <div class="card-sub">Where visits came from (first touch of each visit).</div>
+        <div id="trafficSources"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Booking funnel</h3>
+        <div class="card-sub">Furthest stage each visitor reached.</div>
+        <div id="bookingFunnel"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-up" style="margin-top:20px;">
+    <div>
+      <div class="card">
+        <h3>Top countries</h3>
+        <div class="card-sub">By unique visitor, from IP-based location (approximate).</div>
+        <div id="topCountries"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Top cities</h3>
+        <div class="card-sub">City-level is an estimate, not exact.</div>
+        <div id="topCities"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-up" style="margin-top:20px;">
+    <div>
+      <div class="card">
+        <h3>Cart value vs. purchases</h3>
+        <div class="card-sub">Dollar value added to a trip vs. what was actually booked.</div>
+        <div id="cartVsPurchase"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Most-viewed pages</h3>
+        <div class="card-sub">By page view, across all visits.</div>
+        <div id="topPages"></div>
+      </div>
+    </div>
+  </div>
+
 </main><script type="module">
   const sidebar = document.getElementById('sidebar');
   document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
@@ -469,7 +533,144 @@
       sizes.map(g => barRow(g + (g === 1 ? ' guest' : ' guests'), counts[g] + ' booking' + (counts[g] === 1 ? '' : 's'), (counts[g] / max) * 100)).join('');
   }
 
+  function capitalize(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  const PAGE_LABEL = { home: 'Homepage', '3day': '3-Day Package', '5day': '5-Day Package', '7day': '7-Day Package', reviews: 'Reviews Page', addons: 'Add-Ons Page', 'addon-detail': 'Add-On Detail', review: 'Booking Review', checkout: 'Checkout' };
+
+  async function loadVisitorAnalytics(){
+    const { data, error } = await window.sb.from('analytics_events').select('*').order('created_at', { ascending: true });
+    const banner = document.getElementById('visitorRangeBanner');
+    if (error) { banner.textContent = "Couldn't load visitor analytics: " + error.message; return; }
+    const events = data || [];
+    banner.textContent = events.length
+      ? 'Based on ' + events.length + ' tracked event' + (events.length === 1 ? '' : 's') + ' since tracking went live.'
+      : 'No visitor activity tracked yet — this fills in as people browse the site.';
+
+    renderVisitorStats(events);
+    renderTrafficSources(events);
+    renderBookingFunnel(events);
+    renderTopCountries(events);
+    renderTopCities(events);
+    renderCartVsPurchase(events);
+    renderTopPages(events);
+  }
+
+  function renderVisitorStats(events){
+    const cards = document.querySelectorAll('#visitorStatGrid .stat-card');
+    if (!events.length) { cards.forEach(c => c.querySelector('.value').textContent = '—'); return; }
+    const visitorIds = new Set(events.map(e => e.visitor_id));
+    const sessionsByVisitor = {};
+    events.forEach(e => {
+      if (!sessionsByVisitor[e.visitor_id]) sessionsByVisitor[e.visitor_id] = new Set();
+      sessionsByVisitor[e.visitor_id].add(e.session_id);
+    });
+    const allSessions = new Set(events.map(e => e.session_id));
+    const returning = Object.values(sessionsByVisitor).filter(s => s.size > 1).length;
+    const pageViews = events.filter(e => e.event_type === 'page_view').length;
+
+    cards[0].querySelector('.value').textContent = visitorIds.size;
+    cards[1].querySelector('.value').textContent = allSessions.size;
+    cards[2].querySelector('.value').textContent = returning + ' (' + Math.round(returning / visitorIds.size * 100) + '%)';
+    cards[3].querySelector('.value').textContent = (pageViews / allSessions.size).toFixed(1);
+  }
+
+  function renderTrafficSources(events){
+    const el = document.getElementById('trafficSources');
+    if (!events.length) { el.innerHTML = emptyState('No visits tracked yet.'); return; }
+    const firstBySession = {};
+    events.forEach(e => { if (!firstBySession[e.session_id]) firstBySession[e.session_id] = e; });
+    const tally = {};
+    Object.values(firstBySession).forEach(e => {
+      const src = e.utm_source || e.referrer_source || 'direct';
+      tally[src] = (tally[src] || 0) + 1;
+    });
+    const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+    const total = Object.values(tally).reduce((s, n) => s + n, 0);
+    const max = Math.max(...rows.map(r => r[1]));
+    el.innerHTML = rows.map(([src, n]) => barRow(capitalize(src), n + ' (' + Math.round(n / total * 100) + '%)', n / max * 100)).join('');
+  }
+
+  function renderBookingFunnel(events){
+    const el = document.getElementById('bookingFunnel');
+    if (!events.length) { el.innerHTML = emptyState('No visits tracked yet.'); return; }
+    const STAGE_LABEL = ['Viewed homepage', 'Viewed a package', 'Reached booking review', 'Reached checkout', 'Completed purchase'];
+    const byVisitor = {};
+    events.forEach(e => {
+      if (!(e.visitor_id in byVisitor)) byVisitor[e.visitor_id] = -1;
+      let stageIdx = -1;
+      if (e.event_type === 'purchase') stageIdx = 4;
+      else if (e.view_id === 'checkout') stageIdx = 3;
+      else if (e.view_id === 'review') stageIdx = 2;
+      else if (['3day', '5day', '7day'].includes(e.view_id)) stageIdx = 1;
+      else if (e.view_id === 'home') stageIdx = 0;
+      if (stageIdx > byVisitor[e.visitor_id]) byVisitor[e.visitor_id] = stageIdx;
+    });
+    const counts = [0, 0, 0, 0, 0];
+    Object.values(byVisitor).forEach(maxStage => {
+      for (let i = 0; i <= maxStage; i++) counts[i]++;
+    });
+    const max = counts[0] || 1;
+    el.innerHTML = STAGE_LABEL.map((label, i) => barRow(label, counts[i] + ' (' + Math.round(counts[i] / max * 100) + '%)', counts[i] / max * 100)).join('');
+  }
+
+  function firstValueByVisitor(events, field){
+    const seen = {};
+    events.forEach(e => { if (!seen[e.visitor_id] && e[field]) seen[e.visitor_id] = e[field]; });
+    return seen;
+  }
+
+  function renderTopCountries(events){
+    const el = document.getElementById('topCountries');
+    const vals = Object.values(firstValueByVisitor(events, 'country'));
+    if (!vals.length) { el.innerHTML = emptyState('No location data yet.'); return; }
+    const tally = {};
+    vals.forEach(c => { tally[c] = (tally[c] || 0) + 1; });
+    const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = Math.max(...rows.map(r => r[1]));
+    el.innerHTML = rows.map(([c, n]) => barRow(c, n, n / max * 100)).join('');
+  }
+
+  function renderTopCities(events){
+    const el = document.getElementById('topCities');
+    const countryByVisitor = firstValueByVisitor(events, 'country');
+    const cityByVisitor = firstValueByVisitor(events, 'city');
+    const keys = Object.keys(cityByVisitor);
+    if (!keys.length) { el.innerHTML = emptyState('No location data yet.'); return; }
+    const tally = {};
+    keys.forEach(vid => {
+      const label = cityByVisitor[vid] + (countryByVisitor[vid] ? ', ' + countryByVisitor[vid] : '');
+      tally[label] = (tally[label] || 0) + 1;
+    });
+    const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = Math.max(...rows.map(r => r[1]));
+    el.innerHTML = rows.map(([c, n]) => barRow(c, n, n / max * 100)).join('');
+  }
+
+  function renderCartVsPurchase(events){
+    const el = document.getElementById('cartVsPurchase');
+    const cartEvents = events.filter(e => e.event_type === 'add_to_cart');
+    const purchaseEvents = events.filter(e => e.event_type === 'purchase');
+    if (!cartEvents.length && !purchaseEvents.length) { el.innerHTML = emptyState('No cart or purchase activity yet.'); return; }
+    const cartTotal = cartEvents.reduce((s, e) => s + Number(e.value || 0), 0);
+    const purchaseTotal = purchaseEvents.reduce((s, e) => s + Number(e.value || 0), 0);
+    const max = Math.max(cartTotal, purchaseTotal, 1);
+    el.innerHTML =
+      barRow('Added to cart', fmt(cartTotal) + ' (' + cartEvents.length + ' adds)', cartTotal / max * 100) +
+      barRow('Purchased', fmt(purchaseTotal) + ' (' + purchaseEvents.length + ' orders)', purchaseTotal / max * 100);
+  }
+
+  function renderTopPages(events){
+    const el = document.getElementById('topPages');
+    const views = events.filter(e => e.event_type === 'page_view' && e.view_id);
+    if (!views.length) { el.innerHTML = emptyState('No page views tracked yet.'); return; }
+    const tally = {};
+    views.forEach(e => { tally[e.view_id] = (tally[e.view_id] || 0) + 1; });
+    const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(...rows.map(r => r[1]));
+    el.innerHTML = rows.map(([id, n]) => barRow(PAGE_LABEL[id] || id, n, n / max * 100)).join('');
+  }
+
   loadAnalytics();
+  loadVisitorAnalytics();
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {

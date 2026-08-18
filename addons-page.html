@@ -507,6 +507,7 @@
     if (existing) { existing.qty += 1; }
     else { items.push({ id: addon.id, name: addon.name, price: Number(addon.price), price_unit: addon.price_unit, qty: 1 }); }
     jgCartSet(items);
+    if (window.parent && window.parent.jgTrack) window.parent.jgTrack('add_to_cart', 'addons', addon.price, { name: addon.name, id: addon.id });
     return items;
   }
 

@@ -482,6 +482,14 @@
 
     try { localStorage.removeItem('jgAddonCart'); } catch (e) {} // defensive — review.html already clears this on apply
 
+    if (window.parent && window.parent.jgTrack) {
+      window.parent.jgTrack('purchase', 'checkout', order ? order.total : 0, {
+        booking_ref: ref,
+        package_slug: val(trip && trip.viewId),
+        package_name: (order && order.packageName) || (trip && trip.pkg) || null
+      });
+    }
+
     document.getElementById('confirmName').textContent =
       `Thanks, ${first} — a confirmation is on its way to your inbox.`;
     document.getElementById('confirmRef').textContent = 'Booking Ref: ' + ref;
