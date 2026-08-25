@@ -254,6 +254,45 @@
   .card-cta-dual { display: flex; gap: 0.5rem; }
   .card-cta-dual .btn { width: auto; flex: 1; }
 
+  /* ===== "Learn more" modal — same pattern as the adventure picker on the
+     package pages: a photo header, close button, title, a tag pill, price,
+     description, and a full-width primary action. Bottom sheet on mobile,
+     centered dialog from tablet up. ===== */
+  .addon-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(20, 22, 28, 0.5); z-index: 300;
+    display: none; align-items: center; justify-content: center;
+  }
+  .addon-modal-backdrop.open { display: flex; }
+  .addon-modal {
+    background: var(--paper); width: 100%; max-width: 460px; max-height: 82vh;
+    overflow-y: auto; border-radius: 20px; position: relative;
+  }
+  .addon-modal-photo {
+    aspect-ratio: 16/9; background: linear-gradient(150deg, var(--purple), var(--purple-deep, var(--purple)));
+    background-size: cover; background-position: center; position: relative;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .addon-modal-photo svg { width: 2.25rem; height: 2.25rem; opacity: 0.85; }
+  .addon-modal-close {
+    position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5); color: #fff; border: none; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .addon-modal-body { padding: 1.4rem; }
+  .addon-modal-title { font-family: var(--font); font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 0.7rem; }
+  .addon-modal-tags { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .addon-modal-tag {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    background: var(--mist); color: var(--purple); padding: 0.35em 0.7em; border-radius: 999px;
+  }
+  .addon-modal-price { font-family: var(--font); font-weight: 700; font-size: 1.2rem; color: var(--ink); margin-bottom: 1rem; }
+  .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 1.4rem; }
+  .addon-modal .addon-modal-add-btn { width: 100%; justify-content: center; }
+  @media (max-width: 680px) {
+    .addon-modal-backdrop { align-items: flex-end; }
+    .addon-modal { max-height: 88vh; border-radius: 20px 20px 0 0; }
+  }
+
   /* ---------- Gallery ---------- */
   .gallery-strip { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
   .gallery-strip .tile { flex: 0 0 clamp(9rem, 22vw, 12rem); border-radius: 12px; scroll-snap-align: start; }
@@ -690,6 +729,27 @@
   </section>
 </main>
 
+<!-- Shared "Learn more" modal — one instance, reused by every add-on card. -->
+<div class="addon-modal-backdrop" id="addonModalBackdrop">
+  <div class="addon-modal">
+    <div class="addon-modal-photo" id="addonModalPhoto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>
+      <button type="button" class="addon-modal-close" id="addonModalClose" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="addon-modal-body">
+      <div class="addon-modal-title" id="addonModalTitle"></div>
+      <div class="addon-modal-tags">
+        <span class="addon-modal-tag" id="addonModalUnit"></span>
+      </div>
+      <div class="addon-modal-price" id="addonModalPrice"></div>
+      <p class="addon-modal-desc" id="addonModalDesc"></p>
+      <button type="button" class="btn btn-solid addon-modal-add-btn" id="addonModalAddBtn">Add to Package</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
     <div class="footer-grid">
@@ -885,6 +945,82 @@
     return items;
   }
 
+  // ===== Shared "Learn more" modal — mirrors the adventure-picker modal on
+  // the package pages (photo, title, tag, description, one primary action),
+  // reused here for every add-on card instead of navigating to a separate
+  // detail page. =====
+  const addonModalBackdrop = document.getElementById('addonModalBackdrop');
+  const addonModalPhoto = document.getElementById('addonModalPhoto');
+  const addonModalTitle = document.getElementById('addonModalTitle');
+  const addonModalUnit = document.getElementById('addonModalUnit');
+  const addonModalPrice = document.getElementById('addonModalPrice');
+  const addonModalDesc = document.getElementById('addonModalDesc');
+  const addonModalAddBtn = document.getElementById('addonModalAddBtn');
+  let addonModalAddon = null;
+
+  function fmtAddonPrice(n) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+  function openAddonModal(a) {
+    addonModalAddon = a;
+    addonModalTitle.textContent = a.name || '';
+    addonModalUnit.textContent = a.price_unit || '';
+    addonModalUnit.style.display = a.price_unit ? '' : 'none';
+    addonModalPrice.textContent = '$' + fmtAddonPrice(a.price);
+    addonModalDesc.textContent = a.description || '';
+    if (Array.isArray(a.images) && a.images.length) {
+      addonModalPhoto.style.backgroundImage = 'url("' + a.images[0] + '")';
+      addonModalPhoto.querySelector('svg').style.display = 'none';
+    } else {
+      addonModalPhoto.style.backgroundImage = ''; // reverts to the CSS gradient placeholder
+      addonModalPhoto.querySelector('svg').style.display = '';
+    }
+    addonModalAddBtn.textContent = 'Add to Package';
+    addonModalAddBtn.disabled = false;
+    addonModalBackdrop.classList.add('open');
+  }
+  function closeAddonModal() { addonModalBackdrop.classList.remove('open'); addonModalAddon = null; }
+
+  document.getElementById('addonModalClose').addEventListener('click', closeAddonModal);
+  addonModalBackdrop.addEventListener('click', (e) => { if (e.target === addonModalBackdrop) closeAddonModal(); });
+  addonModalAddBtn.addEventListener('click', () => {
+    if (!addonModalAddon) return;
+    jgCartAdd(addonModalAddon);
+    addonModalAddBtn.textContent = 'Added ✓';
+    addonModalAddBtn.disabled = true;
+    setTimeout(closeAddonModal, 700);
+  });
+
+  // (Re)binds one teaser card's "Learn More" / "Add" buttons to a given
+  // add-on object — called once with static fallback data on load, then
+  // again with the real row once/if the live catalog fetch succeeds.
+  // Uses .onclick (assignment, not addEventListener) so the second wiring
+  // cleanly replaces the first instead of stacking a duplicate listener.
+  function wireHomeAddonCta(i, a) {
+    const ctaEl = document.querySelector('.card-cta-dual[data-addon-idx="' + i + '"]');
+    if (!ctaEl) return;
+    const learnBtn = ctaEl.querySelector('.learn-more-btn');
+    if (learnBtn) learnBtn.onclick = () => openAddonModal(a);
+    const addBtn = ctaEl.querySelector('.add-to-pkg-btn');
+    if (addBtn) addBtn.onclick = () => {
+      jgCartAdd(a);
+      addBtn.textContent = 'Added ✓';
+      addBtn.disabled = true;
+      setTimeout(() => { addBtn.textContent = 'Add'; addBtn.disabled = false; }, 2000);
+    };
+  }
+
+  // Static fallback teaser data (matches the placeholder copy already in the
+  // page) — wired immediately so "Learn More" / "Add" work even if the live
+  // catalog fetch below never resolves.
+  const HOME_ADDON_FALLBACK = [
+    { name: 'Weed Farm', description: 'Explore Jamaica’s green culture with a guided farm tour.', price: 35 },
+    { name: 'Sea Tubing', description: 'Jamaican jerk & a lazy float down the river — the easiest afternoon on the island.', price: 30 },
+    { name: 'Jet Skiing', description: 'Jet ski blast along the coast — open throttle, open water.', price: 100 },
+    { name: 'Dolphin Cove', description: 'Swim with smiles at Ocho Rios’ Dolphin Cove — a must for animal lovers.', price: 189 }
+  ];
+  HOME_ADDON_FALLBACK.forEach((a, i) => wireHomeAddonCta(i, a));
+
   // Add-ons teaser — shows the 4 "featured" add-ons from the real catalog.
   // Falls back to the static content already in the page if unreachable.
   (async () => {
@@ -915,19 +1051,7 @@
           const icon = tileEl.querySelector('.tile-icon');
           if (icon) icon.style.display = 'none';
         }
-        const ctaEl = document.querySelector('.card-cta-dual[data-addon-idx="' + i + '"]');
-        if (ctaEl) {
-          ctaEl.querySelector('.learn-more-btn').addEventListener('click', () => {
-            if (window.parent && window.parent.jgShowAddonDetail) window.parent.jgShowAddonDetail(a.id);
-          });
-          const addBtn = ctaEl.querySelector('.add-to-pkg-btn');
-          addBtn.addEventListener('click', () => {
-            jgCartAdd(a);
-            addBtn.textContent = 'Added ✓';
-            addBtn.disabled = true;
-            setTimeout(() => { addBtn.textContent = 'Add'; addBtn.disabled = false; }, 2000);
-          });
-        }
+        wireHomeAddonCta(i, a);
       });
     } catch (e) {
       // Supabase unreachable — static fallback add-ons already on the page stand.

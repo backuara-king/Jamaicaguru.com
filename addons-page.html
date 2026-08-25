@@ -325,6 +325,45 @@
   .addon-card-pub .card-actions { display: flex; gap: 0.6rem; margin-top: 0.4rem; }
   .addon-card-pub .card-actions .btn { flex: 1; justify-content: center; padding: 0.6em 1em; font-size: 0.82rem; }
 
+  /* ===== "Learn more" modal — same pattern as the adventure picker on the
+     package pages: a photo header, close button, title, a tag pill, price,
+     description, and a full-width primary action. Bottom sheet on mobile,
+     centered dialog from tablet up. ===== */
+  .addon-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(20, 22, 28, 0.5); z-index: 300;
+    display: none; align-items: center; justify-content: center;
+  }
+  .addon-modal-backdrop.open { display: flex; }
+  .addon-modal {
+    background: var(--paper); width: 100%; max-width: 460px; max-height: 82vh;
+    overflow-y: auto; border-radius: 20px; position: relative;
+  }
+  .addon-modal-photo {
+    aspect-ratio: 16/9; background: linear-gradient(150deg, var(--purple), var(--purple-deep));
+    background-size: cover; background-position: center; position: relative;
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .addon-modal-photo svg { width: 2.25rem; height: 2.25rem; opacity: 0.85; }
+  .addon-modal-close {
+    position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5); color: #fff; border: none; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .addon-modal-body { padding: 1.4rem; }
+  .addon-modal-title { font-family: var(--font); font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 0.7rem; }
+  .addon-modal-tags { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .addon-modal-tag {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    background: var(--mist); color: var(--purple); padding: 0.35em 0.7em; border-radius: 999px;
+  }
+  .addon-modal-price { font-family: var(--font); font-weight: 700; font-size: 1.2rem; color: var(--ink); margin-bottom: 1rem; }
+  .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 1.4rem; }
+  .addon-modal .addon-modal-add-btn { width: 100%; justify-content: center; }
+  @media (max-width: 680px) {
+    .addon-modal-backdrop { align-items: flex-end; }
+    .addon-modal { max-height: 88vh; border-radius: 20px 20px 0 0; }
+  }
+
   /* ---------- Articles ---------- */
   .articles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
   @media (max-width: 860px) { .articles-grid { grid-template-columns: 1fr; } }
@@ -423,7 +462,29 @@
       </div>
     </div>
   </section>
-</main><footer>
+</main>
+
+<!-- Shared "Learn more" modal — one instance, reused by every add-on card. -->
+<div class="addon-modal-backdrop" id="addonModalBackdrop">
+  <div class="addon-modal">
+    <div class="addon-modal-photo" id="addonModalPhoto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>
+      <button type="button" class="addon-modal-close" id="addonModalClose" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="addon-modal-body">
+      <div class="addon-modal-title" id="addonModalTitle"></div>
+      <div class="addon-modal-tags">
+        <span class="addon-modal-tag" id="addonModalUnit"></span>
+      </div>
+      <div class="addon-modal-price" id="addonModalPrice"></div>
+      <p class="addon-modal-desc" id="addonModalDesc"></p>
+      <button type="button" class="btn btn-solid addon-modal-add-btn" id="addonModalAddBtn">Add to Package</button>
+    </div>
+  </div>
+</div>
+<footer>
   <div class="wrap">
     <div class="footer-grid">
       <div>
@@ -528,6 +589,49 @@
     return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   }
 
+  // ===== Shared "Learn more" modal — mirrors the adventure-picker modal on
+  // the package pages (photo, title, tag, description, one primary action),
+  // reused here for every add-on card instead of navigating to a separate
+  // detail page. =====
+  const addonModalBackdrop = document.getElementById('addonModalBackdrop');
+  const addonModalPhoto = document.getElementById('addonModalPhoto');
+  const addonModalTitle = document.getElementById('addonModalTitle');
+  const addonModalUnit = document.getElementById('addonModalUnit');
+  const addonModalPrice = document.getElementById('addonModalPrice');
+  const addonModalDesc = document.getElementById('addonModalDesc');
+  const addonModalAddBtn = document.getElementById('addonModalAddBtn');
+  let addonModalAddon = null;
+
+  function openAddonModal(a) {
+    addonModalAddon = a;
+    addonModalTitle.textContent = a.name || '';
+    addonModalUnit.textContent = a.price_unit || '';
+    addonModalUnit.style.display = a.price_unit ? '' : 'none';
+    addonModalPrice.textContent = '$' + fmtAddonPrice(a.price);
+    addonModalDesc.textContent = a.description || '';
+    if (Array.isArray(a.images) && a.images.length) {
+      addonModalPhoto.style.backgroundImage = 'url("' + a.images[0] + '")';
+      addonModalPhoto.querySelector('svg').style.display = 'none';
+    } else {
+      addonModalPhoto.style.backgroundImage = ''; // reverts to the CSS gradient placeholder
+      addonModalPhoto.querySelector('svg').style.display = '';
+    }
+    addonModalAddBtn.textContent = 'Add to Package';
+    addonModalAddBtn.disabled = false;
+    addonModalBackdrop.classList.add('open');
+  }
+  function closeAddonModal() { addonModalBackdrop.classList.remove('open'); addonModalAddon = null; }
+
+  document.getElementById('addonModalClose').addEventListener('click', closeAddonModal);
+  addonModalBackdrop.addEventListener('click', (e) => { if (e.target === addonModalBackdrop) closeAddonModal(); });
+  addonModalAddBtn.addEventListener('click', () => {
+    if (!addonModalAddon) return;
+    jgCartAdd(addonModalAddon);
+    addonModalAddBtn.textContent = 'Added ✓';
+    addonModalAddBtn.disabled = true;
+    setTimeout(closeAddonModal, 700);
+  });
+
   function renderAddons(list) {
     const grid = document.getElementById('addonsGrid');
     if (!list.length) {
@@ -563,9 +667,7 @@
       card.querySelector('.price-line').innerHTML =
         '$' + fmtAddonPrice(a.price) + ' <span>' + (a.price_unit || '') + '</span>';
       const learnBtn = card.querySelector('.learn-more-btn');
-      if (learnBtn) learnBtn.addEventListener('click', () => {
-        if (window.parent && window.parent.jgShowAddonDetail) window.parent.jgShowAddonDetail(a.id);
-      });
+      if (learnBtn) learnBtn.addEventListener('click', () => openAddonModal(a));
       const addBtn = card.querySelector('.add-to-pkg-btn');
       if (addBtn) addBtn.addEventListener('click', () => {
         jgCartAdd(a);
