@@ -395,6 +395,19 @@
     position:absolute; left:0; right:0; bottom:10px; z-index:1;
     display:flex; justify-content:center; gap:6px; pointer-events:none;
   }
+  /* Visible prev/next controls — swipe/scroll still works, but this is
+     the discoverable way most visitors (especially on a laptop, with no
+     swipe at all) will realize there's more than one photo. Same visual
+     language as the package page's own hero-arrow carousel controls. */
+  .adv-modal-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+    width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(0,0,0,0.35); color:#fff; backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .adv-modal-arrow:hover{ background:rgba(0,0,0,0.5); }
+  .adv-modal-arrow.prev{ left:12px; }
+  .adv-modal-arrow.next{ right:12px; }
   .adv-modal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.45); }
   .adv-modal-dot.active{ background:#fff; }
   .adv-modal-close{
@@ -1123,6 +1136,12 @@
     <div class="adv-modal-gallery-wrap">
       <div class="adv-modal-gallery" id="advModalGallery"></div>
       <div class="adv-modal-dots" id="advModalDots"></div>
+      <button type="button" class="adv-modal-arrow prev" id="advModalPrev" aria-label="Previous photo" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="adv-modal-arrow next" id="advModalNext" aria-label="Next photo" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
       <button type="button" class="adv-modal-close" id="advModalClose" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
@@ -1311,6 +1330,8 @@
   const advModalBackdrop = document.getElementById('advModalBackdrop');
   const advModalGallery = document.getElementById('advModalGallery');
   const advModalDots = document.getElementById('advModalDots');
+  const advModalPrev = document.getElementById('advModalPrev');
+  const advModalNext = document.getElementById('advModalNext');
   const advModalScroll = document.getElementById('advModalScroll');
   const advModalTitle = document.getElementById('advModalTitle');
   const advModalDuration = document.getElementById('advModalDuration');
@@ -1335,6 +1356,7 @@
     advModalDots.innerHTML = pics.length > 1
       ? pics.map((_, i) => '<span class="adv-modal-dot' + (i === 0 ? ' active' : '') + '"></span>').join('')
       : '';
+    advModalPrev.style.display = advModalNext.style.display = pics.length > 1 ? '' : 'none';
     advModalGallery.scrollLeft = 0;
   }
   // Keeps the dots in sync as the visitor swipes/scrolls through photos.
@@ -1344,6 +1366,19 @@
     const idx = Math.round(advModalGallery.scrollLeft / advModalGallery.clientWidth);
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
   });
+  // Visible prev/next controls — the same swipe/scroll still works, this
+  // is just the discoverable version for anyone who doesn't try swiping
+  // (and the only option at all on a laptop with no touchscreen). Loops
+  // around at either end, matching the page's own hero carousel.
+  function advModalGalleryStep(delta){
+    const count = advModalDots.querySelectorAll('.adv-modal-dot').length;
+    if (!count) return;
+    const current = Math.round(advModalGallery.scrollLeft / advModalGallery.clientWidth);
+    const next = (current + delta + count) % count;
+    advModalGallery.scrollTo({ left: next * advModalGallery.clientWidth, behavior: 'smooth' });
+  }
+  advModalPrev.addEventListener('click', () => advModalGalleryStep(-1));
+  advModalNext.addEventListener('click', () => advModalGalleryStep(1));
 
   // Locks the underlying page in place while the modal is open — plain
   // `overflow:hidden` on body isn't reliable on iOS Safari, so the body is

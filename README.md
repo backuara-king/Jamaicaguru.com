@@ -4,10 +4,11 @@ A self-contained, static demo site for Jamaica Guru's all-inclusive travel packa
 
 ## What's in here
 
-- **`index.html`** — the actual deployable site. Open this file (or host it anywhere static) and everything works: no build step, no server, no dependencies. Fonts are embedded, and the homepage / package pages / review / checkout are bundled inside it as same-origin iframes that share state directly in JavaScript.
-- **`home.html`, `package-3day.html`, `package-5day.html`, `package-7day.html`, `review.html`, `checkout.html`** — the source for each individual view, kept separately so they're easier to read and edit than digging through `index.html`.
+- **`index.html`** — the actual deployable site. Open this file (or host it anywhere static) and everything works: no build step, no server, no dependencies. Fonts are embedded, and every other view below is bundled inside it as same-origin iframes that share state directly in JavaScript.
+- **`home.html`, `package-3day.html`, `package-5day.html`, `package-7day.html`, `reviews-page.html`, `addons-page.html`, `addon-detail.html`, `review.html`, `checkout.html`** — the source for each individual view, kept separately so they're easier to read and edit than digging through `index.html`.
 - **`pkg-template.html`** — the shared template the three `package-*.html` files are generated from.
 - **`gen-packages.pl`** — a small Perl script that fills in `pkg-template.html` with each package's name, price, and dates to produce the three `package-*.html` files.
+- **`gen-index.pl`** — rebuilds `index.html`'s embedded copy of all 9 views above from their source files.
 
 ## Editing a package page
 
@@ -19,7 +20,13 @@ perl gen-packages.pl
 
 ## Publishing changes to index.html
 
-`index.html` is a bundle — it embeds `home.html`, the three package pages, `review.html`, and `checkout.html` as base64 text blocks so the whole site works from a single file with no server. After editing any of the source view files (or regenerating the package pages), `index.html` needs to be rebuilt from them; it will not pick up changes automatically. Ask Claude to rebuild it, or see the conversation history for the build script.
+`index.html` is a bundle — it embeds all 9 views listed above as base64 text blocks so the whole site works from a single file with no server. After editing any source view file (or regenerating the package pages), rebuild it with:
+
+```
+perl gen-index.pl
+```
+
+It will not pick up changes automatically, and hand-editing the base64 blocks directly is not possible — always go through this script. If you changed `index.html`'s own shell (the styles/router/analytics code outside the embedded views), run this after that edit too, since it reads the current `index.html` to find where the embedded views start and end. It scans for those markers rather than assuming fixed line numbers, and refuses to run (rather than guess) if it can't find exactly 9 in the expected order — that's the fix for a real bug where an earlier hand-written version of this step, built around a hardcoded line range, silently corrupted the bundle the first time the shell's line count changed.
 
 ## Admin dashboard (`/admin`)
 

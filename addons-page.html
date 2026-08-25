@@ -382,6 +382,18 @@
   }
   .addon-modal-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); }
   .addon-modal-dot.active { background: #fff; }
+  /* Visible prev/next controls — swipe/scroll still works, but this is
+     the discoverable way most visitors (especially on a laptop, with no
+     swipe at all) will realize there's more than one photo. */
+  .addon-modal-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0, 0, 0, 0.35); color: #fff; backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .addon-modal-arrow:hover { background: rgba(0, 0, 0, 0.5); }
+  .addon-modal-arrow.prev { left: 12px; }
+  .addon-modal-arrow.next { right: 12px; }
   .addon-modal-close {
     position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%; z-index: 2;
     background: rgba(0, 0, 0, 0.5); color: #fff; border: none; display: flex; align-items: center;
@@ -516,6 +528,12 @@
     <div class="addon-modal-gallery-wrap">
       <div class="addon-modal-gallery" id="addonModalGallery"></div>
       <div class="addon-modal-dots" id="addonModalDots"></div>
+      <button type="button" class="addon-modal-arrow prev" id="addonModalPrev" aria-label="Previous photo" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="addon-modal-arrow next" id="addonModalNext" aria-label="Next photo" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
       <button type="button" class="addon-modal-close" id="addonModalClose" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
@@ -648,6 +666,8 @@
   const addonModalBackdrop = document.getElementById('addonModalBackdrop');
   const addonModalGallery = document.getElementById('addonModalGallery');
   const addonModalDots = document.getElementById('addonModalDots');
+  const addonModalPrev = document.getElementById('addonModalPrev');
+  const addonModalNext = document.getElementById('addonModalNext');
   const addonModalScroll = document.getElementById('addonModalScroll');
   const addonModalTitle = document.getElementById('addonModalTitle');
   const addonModalUnit = document.getElementById('addonModalUnit');
@@ -673,6 +693,7 @@
     addonModalDots.innerHTML = pics.length > 1
       ? pics.map((_, i) => '<span class="addon-modal-dot' + (i === 0 ? ' active' : '') + '"></span>').join('')
       : '';
+    addonModalPrev.style.display = addonModalNext.style.display = pics.length > 1 ? '' : 'none';
     addonModalGallery.scrollLeft = 0;
   }
   // Keeps the dots in sync as the visitor swipes/scrolls through photos.
@@ -682,6 +703,19 @@
     const idx = Math.round(addonModalGallery.scrollLeft / addonModalGallery.clientWidth);
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
   });
+  // Visible prev/next controls — the same swipe/scroll still works, this
+  // is just the discoverable version for anyone who doesn't try swiping
+  // (and the only option at all on a laptop with no touchscreen). Loops
+  // around at either end.
+  function addonModalGalleryStep(delta) {
+    const count = addonModalDots.querySelectorAll('.addon-modal-dot').length;
+    if (!count) return;
+    const current = Math.round(addonModalGallery.scrollLeft / addonModalGallery.clientWidth);
+    const next = (current + delta + count) % count;
+    addonModalGallery.scrollTo({ left: next * addonModalGallery.clientWidth, behavior: 'smooth' });
+  }
+  addonModalPrev.addEventListener('click', () => addonModalGalleryStep(-1));
+  addonModalNext.addEventListener('click', () => addonModalGalleryStep(1));
 
   // Locks the underlying page in place while the modal is open — plain
   // `overflow:hidden` on body isn't reliable on iOS Safari, so the body is
