@@ -251,8 +251,17 @@
   .price-row .price-note { color: var(--ink-soft); font-size: 0.78rem; font-weight: 500; }
   .card-cta { margin-top: 0.4rem; }
   .card-cta .btn { width: 100%; justify-content: center; }
-  .card-cta-dual { display: flex; gap: 0.5rem; }
+  .card-cta-dual { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
   .card-cta-dual .btn { width: auto; flex: 1; }
+  .learn-more-btn {
+    background: none; border: none; padding: 0; margin: 0; flex: 0 0 auto;
+    font-family: var(--font); font-weight: 700; font-size: 0.85rem;
+    color: var(--purple); text-decoration: underline; text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .learn-more-btn:hover { color: var(--pink); }
+  .add-to-pkg-btn:disabled { opacity: 0.7; cursor: default; }
+  .view-cart-btn { width: 100%; justify-content: center; margin-top: 0.6rem; }
 
   /* ===== "Learn more" modal — same pattern as the adventure picker on the
      package pages: a photo header, close button, title, a tag pill, price,
@@ -288,6 +297,8 @@
   .addon-modal-price { font-family: var(--font); font-weight: 700; font-size: 1.2rem; color: var(--ink); margin-bottom: 1rem; }
   .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 1.4rem; }
   .addon-modal .addon-modal-add-btn { width: 100%; justify-content: center; }
+  .addon-modal .addon-modal-add-btn:disabled { opacity: 0.7; cursor: default; }
+  .addon-modal-viewcart-btn { width: 100%; justify-content: center; margin-top: 0.6rem; }
   @media (max-width: 680px) {
     .addon-modal-backdrop { align-items: flex-end; }
     .addon-modal { max-height: 88vh; border-radius: 20px 20px 0 0; }
@@ -386,6 +397,7 @@
       <li><a href="#addons">Add-Ons</a></li>
       <li><a href="#" data-jg-nav="reviews">Reviews</a></li>
       <li><a href="#contact">Contact</a></li>
+      <li><a href="#" data-jg-nav="review">Cart</a></li>
       <li><a class="btn btn-solid btn-sm" href="#packages">Book Now</a></li>
     </ul>
     <label for="nav-toggle" class="nav-toggle-btn" aria-label="Open menu">
@@ -518,9 +530,10 @@
             <p class="excerpt" id="homeAddonDesc-0">Explore Jamaica&rsquo;s green culture with a guided farm tour.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-0">$35</span></div>
             <div class="card-cta card-cta-dual" data-addon-idx="0">
-              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
-              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+              <button class="learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add to Package</button>
             </div>
+            <a href="#" class="btn btn-outline btn-sm view-cart-btn" data-addon-idx="0" style="display:none">View Package and Selections</a>
           </div>
         </article>
         <article class="card">
@@ -530,9 +543,10 @@
             <p class="excerpt" id="homeAddonDesc-1">Jamaican jerk &amp; a lazy float down the river &mdash; the easiest afternoon on the island.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-1">$30</span></div>
             <div class="card-cta card-cta-dual" data-addon-idx="1">
-              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
-              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+              <button class="learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add to Package</button>
             </div>
+            <a href="#" class="btn btn-outline btn-sm view-cart-btn" data-addon-idx="1" style="display:none">View Package and Selections</a>
           </div>
         </article>
         <article class="card">
@@ -542,9 +556,10 @@
             <p class="excerpt" id="homeAddonDesc-2">Jet ski blast along the coast &mdash; open throttle, open water.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-2">$100</span></div>
             <div class="card-cta card-cta-dual" data-addon-idx="2">
-              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
-              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+              <button class="learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add to Package</button>
             </div>
+            <a href="#" class="btn btn-outline btn-sm view-cart-btn" data-addon-idx="2" style="display:none">View Package and Selections</a>
           </div>
         </article>
         <article class="card">
@@ -554,9 +569,10 @@
             <p class="excerpt" id="homeAddonDesc-3">Swim with smiles at Ocho Rios&rsquo; Dolphin Cove &mdash; a must for animal lovers.</p>
             <div class="price-row"><span class="price-only" id="homeAddonPrice-3">$189</span></div>
             <div class="card-cta card-cta-dual" data-addon-idx="3">
-              <button class="btn btn-outline btn-sm learn-more-btn" type="button">Learn More</button>
-              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add</button>
+              <button class="learn-more-btn" type="button">Learn More</button>
+              <button class="btn btn-solid btn-sm add-to-pkg-btn" type="button">Add to Package</button>
             </div>
+            <a href="#" class="btn btn-outline btn-sm view-cart-btn" data-addon-idx="3" style="display:none">View Package and Selections</a>
           </div>
         </article>
       </div>
@@ -746,6 +762,7 @@
       <div class="addon-modal-price" id="addonModalPrice"></div>
       <p class="addon-modal-desc" id="addonModalDesc"></p>
       <button type="button" class="btn btn-solid addon-modal-add-btn" id="addonModalAddBtn">Add to Package</button>
+      <a href="#" class="btn btn-outline addon-modal-viewcart-btn" id="addonModalViewCartBtn" style="display:none">View Package and Selections</a>
     </div>
   </div>
 </div>
@@ -956,6 +973,7 @@
   const addonModalPrice = document.getElementById('addonModalPrice');
   const addonModalDesc = document.getElementById('addonModalDesc');
   const addonModalAddBtn = document.getElementById('addonModalAddBtn');
+  const addonModalViewCartBtn = document.getElementById('addonModalViewCartBtn');
   let addonModalAddon = null;
 
   function fmtAddonPrice(n) {
@@ -977,6 +995,7 @@
     }
     addonModalAddBtn.textContent = 'Add to Package';
     addonModalAddBtn.disabled = false;
+    addonModalViewCartBtn.style.display = 'none';
     addonModalBackdrop.classList.add('open');
   }
   function closeAddonModal() { addonModalBackdrop.classList.remove('open'); addonModalAddon = null; }
@@ -986,12 +1005,17 @@
   addonModalAddBtn.addEventListener('click', () => {
     if (!addonModalAddon) return;
     jgCartAdd(addonModalAddon);
-    addonModalAddBtn.textContent = 'Added ✓';
+    addonModalAddBtn.textContent = 'Added to Package';
     addonModalAddBtn.disabled = true;
-    setTimeout(closeAddonModal, 700);
+    addonModalViewCartBtn.style.display = '';
+  });
+  addonModalViewCartBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeAddonModal();
+    if (window.parent && window.parent.jgShowView) window.parent.jgShowView('review');
   });
 
-  // (Re)binds one teaser card's "Learn More" / "Add" buttons to a given
+  // (Re)binds one teaser card's "Learn More" / "Add to Package" buttons to a
   // add-on object — called once with static fallback data on load, then
   // again with the real row once/if the live catalog fetch succeeds.
   // Uses .onclick (assignment, not addEventListener) so the second wiring
@@ -1002,17 +1026,22 @@
     const learnBtn = ctaEl.querySelector('.learn-more-btn');
     if (learnBtn) learnBtn.onclick = () => openAddonModal(a);
     const addBtn = ctaEl.querySelector('.add-to-pkg-btn');
+    const viewCartBtn = document.querySelector('.view-cart-btn[data-addon-idx="' + i + '"]');
     if (addBtn) addBtn.onclick = () => {
       jgCartAdd(a);
-      addBtn.textContent = 'Added ✓';
+      addBtn.textContent = 'Added to Package';
       addBtn.disabled = true;
-      setTimeout(() => { addBtn.textContent = 'Add'; addBtn.disabled = false; }, 2000);
+      if (viewCartBtn) viewCartBtn.style.display = '';
+    };
+    if (viewCartBtn) viewCartBtn.onclick = (e) => {
+      e.preventDefault();
+      if (window.parent && window.parent.jgShowView) window.parent.jgShowView('review');
     };
   }
 
   // Static fallback teaser data (matches the placeholder copy already in the
-  // page) — wired immediately so "Learn More" / "Add" work even if the live
-  // catalog fetch below never resolves.
+  // page) — wired immediately so "Learn More" / "Add to Package" work even
+  // if the live catalog fetch below never resolves.
   const HOME_ADDON_FALLBACK = [
     { name: 'Weed Farm', description: 'Explore Jamaica’s green culture with a guided farm tour.', price: 35 },
     { name: 'Sea Tubing', description: 'Jamaican jerk & a lazy float down the river — the easiest afternoon on the island.', price: 30 },
