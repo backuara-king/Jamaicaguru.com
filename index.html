@@ -60,7 +60,10 @@
     jgLoaded[id] = true;
   }
 
-  function jgShowView(id) {
+  let jgCurrentView = 'home';
+
+  function jgShowView(id, opts) {
+    const fromHistory = opts && opts.fromHistory;
     const wasLoaded = jgLoaded[id];
     jgLoadView(id);
     document.querySelectorAll('.jg-frame').forEach(f => f.classList.toggle('active', f.id === 'jg-' + id));
@@ -70,7 +73,24 @@
         jgLoading.classList.add('hidden');
       }, { once: true });
     }
+    // Give every internal view its own browser-history entry so the
+    // phone/browser back button steps back through the site's own pages
+    // instead of exiting the whole site. Skipped when this call is itself
+    // the result of a back/forward navigation (see popstate handler below),
+    // so we don't push a fresh entry on top of the one just popped to.
+    if (!fromHistory && id !== jgCurrentView) {
+      history.pushState({ jgView: id }, '', location.pathname + location.search);
+    }
+    jgCurrentView = id;
   }
+
+  // Back/forward support: restore whichever view was current at that point
+  // in history instead of letting the browser fall through and leave the
+  // site.
+  window.addEventListener('popstate', (e) => {
+    const id = (e.state && e.state.jgView) || 'home';
+    jgShowView(id, { fromHistory: true });
+  });
 
   function jgSetTripAndShow(state, viewId) {
     window.jgTripState = state;
@@ -88,6 +108,7 @@
   }
 
   document.getElementById('jg-home').addEventListener('load', () => jgLoading.classList.add('hidden'), { once: true });
+  history.replaceState({ jgView: 'home' }, '', location.pathname + location.search);
   jgLoadView('home');
 </script>
 
