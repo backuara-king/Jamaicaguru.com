@@ -348,25 +348,47 @@
     transform:translate(7px,4px) rotate(45deg);
   }
 
-  /* ===== Shared "Learn more" modal ===== */
+  /* ===== Shared "Learn more" modal =====
+     Fixed-height sheet split into three regions so it works on a phone
+     with the browser's own nav/gesture bar eating into the viewport:
+     a swipeable image gallery up top (flex:0, never scrolls away), a
+     scrolling body in the middle for the description, and a footer with
+     the primary action pinned to the bottom of the SHEET (not the
+     viewport) so it's always visible no matter how far the description
+     scrolls or how much of the screen the phone's chrome covers. */
   .adv-modal-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300;
     display:none; align-items:flex-end; justify-content:center;
   }
   .adv-modal-backdrop.open{display:flex;}
   .adv-modal{
-    background:var(--card); width:100%; max-height:88vh; overflow-y:auto;
+    background:var(--card); width:100%; max-height:88vh; max-height:88dvh;
     border-radius:20px 20px 0 0; position:relative;
+    display:flex; flex-direction:column; overflow:hidden;
   }
-  .adv-modal-photo{
-    aspect-ratio:16/9; background-size:cover; background-position:center; position:relative;
+  .adv-modal-gallery-wrap{ position:relative; flex:0 0 auto; }
+  .adv-modal-gallery{
+    aspect-ratio:16/9; display:flex; overflow-x:auto;
+    scroll-snap-type:x mandatory; scrollbar-width:none;
   }
-  .adv-modal-photo .placeholder-photo{position:absolute; inset:0;}
-  .adv-modal-photo .placeholder-photo svg{width:40px; height:40px;}
+  .adv-modal-gallery::-webkit-scrollbar{display:none;}
+  .adv-modal-slide{
+    flex:0 0 100%; scroll-snap-align:start; background-size:cover; background-position:center;
+    background:linear-gradient(155deg, #0F1F16 0%, #17331F 55%, var(--purple-accent) 100%);
+    display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.85);
+  }
+  .adv-modal-slide svg{width:40px; height:40px;}
+  .adv-modal-dots{
+    position:absolute; left:0; right:0; bottom:10px; z-index:1;
+    display:flex; justify-content:center; gap:6px; pointer-events:none;
+  }
+  .adv-modal-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.45); }
+  .adv-modal-dot.active{ background:#fff; }
   .adv-modal-close{
-    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
+    position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%; z-index:2;
     background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
+  .adv-modal-scroll{ flex:1 1 auto; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; }
   .adv-modal-body{padding:22px;}
   .adv-modal-title{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:22px; font-weight:600; margin-bottom:12px;}
   .adv-modal-tags{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
@@ -374,7 +396,11 @@
     font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
     background:var(--card-soft); color:var(--gold); padding:4px 10px; border-radius:20px;
   }
-  .adv-modal-desc{font-size:14px; color:var(--muted); line-height:1.65; margin-bottom:22px;}
+  .adv-modal-desc{font-size:14px; color:var(--muted); line-height:1.65;}
+  .adv-modal-footer{
+    flex:0 0 auto; padding:16px 22px calc(16px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--card-border); background:var(--card);
+  }
   .adv-modal-select-btn{
     width:100%; background:var(--purple-accent); color:#fff; border:none; border-radius:12px;
     padding:15px; font-size:15px; font-weight:700; cursor:pointer;
@@ -458,7 +484,7 @@
     .product-photo .placeholder-photo svg{width:30px; height:30px;}
     .opt-card.none-opt{grid-column:1 / -1;}
     .adv-modal-backdrop{align-items:center;}
-    .adv-modal{max-width:460px; max-height:80vh; border-radius:20px;}
+    .adv-modal{max-width:460px; max-height:80vh; max-height:80dvh; border-radius:20px;}
     .pay-grid{grid-template-columns:1fr 1fr;}
     .recap{flex-direction:row; align-items:flex-end; justify-content:space-between;}
     .recap .price{text-align:right;}
@@ -1073,19 +1099,24 @@
      data-activity-id. -->
 <div class="adv-modal-backdrop" id="advModalBackdrop">
   <div class="adv-modal">
-    <div class="adv-modal-photo" id="advModalPhotoWrap">
-      <span class="placeholder-photo" id="advModalPlaceholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg></span>
+    <div class="adv-modal-gallery-wrap">
+      <div class="adv-modal-gallery" id="advModalGallery"></div>
+      <div class="adv-modal-dots" id="advModalDots"></div>
       <button type="button" class="adv-modal-close" id="advModalClose" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="adv-modal-body">
-      <div class="adv-modal-title" id="advModalTitle"></div>
-      <div class="adv-modal-tags">
-        <span class="adv-modal-tag" id="advModalDuration"></span>
-        <span class="adv-modal-tag" id="advModalDifficulty"></span>
+    <div class="adv-modal-scroll" id="advModalScroll">
+      <div class="adv-modal-body">
+        <div class="adv-modal-title" id="advModalTitle"></div>
+        <div class="adv-modal-tags">
+          <span class="adv-modal-tag" id="advModalDuration"></span>
+          <span class="adv-modal-tag" id="advModalDifficulty"></span>
+        </div>
+        <p class="adv-modal-desc" id="advModalDesc"></p>
       </div>
-      <p class="adv-modal-desc" id="advModalDesc"></p>
+    </div>
+    <div class="adv-modal-footer">
       <button type="button" class="adv-modal-select-btn" id="advModalSelectBtn">Select this adventure</button>
     </div>
   </div>
@@ -1257,14 +1288,40 @@
   let ACTIVITY_DATA = Object.assign({}, FALLBACK_ACTIVITY_DATA);
 
   const advModalBackdrop = document.getElementById('advModalBackdrop');
-  const advModalPhotoWrap = document.getElementById('advModalPhotoWrap');
-  const advModalPlaceholder = document.getElementById('advModalPlaceholder');
+  const advModalGallery = document.getElementById('advModalGallery');
+  const advModalDots = document.getElementById('advModalDots');
+  const advModalScroll = document.getElementById('advModalScroll');
   const advModalTitle = document.getElementById('advModalTitle');
   const advModalDuration = document.getElementById('advModalDuration');
   const advModalDifficulty = document.getElementById('advModalDifficulty');
   const advModalDesc = document.getElementById('advModalDesc');
   const advModalSelectBtn = document.getElementById('advModalSelectBtn');
   let advModalRadioName = null; // which radio group to check when "Select this adventure" is clicked
+
+  const ADV_MODAL_PLACEHOLDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>';
+
+  // Renders one slide per photo (or a single placeholder slide when there
+  // are none) into the swipeable gallery strip, plus a dot per slide when
+  // there's more than one to page through.
+  function renderAdvModalGallery(images){
+    const pics = (images && images.length) ? images : [null];
+    advModalGallery.innerHTML = pics.map(src =>
+      '<div class="adv-modal-slide"' + (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
+        (src ? '' : ADV_MODAL_PLACEHOLDER_ICON) +
+      '</div>'
+    ).join('');
+    advModalDots.innerHTML = pics.length > 1
+      ? pics.map((_, i) => '<span class="adv-modal-dot' + (i === 0 ? ' active' : '') + '"></span>').join('')
+      : '';
+    advModalGallery.scrollLeft = 0;
+  }
+  // Keeps the dots in sync as the visitor swipes/scrolls through photos.
+  advModalGallery.addEventListener('scroll', () => {
+    const dots = advModalDots.querySelectorAll('.adv-modal-dot');
+    if (!dots.length) return;
+    const idx = Math.round(advModalGallery.scrollLeft / advModalGallery.clientWidth);
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  });
 
   function openAdvModal(card){
     const id = card.dataset.activityId;
@@ -1277,15 +1334,8 @@
     advModalDifficulty.textContent = activity.difficulty || '';
     advModalDifficulty.style.display = activity.difficulty ? '' : 'none';
     advModalDesc.textContent = activity.description || '';
-    if (Array.isArray(activity.images) && activity.images.length) {
-      advModalPhotoWrap.style.backgroundImage = 'url("' + activity.images[0] + '")';
-      advModalPhotoWrap.style.backgroundSize = 'cover';
-      advModalPhotoWrap.style.backgroundPosition = 'center';
-      advModalPlaceholder.style.display = 'none';
-    } else {
-      advModalPhotoWrap.style.backgroundImage = 'none';
-      advModalPlaceholder.style.display = '';
-    }
+    renderAdvModalGallery(activity.images);
+    advModalScroll.scrollTop = 0;
     advModalSelectBtn.dataset.activityId = id;
     advModalBackdrop.classList.add('open');
   }

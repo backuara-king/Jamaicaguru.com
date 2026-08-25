@@ -264,29 +264,50 @@
   .view-cart-btn { width: 100%; justify-content: center; margin-top: 0.6rem; }
 
   /* ===== "Learn more" modal — same pattern as the adventure picker on the
-     package pages: a photo header, close button, title, a tag pill, price,
-     description, and a full-width primary action. Bottom sheet on mobile,
-     centered dialog from tablet up. ===== */
+     package pages: a photo gallery header, close button, title, a tag
+     pill, price, description, and a full-width primary action. Bottom
+     sheet on mobile, centered dialog from tablet up.
+     Fixed-height sheet split into three regions so it works on a phone
+     with the browser's own nav/gesture bar eating into the viewport: the
+     gallery up top never scrolls away, the body scrolls independently
+     for long descriptions, and the footer with the action button is
+     pinned to the bottom of the SHEET (not the viewport) so it's always
+     visible regardless of scroll position or how much of the screen the
+     phone's chrome covers. */
   .addon-modal-backdrop {
     position: fixed; inset: 0; background: rgba(20, 22, 28, 0.5); z-index: 300;
     display: none; align-items: center; justify-content: center;
   }
   .addon-modal-backdrop.open { display: flex; }
   .addon-modal {
-    background: var(--paper); width: 100%; max-width: 460px; max-height: 82vh;
-    overflow-y: auto; border-radius: 20px; position: relative;
+    background: var(--paper); width: 100%; max-width: 460px; max-height: 82vh; max-height: 82dvh;
+    border-radius: 20px; position: relative;
+    display: flex; flex-direction: column; overflow: hidden;
   }
-  .addon-modal-photo {
-    aspect-ratio: 16/9; background: linear-gradient(150deg, var(--purple), var(--purple-deep, var(--purple)));
-    background-size: cover; background-position: center; position: relative;
+  .addon-modal-gallery-wrap { position: relative; flex: 0 0 auto; }
+  .addon-modal-gallery {
+    aspect-ratio: 16/9; display: flex; overflow-x: auto;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .addon-modal-gallery::-webkit-scrollbar { display: none; }
+  .addon-modal-slide {
+    flex: 0 0 100%; scroll-snap-align: start; background-size: cover; background-position: center;
+    background: linear-gradient(150deg, var(--purple), var(--purple-deep, var(--purple)));
     display: flex; align-items: center; justify-content: center; color: #fff;
   }
-  .addon-modal-photo svg { width: 2.25rem; height: 2.25rem; opacity: 0.85; }
+  .addon-modal-slide svg { width: 2.25rem; height: 2.25rem; opacity: 0.85; }
+  .addon-modal-dots {
+    position: absolute; left: 0; right: 0; bottom: 10px; z-index: 1;
+    display: flex; justify-content: center; gap: 6px; pointer-events: none;
+  }
+  .addon-modal-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.5); }
+  .addon-modal-dot.active { background: #fff; }
   .addon-modal-close {
-    position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+    position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%; z-index: 2;
     background: rgba(0, 0, 0, 0.5); color: #fff; border: none; display: flex; align-items: center;
     justify-content: center; cursor: pointer;
   }
+  .addon-modal-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
   .addon-modal-body { padding: 1.4rem; }
   .addon-modal-title { font-family: var(--font); font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 0.7rem; }
   .addon-modal-tags { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -295,13 +316,17 @@
     background: var(--mist); color: var(--purple); padding: 0.35em 0.7em; border-radius: 999px;
   }
   .addon-modal-price { font-family: var(--font); font-weight: 700; font-size: 1.2rem; color: var(--ink); margin-bottom: 1rem; }
-  .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; margin-bottom: 1.4rem; }
+  .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; }
+  .addon-modal-footer {
+    flex: 0 0 auto; padding: 1rem 1.4rem calc(1rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line); background: var(--paper);
+  }
   .addon-modal .addon-modal-add-btn { width: 100%; justify-content: center; }
   .addon-modal .addon-modal-add-btn:disabled { opacity: 0.7; cursor: default; }
   .addon-modal-viewcart-btn { width: 100%; justify-content: center; margin-top: 0.6rem; }
   @media (max-width: 680px) {
     .addon-modal-backdrop { align-items: flex-end; }
-    .addon-modal { max-height: 88vh; border-radius: 20px 20px 0 0; }
+    .addon-modal { max-height: 88vh; max-height: 88dvh; border-radius: 20px 20px 0 0; }
   }
 
   /* ---------- Gallery ---------- */
@@ -748,19 +773,24 @@
 <!-- Shared "Learn more" modal — one instance, reused by every add-on card. -->
 <div class="addon-modal-backdrop" id="addonModalBackdrop">
   <div class="addon-modal">
-    <div class="addon-modal-photo" id="addonModalPhoto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>
+    <div class="addon-modal-gallery-wrap">
+      <div class="addon-modal-gallery" id="addonModalGallery"></div>
+      <div class="addon-modal-dots" id="addonModalDots"></div>
       <button type="button" class="addon-modal-close" id="addonModalClose" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="addon-modal-body">
-      <div class="addon-modal-title" id="addonModalTitle"></div>
-      <div class="addon-modal-tags">
-        <span class="addon-modal-tag" id="addonModalUnit"></span>
+    <div class="addon-modal-scroll" id="addonModalScroll">
+      <div class="addon-modal-body">
+        <div class="addon-modal-title" id="addonModalTitle"></div>
+        <div class="addon-modal-tags">
+          <span class="addon-modal-tag" id="addonModalUnit"></span>
+        </div>
+        <div class="addon-modal-price" id="addonModalPrice"></div>
+        <p class="addon-modal-desc" id="addonModalDesc"></p>
       </div>
-      <div class="addon-modal-price" id="addonModalPrice"></div>
-      <p class="addon-modal-desc" id="addonModalDesc"></p>
+    </div>
+    <div class="addon-modal-footer">
       <button type="button" class="btn btn-solid addon-modal-add-btn" id="addonModalAddBtn">Add to Package</button>
       <a href="#" class="btn btn-outline addon-modal-viewcart-btn" id="addonModalViewCartBtn" style="display:none">View Package and Selections</a>
     </div>
@@ -967,7 +997,9 @@
   // reused here for every add-on card instead of navigating to a separate
   // detail page. =====
   const addonModalBackdrop = document.getElementById('addonModalBackdrop');
-  const addonModalPhoto = document.getElementById('addonModalPhoto');
+  const addonModalGallery = document.getElementById('addonModalGallery');
+  const addonModalDots = document.getElementById('addonModalDots');
+  const addonModalScroll = document.getElementById('addonModalScroll');
   const addonModalTitle = document.getElementById('addonModalTitle');
   const addonModalUnit = document.getElementById('addonModalUnit');
   const addonModalPrice = document.getElementById('addonModalPrice');
@@ -979,6 +1011,32 @@
   function fmtAddonPrice(n) {
     return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   }
+
+  const ADDON_MODAL_PLACEHOLDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7L12 2z"/></svg>';
+
+  // Renders one slide per photo (or a single placeholder slide when there
+  // are none) into the swipeable gallery strip, plus a dot per slide when
+  // there's more than one to page through.
+  function renderAddonModalGallery(images) {
+    const pics = (images && images.length) ? images : [null];
+    addonModalGallery.innerHTML = pics.map(src =>
+      '<div class="addon-modal-slide"' + (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
+        (src ? '' : ADDON_MODAL_PLACEHOLDER_ICON) +
+      '</div>'
+    ).join('');
+    addonModalDots.innerHTML = pics.length > 1
+      ? pics.map((_, i) => '<span class="addon-modal-dot' + (i === 0 ? ' active' : '') + '"></span>').join('')
+      : '';
+    addonModalGallery.scrollLeft = 0;
+  }
+  // Keeps the dots in sync as the visitor swipes/scrolls through photos.
+  addonModalGallery.addEventListener('scroll', () => {
+    const dots = addonModalDots.querySelectorAll('.addon-modal-dot');
+    if (!dots.length) return;
+    const idx = Math.round(addonModalGallery.scrollLeft / addonModalGallery.clientWidth);
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  });
+
   function openAddonModal(a) {
     addonModalAddon = a;
     addonModalTitle.textContent = a.name || '';
@@ -986,13 +1044,8 @@
     addonModalUnit.style.display = a.price_unit ? '' : 'none';
     addonModalPrice.textContent = '$' + fmtAddonPrice(a.price);
     addonModalDesc.textContent = a.description || '';
-    if (Array.isArray(a.images) && a.images.length) {
-      addonModalPhoto.style.backgroundImage = 'url("' + a.images[0] + '")';
-      addonModalPhoto.querySelector('svg').style.display = 'none';
-    } else {
-      addonModalPhoto.style.backgroundImage = ''; // reverts to the CSS gradient placeholder
-      addonModalPhoto.querySelector('svg').style.display = '';
-    }
+    renderAddonModalGallery(a.images);
+    addonModalScroll.scrollTop = 0;
     addonModalAddBtn.textContent = 'Add to Package';
     addonModalAddBtn.disabled = false;
     addonModalViewCartBtn.style.display = 'none';
