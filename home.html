@@ -287,13 +287,22 @@
   .addon-modal-gallery-wrap { position: relative; flex: 0 0 auto; }
   .addon-modal-gallery {
     aspect-ratio: 16/9; display: flex; overflow-x: auto;
-    scroll-snap-type: x mandatory; scrollbar-width: none;
+    scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain;
   }
   .addon-modal-gallery::-webkit-scrollbar { display: none; }
+  /* Real photos: always shown in full ("contain"), never cropped, on a
+     neutral fill so any letterboxing (when a photo isn't exactly 16:9)
+     reads as intentional rather than a broken image. */
   .addon-modal-slide {
-    flex: 0 0 100%; scroll-snap-align: start; background-size: cover; background-position: center;
-    background: linear-gradient(150deg, var(--purple), var(--purple-deep, var(--purple)));
+    flex: 0 0 100%; scroll-snap-align: start; background-color: #14161c;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
     display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  /* No-photo placeholder only: the branded gradient fills edge-to-edge
+     since there's no real image to protect from cropping. */
+  .addon-modal-slide.is-placeholder {
+    background-image: linear-gradient(150deg, var(--purple), var(--purple-deep, var(--purple)));
+    background-size: cover;
   }
   .addon-modal-slide svg { width: 2.25rem; height: 2.25rem; opacity: 0.85; }
   .addon-modal-dots {
@@ -307,7 +316,7 @@
     background: rgba(0, 0, 0, 0.5); color: #fff; border: none; display: flex; align-items: center;
     justify-content: center; cursor: pointer;
   }
-  .addon-modal-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
+  .addon-modal-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .addon-modal-body { padding: 1.4rem; }
   .addon-modal-title { font-family: var(--font); font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-bottom: 0.7rem; }
   .addon-modal-tags { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -1020,7 +1029,8 @@
   function renderAddonModalGallery(images) {
     const pics = (images && images.length) ? images : [null];
     addonModalGallery.innerHTML = pics.map(src =>
-      '<div class="addon-modal-slide"' + (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
+      '<div class="addon-modal-slide' + (src ? '' : ' is-placeholder') + '"' +
+        (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
         (src ? '' : ADDON_MODAL_PLACEHOLDER_ICON) +
       '</div>'
     ).join('');
@@ -1037,6 +1047,28 @@
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
   });
 
+  // Locks the underlying page in place while the modal is open — plain
+  // `overflow:hidden` on body isn't reliable on iOS Safari, so the body is
+  // pinned with position:fixed at its current scroll offset instead, and
+  // restored to that same offset on close. Without this, a touch-drag
+  // starting over the modal can scroll the page behind it instead of (or
+  // as well as) the modal's own content.
+  let addonModalScrollY = 0;
+  function lockBodyScroll() {
+    addonModalScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = -addonModalScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+  }
+  function unlockBodyScroll() {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    window.scrollTo({ top: addonModalScrollY, behavior: 'instant' }); // force instant — this page sets scroll-behavior:smooth, which would otherwise animate the snap-back into a jarring jump-then-slide
+  }
+
   function openAddonModal(a) {
     addonModalAddon = a;
     addonModalTitle.textContent = a.name || '';
@@ -1050,8 +1082,9 @@
     addonModalAddBtn.disabled = false;
     addonModalViewCartBtn.style.display = 'none';
     addonModalBackdrop.classList.add('open');
+    lockBodyScroll();
   }
-  function closeAddonModal() { addonModalBackdrop.classList.remove('open'); addonModalAddon = null; }
+  function closeAddonModal() { addonModalBackdrop.classList.remove('open'); addonModalAddon = null; unlockBodyScroll(); }
 
   document.getElementById('addonModalClose').addEventListener('click', closeAddonModal);
   addonModalBackdrop.addEventListener('click', (e) => { if (e.target === addonModalBackdrop) closeAddonModal(); });

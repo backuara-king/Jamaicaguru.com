@@ -369,13 +369,22 @@
   .adv-modal-gallery-wrap{ position:relative; flex:0 0 auto; }
   .adv-modal-gallery{
     aspect-ratio:16/9; display:flex; overflow-x:auto;
-    scroll-snap-type:x mandatory; scrollbar-width:none;
+    scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior:contain;
   }
   .adv-modal-gallery::-webkit-scrollbar{display:none;}
+  /* Real photos: always shown in full ("contain"), never cropped, on a
+     neutral fill so any letterboxing (when a photo isn't exactly 16:9)
+     reads as intentional rather than a broken image. */
   .adv-modal-slide{
-    flex:0 0 100%; scroll-snap-align:start; background-size:cover; background-position:center;
-    background:linear-gradient(155deg, #0F1F16 0%, #17331F 55%, var(--purple-accent) 100%);
+    flex:0 0 100%; scroll-snap-align:start; background-color:#12141a;
+    background-size:contain; background-repeat:no-repeat; background-position:center;
     display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.85);
+  }
+  /* No-photo placeholder only: the branded gradient fills edge-to-edge
+     since there's no real image to protect from cropping. */
+  .adv-modal-slide.is-placeholder{
+    background-image:linear-gradient(155deg, #0F1F16 0%, #17331F 55%, var(--purple-accent) 100%);
+    background-size:cover;
   }
   .adv-modal-slide svg{width:40px; height:40px;}
   .adv-modal-dots{
@@ -388,7 +397,7 @@
     position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%; z-index:2;
     background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
-  .adv-modal-scroll{ flex:1 1 auto; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; }
+  .adv-modal-scroll{ flex:1 1 auto; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
   .adv-modal-body{padding:22px;}
   .adv-modal-title{font-family:'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:22px; font-weight:600; margin-bottom:12px;}
   .adv-modal-tags{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
@@ -1306,7 +1315,8 @@
   function renderAdvModalGallery(images){
     const pics = (images && images.length) ? images : [null];
     advModalGallery.innerHTML = pics.map(src =>
-      '<div class="adv-modal-slide"' + (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
+      '<div class="adv-modal-slide' + (src ? '' : ' is-placeholder') + '"' +
+        (src ? ' style="background-image:url(\'' + src + '\')"' : '') + '>' +
         (src ? '' : ADV_MODAL_PLACEHOLDER_ICON) +
       '</div>'
     ).join('');
@@ -1323,6 +1333,28 @@
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
   });
 
+  // Locks the underlying page in place while the modal is open — plain
+  // `overflow:hidden` on body isn't reliable on iOS Safari, so the body is
+  // pinned with position:fixed at its current scroll offset instead, and
+  // restored to that same offset on close. Without this, a touch-drag
+  // starting over the modal can scroll the page behind it instead of (or
+  // as well as) the modal's own content.
+  let advModalScrollY = 0;
+  function lockBodyScroll(){
+    advModalScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = -advModalScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+  }
+  function unlockBodyScroll(){
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    window.scrollTo({ top: advModalScrollY, behavior: 'instant' }); // force instant — this page sets scroll-behavior:smooth, which would otherwise animate the snap-back into a jarring jump-then-slide
+  }
+
   function openAdvModal(card){
     const id = card.dataset.activityId;
     const activity = id && ACTIVITY_DATA[id];
@@ -1338,8 +1370,9 @@
     advModalScroll.scrollTop = 0;
     advModalSelectBtn.dataset.activityId = id;
     advModalBackdrop.classList.add('open');
+    lockBodyScroll();
   }
-  function closeAdvModal(){ advModalBackdrop.classList.remove('open'); advModalRadioName = null; }
+  function closeAdvModal(){ advModalBackdrop.classList.remove('open'); advModalRadioName = null; unlockBodyScroll(); }
 
   // The Bonus Adventure step is hidden by default in the static markup and
   // only shown per-package if the live overlay finds real bonus options —
