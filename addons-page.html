@@ -319,7 +319,13 @@
   .addon-card-pub .thumb svg { width: 2rem; height: 2rem; opacity: 0.85; }
   .addon-card-pub .body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
   .addon-card-pub h3 { font-size: 1.05rem; font-weight: 700; }
-  .addon-card-pub p { color: var(--ink-soft); font-size: 0.88rem; line-height: 1.55; flex: 1; }
+  .addon-card-pub p {
+    color: var(--ink-soft); font-size: 0.88rem; line-height: 1.55; flex: 1;
+    /* Cards only show the short/card description now, but this caps it at
+       3 lines regardless — a stray long description can't blow the card
+       (and grid row) out. Full text lives in the "Learn More" modal. */
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
   .addon-card-pub .price-line { font-family: var(--font); font-weight: 700; font-size: 1.05rem; }
   .addon-card-pub .price-line span { font-weight: 400; font-size: 0.78rem; color: var(--ink-soft); }
   .addon-card-pub .card-actions { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.4rem; flex-wrap: wrap; }
@@ -803,7 +809,9 @@
     grid.querySelectorAll('.addon-card-pub').forEach((card, i) => {
       const a = list[i];
       card.querySelector('h3').textContent = a.name || '';
-      card.querySelector('p').textContent = a.description || '';
+      // Card shows only the short/card description; the full description
+      // (however long) is reserved for the "Learn More" modal.
+      card.querySelector('p').textContent = a.card_description || a.description || '';
       card.querySelector('.price-line').innerHTML =
         '$' + fmtAddonPrice(a.price) + ' <span>' + (a.price_unit || '') + '</span>';
       const learnBtn = card.querySelector('.learn-more-btn');

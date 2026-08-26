@@ -121,7 +121,7 @@
   .rlrow.selected{background:#F0EEE6;}
   .rl-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .rl-title{font-size:14px; font-weight:600;}
-  .rl-sub{font-size:12px; color:var(--muted); margin-top:3px;}
+  .rl-sub{font-size:12px; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .rl-meta{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
   .rl-meta .m{font-size:11.5px; color:var(--muted);}
   .rl-meta .m b{color:var(--ink); font-weight:600;}
@@ -412,7 +412,8 @@
       <div class="card-sub" id="addonEditCardSub">Changes here apply everywhere this add-on is shown.</div>
 
       <div class="field"><label>Add-on name</label><input type="text" id="aNameInput" placeholder="e.g. Sunset Catamaran Cruise"></div>
-      <div class="field"><label>Description</label><textarea id="aDesc"></textarea></div>
+      <div class="field"><label>Card description <span class="hint">— one short line, shown on the option card itself</span></label><input type="text" id="aCardDesc" placeholder="e.g. Sunset sail with drinks & light bites included."></div>
+      <div class="field"><label>Full description <span class="hint">— shown in the "Learn more" popup</span></label><textarea id="aDesc"></textarea></div>
       <div class="two-col">
         <div class="field"><label>Price</label><input type="text" id="aPrice" placeholder="e.g. 65"></div>
         <div class="field">
@@ -739,6 +740,7 @@
   const addonEditCard = document.getElementById('addonEditCard');
   const aNameInput = document.getElementById('aNameInput');
   const aName = document.getElementById('aName');
+  const aCardDesc = document.getElementById('aCardDesc');
   const aDesc = document.getElementById('aDesc');
   const aPrice = document.getElementById('aPrice');
   const aPriceUnit = document.getElementById('aPriceUnit');
@@ -803,7 +805,7 @@
     addonList.querySelectorAll('.rlrow').forEach(row => {
       const a = addons.find(x => x.id === row.dataset.id);
       row.querySelector('.rl-title').textContent = a.name;
-      row.querySelector('.rl-sub').textContent = a.description || '';
+      row.querySelector('.rl-sub').textContent = a.card_description || a.description || '';
       row.addEventListener('click', () => openAddonEditor(a));
     });
   }
@@ -813,6 +815,7 @@
     aName.textContent = a.name;
     document.getElementById('addonEditCardTitle').firstChild.textContent = 'Edit add-on — ';
     aNameInput.value = a.name || '';
+    aCardDesc.value = a.card_description || '';
     aDesc.value = a.description || '';
     aPrice.value = a.price != null ? a.price : '';
     aPriceUnit.value = a.price_unit || 'per person';
@@ -831,6 +834,7 @@
     aName.textContent = 'New add-on';
     document.getElementById('addonEditCardTitle').firstChild.textContent = 'Add add-on — ';
     aNameInput.value = '';
+    aCardDesc.value = '';
     aDesc.value = '';
     aPrice.value = '';
     aPriceUnit.value = 'per person';
@@ -860,6 +864,7 @@
     if (!name) { alert('Please enter an add-on name.'); return; }
     const payload = {
       name,
+      card_description: aCardDesc.value.trim() || null,
       description: aDesc.value.trim() || null,
       price: parseFloat(aPrice.value) || 0,
       price_unit: aPriceUnit.value,
