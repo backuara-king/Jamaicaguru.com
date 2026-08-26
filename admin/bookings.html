@@ -337,6 +337,27 @@
           </button>
         </div>
 
+        <div class="field">
+          <label>Guru (driver) assigned <span class="hint">— which Partners → Transportation Guru is driving this trip. Assigning one immediately generates a "Meet your Guru" link to share pre-arrival, and a rating survey link once the trip is marked Completed.</span></label>
+          <select id="dDriverSelect"><option value="">— No Guru assigned —</option></select>
+        </div>
+
+        <div class="review-link-box" id="driverIntroLinkBox" style="display:none;">
+          <div class="rl-info" id="driverIntroLinkInfo"></div>
+          <button type="button" id="copyDriverIntroLinkBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy "Meet your Guru" Link
+          </button>
+        </div>
+
+        <div class="review-link-box" id="driverReviewLinkBox" style="display:none;">
+          <div class="rl-info" id="driverReviewLinkInfo"></div>
+          <button type="button" id="copyDriverReviewLinkBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Rating Link
+          </button>
+        </div>
+
         <h3 style="margin-bottom:10px;">Selections</h3>
         <div class="timeline" id="dSelections"></div>
       </div>
@@ -380,6 +401,16 @@
     opt.value = p.id;
     opt.textContent = p.name;
     dPropertySelect.appendChild(opt);
+  });
+
+  // Same idea for the "Guru assigned" dropdown.
+  const dDriverSelect = document.getElementById('dDriverSelect');
+  const { data: driverOptions } = await window.sb.from('partner_drivers').select('id, name').order('name');
+  (driverOptions || []).forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = d.name;
+    dDriverSelect.appendChild(opt);
   });
 
   const { data: bookings, error } = await window.sb
@@ -487,6 +518,53 @@
     };
   }
 
+  function renderDriverIntroLink(b) {
+    const box = document.getElementById('driverIntroLinkBox');
+    if (!b.driver_id || !b.driver_intro_token) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = '';
+    const url = location.origin + location.pathname.replace(/admin\/.*$/, '') + 'meet-your-guru.html?token=' + b.driver_intro_token;
+    document.getElementById('driverIntroLinkInfo').innerHTML = '<b>Share pre-arrival</b> so the guest can meet their Guru before they land.';
+    const copyBtn = document.getElementById('copyDriverIntroLinkBtn');
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1800);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    };
+  }
+
+  function renderDriverReviewLink(b) {
+    const box = document.getElementById('driverReviewLinkBox');
+    if (b.status !== 'completed' || !b.driver_id || !b.driver_review_token) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = '';
+    const url = location.origin + location.pathname.replace(/admin\/.*$/, '') + 'submit-driver-review.html?token=' + b.driver_review_token;
+    document.getElementById('driverReviewLinkInfo').innerHTML = b.driver_review_submitted
+      ? '<b>Rating already submitted</b> for this Guru.'
+      : 'Rating survey not requested by email yet — <b>share this link</b> directly with the guest.';
+    const copyBtn = document.getElementById('copyDriverReviewLinkBtn');
+    copyBtn.style.display = b.driver_review_submitted ? 'none' : '';
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1800);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    };
+  }
+
   function selectBooking(i, row) {
     const b = bookings[i];
     document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
@@ -524,13 +602,28 @@
       renderPropertyReviewLink(b);
     };
 
+    dDriverSelect.value = b.driver_id || '';
+    renderDriverIntroLink(b);
+    renderDriverReviewLink(b);
+    dDriverSelect.onchange = async () => {
+      const newDriverId = dDriverSelect.value || null;
+      // .select().single() so we get back driver_intro_token (generated
+      // immediately) and driver_review_token (only if already completed).
+      const { data: updated, error: updateError } = await window.sb.from('bookings')
+        .update({ driver_id: newDriverId }).eq('id', b.id).select().single();
+      if (updateError) { alert("Couldn't assign Guru: " + updateError.message); return; }
+      Object.assign(b, updated);
+      renderDriverIntroLink(b);
+      renderDriverReviewLink(b);
+    };
+
     const sel = document.getElementById('dStatusSelect');
     sel.value = b.status || 'new';
     sel.className = 'badge status-select ' + STATUS_BADGE[b.status || 'new'];
     sel.onchange = async () => {
       const newStatus = sel.value;
-      // .select().single() so we get back the review_token / property_review_token
-      // the database triggers generate the moment status flips to "completed".
+      // .select().single() so we get back the review_token / property_review_token /
+      // driver_review_token the database triggers generate the moment status flips to "completed".
       const { data: updated, error: updateError } = await window.sb.from('bookings')
         .update({ status: newStatus }).eq('id', b.id).select().single();
       if (updateError) { alert("Couldn't update status: " + updateError.message); return; }
@@ -541,6 +634,7 @@
       sel.className = 'badge status-select ' + STATUS_BADGE[newStatus];
       renderReviewLink(b);
       renderPropertyReviewLink(b);
+      renderDriverReviewLink(b);
     };
 
     const items = [

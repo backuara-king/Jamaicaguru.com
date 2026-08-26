@@ -206,6 +206,7 @@
   }
   .rating-readout .stars{color:var(--gold-vivid); font-size:15px; letter-spacing:1px;}
   .rating-readout b{color:var(--ink);}
+  .section-divider{border:none; border-top:1px solid var(--border); margin:18px 0;}
 
   @media (min-width:960px){
     .mobile-topbar{display:none;}
@@ -268,6 +269,7 @@
   <div class="page-header">
     <div><h1>Partners</h1><div class="sub" id="pageSub">Properties, transportation, and excursion partners — all in one place.</div></div>
     <button class="btn-primary" id="addPropertyBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Property</button>
+    <button class="btn-primary" id="addDriverBtn" style="display:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Guru</button>
   </div>
 
   <div class="catalog-tabs">
@@ -366,63 +368,134 @@
     </div>
   </div>
 
-  <!-- ===================== PANEL: Transportation (moved here — CRUD + status/email workflow coming in the next pass) ===================== -->
+  <!-- ===================== PANEL: Transportation (Gurus / drivers) ===================== -->
   <div class="catalog-panel" id="panel-transportation">
     <div class="note-banner">
-      Moved here from its own page. This tab still shows placeholder data — Gurus (drivers) with full profiles, the applied → processing → approved → assigned status workflow, and its "Send Email" buttons are built in the next pass.
+      The old separate fleet-maintenance "Vehicles" list (mileage, insurance expiry) was placeholder data that was never part of the spec, so it's gone — each Guru's vehicle info now lives directly on their own profile below. Guest ratings work the same way as Properties: assign a Guru to a booking, and a rating survey link generates once that trip is marked Completed.
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="vehicles">Vehicles</button>
-      <button class="tab-btn" data-tab="drivers">Gurus (Drivers)</button>
+    <div class="rowlist" id="driverList">
+      <div class="rlrow-empty">Loading Gurus&hellip;</div>
     </div>
 
-    <div class="tab-panel active" id="tab-vehicles">
-      <div class="rowlist">
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-001</span><span class="badge ok">Assigned</span></div>
-          <div class="rl-sub">2019 · Plate JA-4471 · Capacity 8</div>
-          <div class="rl-meta"><span class="m">Mileage <b>186,432 km</b></span><span class="m">Next service <b>190,000 km</b></span><span class="m">Driver <b>Michael</b></span><span class="m">Insurance exp. <b>Dec 2026</b></span></div>
+    <div class="card" id="driverEditCard" style="margin-top:20px; display:none;">
+      <h3 id="driverEditCardTitle">Edit Guru — <span id="dName">&nbsp;</span></h3>
+      <div class="card-sub">Changes here apply everywhere this Guru is shown.</div>
+
+      <div class="two-col">
+        <div class="field"><label>Full name</label><input type="text" id="dNameInput" placeholder="e.g. Michael Brown"></div>
+        <div class="field"><label>Age</label><input type="number" min="0" step="1" id="dAge"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Email</label><input type="text" id="dEmailInput"></div>
+        <div class="field"><label>Phone</label><input type="text" id="dPhone"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Tour company <span class="hint">— their own company, if any</span></label><input type="text" id="dTourCompany"></div>
+        <div class="field"><label>Affiliation <span class="hint">— e.g. JUTA, Maxi Tours, Independent</span></label><input type="text" id="dAffiliation"></div>
+      </div>
+      <div class="field" style="max-width:220px;"><label>Years of service</label><input type="number" min="0" step="1" id="dYears"></div>
+
+      <div class="rating-readout" id="dRatingReadout" style="margin-bottom:14px;">
+        <span class="stars" id="dRatingStars">☆☆☆☆☆</span>
+        <span id="dRatingText">No guest ratings yet</span>
+      </div>
+
+      <hr class="section-divider">
+      <h3 style="font-size:14.5px; margin-bottom:12px;">Vehicle</h3>
+      <div class="three-col">
+        <div class="field"><label>Vehicle type</label><input type="text" id="dVehicleType" placeholder="e.g. Toyota Noah"></div>
+        <div class="field"><label>Color</label><input type="text" id="dVehicleColor"></div>
+        <div class="field"><label>License plate</label><input type="text" id="dPlate"></div>
+      </div>
+      <div class="field">
+        <label>Vehicle photos</label>
+        <div class="img-grid" id="vehicleImgGrid">
+          <div class="img-tile add-tile" id="addVehicleImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
         </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Toyota Hiace — #JG-002</span><span class="badge ok">Assigned</span></div>
-          <div class="rl-sub">2021 · Plate JA-5820 · Capacity 12</div>
-          <div class="rl-meta"><span class="m">Mileage <b>92,110 km</b></span><span class="m">Next service <b>100,000 km</b></span><span class="m">Driver <b>Andre</b></span><span class="m">Insurance exp. <b>Mar 2027</b></span></div>
+        <input type="file" id="vehicleImgFileInput" accept="image/*" multiple style="display:none;">
+        <div class="img-upload-status" id="vehicleImgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
+      </div>
+
+      <hr class="section-divider">
+      <h3 style="font-size:14.5px; margin-bottom:4px;">Profile photo</h3>
+      <div class="card-sub">Shown to guests in the "Meet your Guru" preview.</div>
+      <div class="field">
+        <div class="img-grid" id="profileImgGrid" style="grid-template-columns:repeat(2,1fr); max-width:220px;">
+          <div class="img-tile add-tile" id="addProfileImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
         </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Honda CR-V — #JG-003</span><span class="badge warn">Maintenance</span></div>
-          <div class="rl-sub">2020 · Plate JA-3390 · Capacity 5</div>
-          <div class="rl-meta"><span class="m">Mileage <b>141,880 km</b></span><span class="m">In shop until <b>Aug 15</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jan 2027</b></span></div>
+        <input type="file" id="profileImgFileInput" accept="image/*" style="display:none;">
+      </div>
+
+      <hr class="section-divider">
+      <h3 style="font-size:14.5px; margin-bottom:4px;">Driver's license <span style="font-weight:400; color:var(--muted); font-size:12px;">— private, admin-only</span></h3>
+      <div class="two-col">
+        <div class="field">
+          <label>Front</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn-secondary" type="button" id="licenseFrontUploadBtn">Upload</button>
+            <button class="btn-secondary" type="button" id="licenseFrontViewBtn" style="display:none;">View</button>
+            <input type="file" id="licenseFrontFileInput" accept="image/*" style="display:none;">
+          </div>
+          <span id="licenseFrontStatus" style="font-size:12px; color:var(--muted);">Not uploaded</span>
         </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-004</span><span class="badge neutral">Available</span></div>
-          <div class="rl-sub">2022 · Plate JA-6127 · Capacity 8</div>
-          <div class="rl-meta"><span class="m">Mileage <b>44,205 km</b></span><span class="m">Next service <b>50,000 km</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jul 2027</b></span></div>
+        <div class="field">
+          <label>Back</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn-secondary" type="button" id="licenseBackUploadBtn">Upload</button>
+            <button class="btn-secondary" type="button" id="licenseBackViewBtn" style="display:none;">View</button>
+            <input type="file" id="licenseBackFileInput" accept="image/*" style="display:none;">
+          </div>
+          <span id="licenseBackStatus" style="font-size:12px; color:var(--muted);">Not uploaded</span>
         </div>
       </div>
-    </div>
 
-    <div class="tab-panel" id="tab-drivers">
-      <div class="rowlist">
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Guru #14 — Michael</span><span class="badge ok">Available</span></div>
-          <div class="rl-sub">Toyota Noah #JG-001 · St. Ann service area</div>
-          <div class="rl-meta"><span class="m">Trips completed <b>147</b></span><span class="m">Rating <b>4.9</b></span><span class="m">On-time <b>94%</b></span><span class="m">This month <b>14 trips</b></span></div>
+      <hr class="section-divider">
+      <h3 style="font-size:14.5px; margin-bottom:4px;">Banking info <span style="font-weight:400; color:var(--muted); font-size:12px;">— private, admin-only</span></h3>
+      <div class="three-col">
+        <div class="field"><label>Bank name</label><input type="text" id="dBankName"></div>
+        <div class="field"><label>Account name</label><input type="text" id="dBankAccountName"></div>
+        <div class="field"><label>Account number</label><input type="text" id="dBankAccountNumber"></div>
+      </div>
+
+      <hr class="section-divider">
+      <h3 style="font-size:14.5px; margin-bottom:12px;">Status</h3>
+      <div class="two-col">
+        <div class="field">
+          <label>Application status</label>
+          <select id="dStatus">
+            <option value="applied">Applied</option>
+            <option value="processing">Processing</option>
+            <option value="approved">Approved</option>
+            <option value="assigned">Assigned</option>
+          </select>
         </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Guru #7 — Andre</span><span class="badge warn">On Trip</span></div>
-          <div class="rl-sub">Toyota Hiace #JG-002 · Montego Bay service area</div>
-          <div class="rl-meta"><span class="m">Trips completed <b>93</b></span><span class="m">Rating <b>4.8</b></span><span class="m">On-time <b>91%</b></span><span class="m">This month <b>9 trips</b></span></div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <a class="btn-secondary" id="sendStatusEmailBtn" href="#" style="text-align:center; text-decoration:none;">Send Email</a>
         </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Guru #3 — Kadeem</span><span class="badge ok">Available</span></div>
-          <div class="rl-sub">Unassigned vehicle · Ocho Rios service area</div>
-          <div class="rl-meta"><span class="m">Trips completed <b>61</b></span><span class="m">Rating <b>4.7</b></span><span class="m">On-time <b>88%</b></span><span class="m">This month <b>6 trips</b></span></div>
-        </div>
-        <div class="rlrow">
-          <div class="rl-top"><span class="rl-title">Guru #22 — Sasha-Kay</span><span class="badge neutral">Off Today</span></div>
-          <div class="rl-sub">Unassigned vehicle · Negril service area</div>
-          <div class="rl-meta"><span class="m">Trips completed <b>28</b></span><span class="m">Rating <b>5.0</b></span><span class="m">On-time <b>100%</b></span><span class="m">This month <b>3 trips</b></span></div>
+      </div>
+      <div class="field" id="applicantNotesField" style="display:none;">
+        <label>Applicant notes <span class="hint">— from their "Become a Partner" application</span></label>
+        <textarea id="dApplicantNotes" readonly style="background:var(--bg);"></textarea>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:14px;">
+        <button class="icon-btn danger" id="deleteDriverBtn" type="button" aria-label="Delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-discard" id="cancelDriverBtn" type="button">Cancel</button>
+          <button class="btn-save" id="saveDriverBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -451,9 +524,10 @@
   /* ===== Top-level category tabs (Properties / Transportation / Excursions) ===== */
   const pageSub = document.getElementById('pageSub');
   const addPropertyBtn = document.getElementById('addPropertyBtn');
+  const addDriverBtn = document.getElementById('addDriverBtn');
   const SUB_TEXT = {
     properties: 'Individual properties guests can be booked into — with host, amenities, and guest ratings.',
-    transportation: 'Your fleet and your Gurus (drivers).',
+    transportation: 'Your Gurus (drivers) — profiles, application status, and guest ratings.',
     excursions: 'Excursion providers your packages and add-ons pull from.'
   };
   document.querySelectorAll('.catalog-tab').forEach(tab => {
@@ -463,16 +537,7 @@
       document.querySelectorAll('.catalog-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
       pageSub.textContent = SUB_TEXT[panel];
       addPropertyBtn.style.display = panel === 'properties' ? '' : 'none';
-    });
-  });
-
-  /* ===== Transportation sub-tabs (Vehicles / Gurus) — unchanged, moved as-is ===== */
-  document.querySelectorAll('#panel-transportation .tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#panel-transportation .tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#panel-transportation .tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      addDriverBtn.style.display = panel === 'transportation' ? '' : 'none';
     });
   });
 
@@ -706,6 +771,355 @@
   });
 
   loadProperties();
+
+  /* ===== Transportation (Gurus/drivers): load, add, edit, delete, image upload, status emails ===== */
+  let drivers = [];
+  let editingDriverId = null;
+  let currentVehicleImages = [];
+  let currentProfilePhoto = null;   // single URL or null
+  let currentLicenseFrontPath = null; // storage object path (private bucket) or null
+  let currentLicenseBackPath = null;
+
+  const driverList = document.getElementById('driverList');
+  const driverEditCard = document.getElementById('driverEditCard');
+  const dNameInput = document.getElementById('dNameInput');
+  const dName = document.getElementById('dName');
+  const dAge = document.getElementById('dAge');
+  const dEmailInput = document.getElementById('dEmailInput');
+  const dPhone = document.getElementById('dPhone');
+  const dTourCompany = document.getElementById('dTourCompany');
+  const dAffiliation = document.getElementById('dAffiliation');
+  const dYears = document.getElementById('dYears');
+  const dVehicleType = document.getElementById('dVehicleType');
+  const dVehicleColor = document.getElementById('dVehicleColor');
+  const dPlate = document.getElementById('dPlate');
+  const dBankName = document.getElementById('dBankName');
+  const dBankAccountName = document.getElementById('dBankAccountName');
+  const dBankAccountNumber = document.getElementById('dBankAccountNumber');
+  const dStatus = document.getElementById('dStatus');
+  const dApplicantNotes = document.getElementById('dApplicantNotes');
+  const applicantNotesField = document.getElementById('applicantNotesField');
+  const dRatingStars = document.getElementById('dRatingStars');
+  const dRatingText = document.getElementById('dRatingText');
+  const deleteDriverBtn = document.getElementById('deleteDriverBtn');
+  const sendStatusEmailBtn = document.getElementById('sendStatusEmailBtn');
+
+  // -- Vehicle photos (multi, public bucket) --
+  const vehicleImgGrid = document.getElementById('vehicleImgGrid');
+  const addVehicleImgTile = document.getElementById('addVehicleImgTile');
+  const vehicleImgFileInput = document.getElementById('vehicleImgFileInput');
+  const vehicleImgUploadStatus = document.getElementById('vehicleImgUploadStatus');
+
+  function renderVehicleImages(){
+    vehicleImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentVehicleImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      vehicleImgGrid.insertBefore(tile, addVehicleImgTile);
+    });
+  }
+  vehicleImgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (!removeBtn) return;
+    currentVehicleImages.splice(Number(removeBtn.closest('.img-tile').dataset.idx), 1);
+    renderVehicleImages();
+  });
+  addVehicleImgTile.addEventListener('click', () => vehicleImgFileInput.click());
+  vehicleImgFileInput.addEventListener('change', async () => {
+    const files = Array.from(vehicleImgFileInput.files || []);
+    if (!files.length) return;
+    vehicleImgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      vehicleImgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `vehicle-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('driver-images').upload(path, file, { upsert: false });
+      if (upErr) { vehicleImgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`; continue; }
+      const { data: pub } = window.sb.storage.from('driver-images').getPublicUrl(path);
+      currentVehicleImages.push(pub.publicUrl);
+    }
+    vehicleImgUploadStatus.style.display = 'none';
+    vehicleImgFileInput.value = '';
+    renderVehicleImages();
+  });
+
+  // -- Profile photo (single, public bucket) --
+  const profileImgGrid = document.getElementById('profileImgGrid');
+  const addProfileImgTile = document.getElementById('addProfileImgTile');
+  const profileImgFileInput = document.getElementById('profileImgFileInput');
+
+  function renderProfileImage(){
+    profileImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    if (!currentProfilePhoto) return;
+    const tile = document.createElement('div');
+    tile.className = 'img-tile';
+    tile.style.backgroundImage = `url("${currentProfilePhoto}")`;
+    tile.style.backgroundSize = 'cover';
+    tile.style.backgroundPosition = 'center';
+    tile.innerHTML = '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+    profileImgGrid.insertBefore(tile, addProfileImgTile);
+  }
+  profileImgGrid.addEventListener('click', (e) => {
+    if (e.target.closest('.remove-img')) { currentProfilePhoto = null; renderProfileImage(); }
+  });
+  addProfileImgTile.addEventListener('click', () => profileImgFileInput.click());
+  profileImgFileInput.addEventListener('change', async () => {
+    const file = (profileImgFileInput.files || [])[0];
+    if (!file) return;
+    const path = `profile-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const { error: upErr } = await window.sb.storage.from('driver-images').upload(path, file, { upsert: false });
+    if (upErr) { alert("Couldn't upload photo: " + upErr.message); return; }
+    const { data: pub } = window.sb.storage.from('driver-images').getPublicUrl(path);
+    currentProfilePhoto = pub.publicUrl;
+    profileImgFileInput.value = '';
+    renderProfileImage();
+  });
+
+  // -- License front/back (single each, PRIVATE bucket — path stored, signed URL to view) --
+  function wireLicenseUpload(side, uploadBtnId, viewBtnId, fileInputId, statusId, getPath, setPath) {
+    const uploadBtn = document.getElementById(uploadBtnId);
+    const viewBtn = document.getElementById(viewBtnId);
+    const fileInput = document.getElementById(fileInputId);
+    const status = document.getElementById(statusId);
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      const file = (fileInput.files || [])[0];
+      if (!file) return;
+      status.textContent = 'Uploading…';
+      const path = `license-${side}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('driver-documents').upload(path, file, { upsert: false });
+      if (upErr) { status.textContent = "Couldn't upload: " + upErr.message; return; }
+      setPath(path);
+      fileInput.value = '';
+      refreshLicenseUI(viewBtn, status, path);
+    });
+    viewBtn.addEventListener('click', async () => {
+      const path = getPath();
+      if (!path) return;
+      const { data, error } = await window.sb.storage.from('driver-documents').createSignedUrl(path, 300);
+      if (error) { alert("Couldn't open file: " + error.message); return; }
+      window.open(data.signedUrl, '_blank');
+    });
+  }
+  function refreshLicenseUI(viewBtn, status, path) {
+    viewBtn.style.display = path ? '' : 'none';
+    status.textContent = path ? 'Uploaded ✓' : 'Not uploaded';
+  }
+  wireLicenseUpload('front', 'licenseFrontUploadBtn', 'licenseFrontViewBtn', 'licenseFrontFileInput', 'licenseFrontStatus',
+    () => currentLicenseFrontPath, (p) => { currentLicenseFrontPath = p; });
+  wireLicenseUpload('back', 'licenseBackUploadBtn', 'licenseBackViewBtn', 'licenseBackFileInput', 'licenseBackStatus',
+    () => currentLicenseBackPath, (p) => { currentLicenseBackPath = p; });
+
+  // -- Status → mailto "Send Email" content --
+  const STATUS_EMAIL = {
+    applied: {
+      subject: "We've received your Jamaica Guru driver application",
+      body: "Hi {name},\n\nThanks for applying to drive with Jamaica Guru! We're reviewing your application now and will follow up shortly with next steps.\n\nThanks,\nJamaica Guru"
+    },
+    processing: {
+      subject: "A few more details — Jamaica Guru driver application",
+      body: "Hi {name},\n\nWe're processing your application and need a bit more from you — please reply with:\n- A clear photo of the front and back of your driver's license\n- Your vehicle's make/model, color, and license plate\n- Your banking details for payouts\n\nOnce we have everything, we'll move your application forward.\n\nThanks,\nJamaica Guru"
+    },
+    approved: {
+      subject: "You're approved! Welcome to the Jamaica Guru Gurus",
+      body: "Hi {name},\n\nGreat news — you're approved as a Jamaica Guru driver partner! We'll be in touch as trips come up that match your service area and vehicle.\n\nWelcome aboard,\nJamaica Guru"
+    },
+    assigned: {
+      subject: "You're all set — Jamaica Guru driver account active",
+      body: "Hi {name},\n\nYou're fully onboarded and active as a Jamaica Guru driver. We'll reach out directly whenever a trip needs a driver.\n\nThanks,\nJamaica Guru"
+    }
+  };
+  function updateSendEmailLink() {
+    const template = STATUS_EMAIL[dStatus.value];
+    const name = dNameInput.value.trim() || 'there';
+    const email = dEmailInput.value.trim();
+    if (!template || !email) {
+      sendStatusEmailBtn.href = '#';
+      sendStatusEmailBtn.setAttribute('aria-disabled', 'true');
+      sendStatusEmailBtn.style.opacity = '0.5';
+      sendStatusEmailBtn.style.pointerEvents = 'none';
+      return;
+    }
+    sendStatusEmailBtn.removeAttribute('aria-disabled');
+    sendStatusEmailBtn.style.opacity = '';
+    sendStatusEmailBtn.style.pointerEvents = '';
+    const subject = encodeURIComponent(template.subject);
+    const body = encodeURIComponent(template.body.replace('{name}', name));
+    sendStatusEmailBtn.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  }
+  dStatus.addEventListener('change', updateSendEmailLink);
+  dEmailInput.addEventListener('input', updateSendEmailLink);
+  dNameInput.addEventListener('input', updateSendEmailLink);
+
+  function setDriverRatingReadout(d) {
+    dRatingStars.textContent = starString(d ? d.rating_avg : null);
+    dRatingText.textContent = (d && d.rating_avg != null)
+      ? Number(d.rating_avg).toFixed(1) + ' average from ' + (d.rating_count || 0) + (d.rating_count === 1 ? ' guest survey' : ' guest surveys')
+      : 'No guest ratings yet';
+  }
+
+  function renderDriverList(){
+    if (!drivers.length) {
+      driverList.innerHTML = '<div class="rlrow-empty">No Gurus yet — click "Add Guru" to create your first one, or wait for applications via "Become a Partner".</div>';
+      return;
+    }
+    const STATUS_BADGE = { applied: 'gold', processing: 'warn', approved: 'ok', assigned: 'ok' };
+    const STATUS_LABEL = { applied: 'Applied', processing: 'Processing', approved: 'Approved', assigned: 'Assigned' };
+    driverList.innerHTML = drivers.map(d => {
+      const status = d.status || 'applied';
+      const ratingLabel = d.rating_avg != null
+        ? '<span class="star">★</span> ' + Number(d.rating_avg).toFixed(1) + ' (' + (d.rating_count || 0) + ')'
+        : 'No ratings yet';
+      return '<div class="rlrow' + (d.id === editingDriverId ? ' selected' : '') + '" data-id="' + d.id + '">' +
+        '<div class="rl-top"><span class="rl-title"></span><span class="badge ' + STATUS_BADGE[status] + '">' + STATUS_LABEL[status] + '</span></div>' +
+        '<div class="rl-sub"></div>' +
+        '<div class="rl-meta"><span class="m">Years <b>' + (d.years_of_service ?? '—') + '</b></span><span class="rl-rating">' + ratingLabel + '</span></div>' +
+      '</div>';
+    }).join('');
+    driverList.querySelectorAll('.rlrow').forEach(row => {
+      const d = drivers.find(x => x.id === row.dataset.id);
+      row.querySelector('.rl-title').textContent = d.name;
+      row.querySelector('.rl-sub').textContent = [d.vehicle_type, d.affiliation].filter(Boolean).join(' · ');
+      row.addEventListener('click', () => openDriverEditor(d));
+    });
+  }
+
+  function openDriverEditor(d){
+    editingDriverId = d.id;
+    dName.textContent = d.name;
+    document.getElementById('driverEditCardTitle').firstChild.textContent = 'Edit Guru — ';
+    dNameInput.value = d.name || '';
+    dAge.value = d.age ?? '';
+    dEmailInput.value = d.email || '';
+    dPhone.value = d.phone || '';
+    dTourCompany.value = d.tour_company_name || '';
+    dAffiliation.value = d.affiliation || '';
+    dYears.value = d.years_of_service ?? '';
+    dVehicleType.value = d.vehicle_type || '';
+    dVehicleColor.value = d.vehicle_color || '';
+    dPlate.value = d.license_plate || '';
+    dBankName.value = d.bank_name || '';
+    dBankAccountName.value = d.bank_account_name || '';
+    dBankAccountNumber.value = d.bank_account_number || '';
+    dStatus.value = d.status || 'applied';
+    if (d.applicant_notes) {
+      applicantNotesField.style.display = '';
+      dApplicantNotes.value = d.applicant_notes;
+    } else {
+      applicantNotesField.style.display = 'none';
+    }
+    setDriverRatingReadout(d);
+    currentVehicleImages = Array.isArray(d.vehicle_images) ? d.vehicle_images.slice() : [];
+    renderVehicleImages();
+    currentProfilePhoto = d.profile_photo_url || null;
+    renderProfileImage();
+    currentLicenseFrontPath = d.license_front_path || null;
+    currentLicenseBackPath = d.license_back_path || null;
+    refreshLicenseUI(document.getElementById('licenseFrontViewBtn'), document.getElementById('licenseFrontStatus'), currentLicenseFrontPath);
+    refreshLicenseUI(document.getElementById('licenseBackViewBtn'), document.getElementById('licenseBackStatus'), currentLicenseBackPath);
+    updateSendEmailLink();
+    deleteDriverBtn.style.display = '';
+    driverEditCard.style.display = '';
+    renderDriverList();
+    driverEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function openNewDriver(){
+    editingDriverId = null;
+    dName.textContent = 'New Guru';
+    document.getElementById('driverEditCardTitle').firstChild.textContent = 'Add Guru — ';
+    dNameInput.value = '';
+    dAge.value = '';
+    dEmailInput.value = '';
+    dPhone.value = '';
+    dTourCompany.value = '';
+    dAffiliation.value = '';
+    dYears.value = '';
+    dVehicleType.value = '';
+    dVehicleColor.value = '';
+    dPlate.value = '';
+    dBankName.value = '';
+    dBankAccountName.value = '';
+    dBankAccountNumber.value = '';
+    dStatus.value = 'applied';
+    applicantNotesField.style.display = 'none';
+    setDriverRatingReadout(null);
+    currentVehicleImages = [];
+    renderVehicleImages();
+    currentProfilePhoto = null;
+    renderProfileImage();
+    currentLicenseFrontPath = null;
+    currentLicenseBackPath = null;
+    refreshLicenseUI(document.getElementById('licenseFrontViewBtn'), document.getElementById('licenseFrontStatus'), null);
+    refreshLicenseUI(document.getElementById('licenseBackViewBtn'), document.getElementById('licenseBackStatus'), null);
+    updateSendEmailLink();
+    deleteDriverBtn.style.display = 'none';
+    driverEditCard.style.display = '';
+    renderDriverList();
+    driverEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  addDriverBtn.addEventListener('click', openNewDriver);
+  document.getElementById('cancelDriverBtn').addEventListener('click', () => { driverEditCard.style.display = 'none'; editingDriverId = null; renderDriverList(); });
+
+  async function loadDrivers(){
+    const { data, error } = await window.sb.from('partner_drivers').select('*').order('name');
+    if (error) { driverList.innerHTML = '<div class="rlrow-empty" style="color:var(--danger)">Couldn\'t load Gurus: ' + error.message + '</div>'; return; }
+    drivers = data || [];
+    renderDriverList();
+  }
+
+  document.getElementById('saveDriverBtn').addEventListener('click', async () => {
+    const name = dNameInput.value.trim();
+    if (!name) { alert('Please enter a name.'); return; }
+    const payload = {
+      name,
+      age: dAge.value !== '' ? parseInt(dAge.value, 10) : null,
+      email: dEmailInput.value.trim() || null,
+      phone: dPhone.value.trim() || null,
+      tour_company_name: dTourCompany.value.trim() || null,
+      affiliation: dAffiliation.value.trim() || null,
+      years_of_service: dYears.value !== '' ? parseInt(dYears.value, 10) : null,
+      vehicle_type: dVehicleType.value.trim() || null,
+      vehicle_color: dVehicleColor.value.trim() || null,
+      license_plate: dPlate.value.trim() || null,
+      bank_name: dBankName.value.trim() || null,
+      bank_account_name: dBankAccountName.value.trim() || null,
+      bank_account_number: dBankAccountNumber.value.trim() || null,
+      status: dStatus.value,
+      profile_photo_url: currentProfilePhoto,
+      vehicle_images: currentVehicleImages,
+      license_front_path: currentLicenseFrontPath,
+      license_back_path: currentLicenseBackPath
+    };
+    const { error } = editingDriverId
+      ? await window.sb.from('partner_drivers').update(payload).eq('id', editingDriverId)
+      : await window.sb.from('partner_drivers').insert(payload);
+    if (error) { alert("Couldn't save: " + error.message); return; }
+    const wasEditing = !!editingDriverId;
+    driverEditCard.style.display = 'none';
+    editingDriverId = null;
+    await loadDrivers();
+    showToast(wasEditing ? 'Guru updated' : 'Guru added');
+  });
+
+  deleteDriverBtn.addEventListener('click', async () => {
+    if (!editingDriverId) return;
+    if (!confirm('Delete this Guru? This can’t be undone.')) return;
+    const { error } = await window.sb.from('partner_drivers').delete().eq('id', editingDriverId);
+    if (error) { alert("Couldn't delete: " + error.message); return; }
+    driverEditCard.style.display = 'none';
+    editingDriverId = null;
+    await loadDrivers();
+    showToast('Guru deleted');
+  });
+
+  loadDrivers();
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
