@@ -358,6 +358,19 @@
           </button>
         </div>
 
+        <div class="field">
+          <label>Excursion provider assigned <span class="hint">— the Partners → Excursions provider primarily associated with this trip, if any. Assigning one is what lets a rating survey link generate once the trip is marked Completed.</span></label>
+          <select id="dExcursionSelect"><option value="">— No excursion provider assigned —</option></select>
+        </div>
+
+        <div class="review-link-box" id="excursionReviewLinkBox" style="display:none;">
+          <div class="rl-info" id="excursionReviewLinkInfo"></div>
+          <button type="button" id="copyExcursionReviewLinkBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Rating Link
+          </button>
+        </div>
+
         <h3 style="margin-bottom:10px;">Selections</h3>
         <div class="timeline" id="dSelections"></div>
       </div>
@@ -411,6 +424,16 @@
     opt.value = d.id;
     opt.textContent = d.name;
     dDriverSelect.appendChild(opt);
+  });
+
+  // Same idea for the "Excursion provider assigned" dropdown.
+  const dExcursionSelect = document.getElementById('dExcursionSelect');
+  const { data: excursionOptions } = await window.sb.from('partner_excursions').select('id, name').order('name');
+  (excursionOptions || []).forEach(x => {
+    const opt = document.createElement('option');
+    opt.value = x.id;
+    opt.textContent = x.name;
+    dExcursionSelect.appendChild(opt);
   });
 
   const { data: bookings, error } = await window.sb
@@ -565,6 +588,31 @@
     };
   }
 
+  function renderExcursionReviewLink(b) {
+    const box = document.getElementById('excursionReviewLinkBox');
+    if (b.status !== 'completed' || !b.excursion_provider_id || !b.excursion_review_token) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = '';
+    const url = location.origin + location.pathname.replace(/admin\/.*$/, '') + 'submit-excursion-review.html?token=' + b.excursion_review_token;
+    document.getElementById('excursionReviewLinkInfo').innerHTML = b.excursion_review_submitted
+      ? '<b>Rating already submitted</b> for this provider.'
+      : 'Rating survey not requested by email yet — <b>share this link</b> directly with the guest.';
+    const copyBtn = document.getElementById('copyExcursionReviewLinkBtn');
+    copyBtn.style.display = b.excursion_review_submitted ? 'none' : '';
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1800);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    };
+  }
+
   function selectBooking(i, row) {
     const b = bookings[i];
     document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
@@ -617,13 +665,25 @@
       renderDriverReviewLink(b);
     };
 
+    dExcursionSelect.value = b.excursion_provider_id || '';
+    renderExcursionReviewLink(b);
+    dExcursionSelect.onchange = async () => {
+      const newExcursionId = dExcursionSelect.value || null;
+      const { data: updated, error: updateError } = await window.sb.from('bookings')
+        .update({ excursion_provider_id: newExcursionId }).eq('id', b.id).select().single();
+      if (updateError) { alert("Couldn't assign excursion provider: " + updateError.message); return; }
+      Object.assign(b, updated);
+      renderExcursionReviewLink(b);
+    };
+
     const sel = document.getElementById('dStatusSelect');
     sel.value = b.status || 'new';
     sel.className = 'badge status-select ' + STATUS_BADGE[b.status || 'new'];
     sel.onchange = async () => {
       const newStatus = sel.value;
       // .select().single() so we get back the review_token / property_review_token /
-      // driver_review_token the database triggers generate the moment status flips to "completed".
+      // driver_review_token / excursion_review_token the database triggers
+      // generate the moment status flips to "completed".
       const { data: updated, error: updateError } = await window.sb.from('bookings')
         .update({ status: newStatus }).eq('id', b.id).select().single();
       if (updateError) { alert("Couldn't update status: " + updateError.message); return; }
@@ -635,6 +695,7 @@
       renderReviewLink(b);
       renderPropertyReviewLink(b);
       renderDriverReviewLink(b);
+      renderExcursionReviewLink(b);
     };
 
     const items = [

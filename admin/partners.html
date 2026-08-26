@@ -270,6 +270,7 @@
     <div><h1>Partners</h1><div class="sub" id="pageSub">Properties, transportation, and excursion partners — all in one place.</div></div>
     <button class="btn-primary" id="addPropertyBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Property</button>
     <button class="btn-primary" id="addDriverBtn" style="display:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Guru</button>
+    <button class="btn-primary" id="addExcursionBtn" style="display:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Provider</button>
   </div>
 
   <div class="catalog-tabs">
@@ -501,12 +502,81 @@
     </div>
   </div>
 
-  <!-- ===================== PANEL: Excursions (built in a later pass) ===================== -->
+  <!-- ===================== PANEL: Excursions ===================== -->
   <div class="catalog-panel" id="panel-excursions">
     <div class="note-banner">
-      Excursion partner directory — excursion types offered, location, prices, star ratings, and provider info — is built in a later pass, same shape as Properties.
+      This is a standalone excursion-provider directory — it doesn't replace the free-text "Supplier" field on individual Activities in the Experiences tab. Guest ratings work the same way as Properties/Transportation: assign a provider as a booking's excursion partner, and a rating survey link generates once that trip is marked Completed.
     </div>
-    <div class="rowlist"><div class="rlrow-empty">Nothing here yet.</div></div>
+
+    <div class="rowlist" id="excursionList">
+      <div class="rlrow-empty">Loading excursion providers&hellip;</div>
+    </div>
+
+    <div class="card" id="excursionEditCard" style="margin-top:20px; display:none;">
+      <h3 id="excursionEditCardTitle">Edit provider — <span id="xName">&nbsp;</span></h3>
+      <div class="card-sub">Changes here apply everywhere this provider is shown.</div>
+
+      <div class="field"><label>Provider / company name</label><input type="text" id="xNameInput" placeholder="e.g. Island Thrill Adventures"></div>
+      <div class="field"><label>Excursion types offered <span class="hint">— free text, e.g. ATV, Zipline, Waterfall Tours</span></label><input type="text" id="xTypes"></div>
+      <div class="two-col">
+        <div class="field"><label>Location</label><input type="text" id="xLocation" placeholder="e.g. Ocho Rios"></div>
+        <div class="field">
+          <label>Status</label>
+          <select id="xStatus"><option value="pending">Pending review</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Contact email</label><input type="text" id="xContactEmail"></div>
+        <div class="field"><label>Contact phone</label><input type="text" id="xContactPhone"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Price</label><input type="text" id="xPrice" placeholder="e.g. 65"></div>
+        <div class="field">
+          <label>Priced</label>
+          <select id="xPriceUnit">
+            <option value="per person">Per person</option>
+            <option value="per couple">Per couple</option>
+            <option value="flat rate">Flat rate</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rating-readout" id="xRatingReadout" style="margin-bottom:14px;">
+        <span class="stars" id="xRatingStars">☆☆☆☆☆</span>
+        <span id="xRatingText">No guest ratings yet</span>
+      </div>
+
+      <div class="field"><label>Other relevant info <span class="hint">— notes, multiple price tiers, anything worth knowing</span></label><textarea id="xNotes"></textarea></div>
+      <div class="field" id="xApplicantNotesField" style="display:none;">
+        <label>Applicant notes <span class="hint">— from their "Become a Partner" application</span></label>
+        <textarea id="xApplicantNotes" readonly style="background:var(--bg);"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Photos</label>
+        <div class="img-grid" id="excursionImgGrid">
+          <div class="img-tile add-tile" id="addExcursionImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
+        </div>
+        <input type="file" id="excursionImgFileInput" accept="image/*" multiple style="display:none;">
+        <div class="img-upload-status" id="excursionImgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
+        <button class="icon-btn danger" id="deleteExcursionBtn" type="button" aria-label="Delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-discard" id="cancelExcursionBtn" type="button">Cancel</button>
+          <button class="btn-save" id="saveExcursionBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -525,10 +595,11 @@
   const pageSub = document.getElementById('pageSub');
   const addPropertyBtn = document.getElementById('addPropertyBtn');
   const addDriverBtn = document.getElementById('addDriverBtn');
+  const addExcursionBtn = document.getElementById('addExcursionBtn');
   const SUB_TEXT = {
     properties: 'Individual properties guests can be booked into — with host, amenities, and guest ratings.',
     transportation: 'Your Gurus (drivers) — profiles, application status, and guest ratings.',
-    excursions: 'Excursion providers your packages and add-ons pull from.'
+    excursions: 'Excursion providers — types offered, location, prices, and guest ratings.'
   };
   document.querySelectorAll('.catalog-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -538,6 +609,7 @@
       pageSub.textContent = SUB_TEXT[panel];
       addPropertyBtn.style.display = panel === 'properties' ? '' : 'none';
       addDriverBtn.style.display = panel === 'transportation' ? '' : 'none';
+      addExcursionBtn.style.display = panel === 'excursions' ? '' : 'none';
     });
   });
 
@@ -1120,6 +1192,205 @@
   });
 
   loadDrivers();
+
+  /* ===== Excursions: load, add, edit, delete, image upload ===== */
+  let excursions = [];
+  let editingExcursionId = null;
+  let currentExcursionImages = [];
+
+  const excursionList = document.getElementById('excursionList');
+  const excursionEditCard = document.getElementById('excursionEditCard');
+  const xNameInput = document.getElementById('xNameInput');
+  const xName = document.getElementById('xName');
+  const xTypes = document.getElementById('xTypes');
+  const xLocation = document.getElementById('xLocation');
+  const xStatus = document.getElementById('xStatus');
+  const xContactEmail = document.getElementById('xContactEmail');
+  const xContactPhone = document.getElementById('xContactPhone');
+  const xPrice = document.getElementById('xPrice');
+  const xPriceUnit = document.getElementById('xPriceUnit');
+  const xNotes = document.getElementById('xNotes');
+  const xApplicantNotes = document.getElementById('xApplicantNotes');
+  const xApplicantNotesField = document.getElementById('xApplicantNotesField');
+  const xRatingStars = document.getElementById('xRatingStars');
+  const xRatingText = document.getElementById('xRatingText');
+  const deleteExcursionBtn = document.getElementById('deleteExcursionBtn');
+
+  const excursionImgGrid = document.getElementById('excursionImgGrid');
+  const addExcursionImgTile = document.getElementById('addExcursionImgTile');
+  const excursionImgFileInput = document.getElementById('excursionImgFileInput');
+  const excursionImgUploadStatus = document.getElementById('excursionImgUploadStatus');
+
+  function renderExcursionImages(){
+    excursionImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentExcursionImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      excursionImgGrid.insertBefore(tile, addExcursionImgTile);
+    });
+  }
+  excursionImgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (!removeBtn) return;
+    currentExcursionImages.splice(Number(removeBtn.closest('.img-tile').dataset.idx), 1);
+    renderExcursionImages();
+  });
+  addExcursionImgTile.addEventListener('click', () => excursionImgFileInput.click());
+  excursionImgFileInput.addEventListener('change', async () => {
+    const files = Array.from(excursionImgFileInput.files || []);
+    if (!files.length) return;
+    excursionImgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      excursionImgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('excursion-images').upload(path, file, { upsert: false });
+      if (upErr) { excursionImgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`; continue; }
+      const { data: pub } = window.sb.storage.from('excursion-images').getPublicUrl(path);
+      currentExcursionImages.push(pub.publicUrl);
+    }
+    excursionImgUploadStatus.style.display = 'none';
+    excursionImgFileInput.value = '';
+    renderExcursionImages();
+  });
+
+  function setExcursionRatingReadout(x) {
+    xRatingStars.textContent = starString(x ? x.rating_avg : null);
+    xRatingText.textContent = (x && x.rating_avg != null)
+      ? Number(x.rating_avg).toFixed(1) + ' average from ' + (x.rating_count || 0) + (x.rating_count === 1 ? ' guest survey' : ' guest surveys')
+      : 'No guest ratings yet';
+  }
+
+  function renderExcursionList(){
+    if (!excursions.length) {
+      excursionList.innerHTML = '<div class="rlrow-empty">No excursion providers yet — click "Add Provider" to create your first one.</div>';
+      return;
+    }
+    const STATUS_BADGE = { active: 'ok', pending: 'gold', inactive: 'neutral' };
+    const STATUS_LABEL = { active: 'Active', pending: 'Pending review', inactive: 'Inactive' };
+    excursionList.innerHTML = excursions.map(x => {
+      const status = x.status || 'active';
+      const ratingLabel = x.rating_avg != null
+        ? '<span class="star">★</span> ' + Number(x.rating_avg).toFixed(1) + ' (' + (x.rating_count || 0) + ')'
+        : 'No ratings yet';
+      return '<div class="rlrow' + (x.id === editingExcursionId ? ' selected' : '') + '" data-id="' + x.id + '">' +
+        '<div class="rl-top"><span class="rl-title"></span><span class="badge ' + STATUS_BADGE[status] + '">' + STATUS_LABEL[status] + '</span></div>' +
+        '<div class="rl-sub"></div>' +
+        '<div class="rl-meta"><span class="m">Price <b>$' + Number(x.price || 0).toFixed(0) + ' ' + (x.price_unit || '') + '</b></span><span class="rl-rating">' + ratingLabel + '</span></div>' +
+      '</div>';
+    }).join('');
+    excursionList.querySelectorAll('.rlrow').forEach(row => {
+      const x = excursions.find(i => i.id === row.dataset.id);
+      row.querySelector('.rl-title').textContent = x.name;
+      row.querySelector('.rl-sub').textContent = [x.excursion_types, x.location].filter(Boolean).join(' · ');
+      row.addEventListener('click', () => openExcursionEditor(x));
+    });
+  }
+
+  function openExcursionEditor(x){
+    editingExcursionId = x.id;
+    xName.textContent = x.name;
+    document.getElementById('excursionEditCardTitle').firstChild.textContent = 'Edit provider — ';
+    xNameInput.value = x.name || '';
+    xTypes.value = x.excursion_types || '';
+    xLocation.value = x.location || '';
+    xStatus.value = x.status || 'pending';
+    xContactEmail.value = x.contact_email || '';
+    xContactPhone.value = x.contact_phone || '';
+    xPrice.value = x.price != null ? x.price : '';
+    xPriceUnit.value = x.price_unit || 'per person';
+    xNotes.value = x.notes || '';
+    if (x.applicant_notes) {
+      xApplicantNotesField.style.display = '';
+      xApplicantNotes.value = x.applicant_notes;
+    } else {
+      xApplicantNotesField.style.display = 'none';
+    }
+    setExcursionRatingReadout(x);
+    currentExcursionImages = Array.isArray(x.images) ? x.images.slice() : [];
+    renderExcursionImages();
+    deleteExcursionBtn.style.display = '';
+    excursionEditCard.style.display = '';
+    renderExcursionList();
+    excursionEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function openNewExcursion(){
+    editingExcursionId = null;
+    xName.textContent = 'New provider';
+    document.getElementById('excursionEditCardTitle').firstChild.textContent = 'Add provider — ';
+    xNameInput.value = '';
+    xTypes.value = '';
+    xLocation.value = '';
+    xStatus.value = 'active';
+    xContactEmail.value = '';
+    xContactPhone.value = '';
+    xPrice.value = '';
+    xPriceUnit.value = 'per person';
+    xNotes.value = '';
+    xApplicantNotesField.style.display = 'none';
+    setExcursionRatingReadout(null);
+    currentExcursionImages = [];
+    renderExcursionImages();
+    deleteExcursionBtn.style.display = 'none';
+    excursionEditCard.style.display = '';
+    renderExcursionList();
+    excursionEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  addExcursionBtn.addEventListener('click', openNewExcursion);
+  document.getElementById('cancelExcursionBtn').addEventListener('click', () => { excursionEditCard.style.display = 'none'; editingExcursionId = null; renderExcursionList(); });
+
+  async function loadExcursions(){
+    const { data, error } = await window.sb.from('partner_excursions').select('*').order('name');
+    if (error) { excursionList.innerHTML = '<div class="rlrow-empty" style="color:var(--danger)">Couldn\'t load excursion providers: ' + error.message + '</div>'; return; }
+    excursions = data || [];
+    renderExcursionList();
+  }
+
+  document.getElementById('saveExcursionBtn').addEventListener('click', async () => {
+    const name = xNameInput.value.trim();
+    if (!name) { alert('Please enter a provider name.'); return; }
+    const payload = {
+      name,
+      excursion_types: xTypes.value.trim() || null,
+      location: xLocation.value.trim() || null,
+      status: xStatus.value,
+      contact_email: xContactEmail.value.trim() || null,
+      contact_phone: xContactPhone.value.trim() || null,
+      price: parseFloat(xPrice.value) || 0,
+      price_unit: xPriceUnit.value,
+      notes: xNotes.value.trim() || null,
+      images: currentExcursionImages
+    };
+    const { error } = editingExcursionId
+      ? await window.sb.from('partner_excursions').update(payload).eq('id', editingExcursionId)
+      : await window.sb.from('partner_excursions').insert(payload);
+    if (error) { alert("Couldn't save: " + error.message); return; }
+    const wasEditing = !!editingExcursionId;
+    excursionEditCard.style.display = 'none';
+    editingExcursionId = null;
+    await loadExcursions();
+    showToast(wasEditing ? 'Provider updated' : 'Provider added');
+  });
+
+  deleteExcursionBtn.addEventListener('click', async () => {
+    if (!editingExcursionId) return;
+    if (!confirm('Delete this provider? This can’t be undone.')) return;
+    const { error } = await window.sb.from('partner_excursions').delete().eq('id', editingExcursionId);
+    if (error) { alert("Couldn't delete: " + error.message); return; }
+    excursionEditCard.style.display = 'none';
+    editingExcursionId = null;
+    await loadExcursions();
+    showToast('Provider deleted');
+  });
+
+  loadExcursions();
 </script>
 <script type="module">
   document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
