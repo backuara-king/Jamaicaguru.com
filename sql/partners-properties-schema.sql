@@ -43,6 +43,14 @@ drop policy if exists "authenticated full access to properties" on partner_prope
 create policy "authenticated full access to properties" on partner_properties
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
+-- RLS policies alone aren't enough — a table created via raw SQL (rather
+-- than the Table Editor UI) doesn't automatically get table-level grants
+-- for anon/authenticated the way the UI wizard sets up. Without these,
+-- every query hits "permission denied for table partner_properties"
+-- before RLS is even evaluated.
+grant select, insert, update, delete on partner_properties to authenticated;
+grant select on partner_properties to anon;
+
 -- ---------- 2. Storage bucket for property photos ----------
 -- Easiest done in the dashboard: Storage → New bucket → name it
 -- "property-images" → Public bucket: ON. Then mirror whatever
