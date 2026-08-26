@@ -609,7 +609,7 @@
     <div class="footer-bottom">
       <span>&copy; 2026 Jamaica Guru. All Rights Reserved.</span>
       <span>Kingston &amp; Negril, Jamaica</span>
-      <a href="become-a-partner.html" target="_blank" rel="noopener" style="color:inherit;">Become a Partner &rarr;</a>
+      <a href="become-a-partner.html" data-jg-external target="_blank" rel="noopener" style="color:inherit;">Become a Partner &rarr;</a>
     </div>
   </div>
 </footer>
@@ -624,6 +624,16 @@
       e.preventDefault();
       if (window.parent && window.parent.jgShowView) window.parent.jgShowView(el.dataset.jgNav);
     });
+  });
+
+  // Links to a real standalone page (not one of the embedded views) need
+  // resolving against the actual site URL, not this iframe's blob: URL —
+  // a plain relative href here has no valid base to resolve against and
+  // silently opens a blank tab.
+  document.querySelectorAll('[data-jg-external]').forEach(el => {
+    try {
+      el.href = new URL(el.getAttribute('href'), window.parent.location.href).href;
+    } catch (e) { /* cross-origin parent — leave href as-is */ }
   });
 </script>
 
