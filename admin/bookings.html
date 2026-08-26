@@ -246,7 +246,8 @@
   <a class="nav-item " href="admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
   <a class="nav-item" href="reviews.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6.2 6.6.7-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.7L12 2.5z"/></svg>Reviews</a>
   <a class="nav-item " href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
-  <a class="nav-item " href="transportation.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-6h14l2 6M5 13h14v5H5v-5zM7 18v2M17 18v2"/></svg>Transportation</a>
+  <div class="nav-group-label">Partners</div>
+  <a class="nav-item " href="partners.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>Partners</a>
 
   <div class="nav-group-label">Site</div>
   <a class="nav-item " href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
@@ -323,6 +324,19 @@
           </button>
         </div>
 
+        <div class="field">
+          <label>Property assigned <span class="hint">— which Partners → Properties listing this guest stayed at, if any. Assigning one is what lets a rating survey link generate once the trip is marked Completed.</span></label>
+          <select id="dPropertySelect"><option value="">— No property assigned —</option></select>
+        </div>
+
+        <div class="review-link-box" id="propertyReviewLinkBox" style="display:none;">
+          <div class="rl-info" id="propertyReviewLinkInfo"></div>
+          <button type="button" id="copyPropertyReviewLinkBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Rating Link
+          </button>
+        </div>
+
         <h3 style="margin-bottom:10px;">Selections</h3>
         <div class="timeline" id="dSelections"></div>
       </div>
@@ -356,6 +370,18 @@
   }
 
   const listEl = document.getElementById('bookingList');
+
+  // Property options for the "Property assigned" dropdown — same list for
+  // every booking, so it's loaded once up front.
+  const dPropertySelect = document.getElementById('dPropertySelect');
+  const { data: propertyOptions } = await window.sb.from('partner_properties').select('id, name').order('name');
+  (propertyOptions || []).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    dPropertySelect.appendChild(opt);
+  });
+
   const { data: bookings, error } = await window.sb
     .from('bookings')
     .select('*')
@@ -436,6 +462,31 @@
     };
   }
 
+  function renderPropertyReviewLink(b) {
+    const box = document.getElementById('propertyReviewLinkBox');
+    if (b.status !== 'completed' || !b.property_id || !b.property_review_token) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = '';
+    const url = location.origin + location.pathname.replace(/admin\/.*$/, '') + 'submit-property-review.html?token=' + b.property_review_token;
+    document.getElementById('propertyReviewLinkInfo').innerHTML = b.property_review_submitted
+      ? '<b>Rating already submitted</b> for this property.'
+      : 'Rating survey not requested by email yet — <b>share this link</b> directly with the guest.';
+    const copyBtn = document.getElementById('copyPropertyReviewLinkBtn');
+    copyBtn.style.display = b.property_review_submitted ? 'none' : '';
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        const original = copyBtn.innerHTML;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.innerHTML = original; }, 1800);
+      } catch (e) {
+        prompt('Copy this link:', url);
+      }
+    };
+  }
+
   function selectBooking(i, row) {
     const b = bookings[i];
     document.querySelectorAll('#bookingList .rlrow').forEach(r => r.classList.remove('selected'));
@@ -459,13 +510,27 @@
     document.getElementById('dOutstanding').textContent = fmt(remaining);
     renderReviewLink(b);
 
+    dPropertySelect.value = b.property_id || '';
+    renderPropertyReviewLink(b);
+    dPropertySelect.onchange = async () => {
+      const newPropertyId = dPropertySelect.value || null;
+      // .select().single() so we get back the property_review_token the
+      // database trigger generates immediately if this booking is already
+      // completed at the moment a property gets assigned.
+      const { data: updated, error: updateError } = await window.sb.from('bookings')
+        .update({ property_id: newPropertyId }).eq('id', b.id).select().single();
+      if (updateError) { alert("Couldn't assign property: " + updateError.message); return; }
+      Object.assign(b, updated);
+      renderPropertyReviewLink(b);
+    };
+
     const sel = document.getElementById('dStatusSelect');
     sel.value = b.status || 'new';
     sel.className = 'badge status-select ' + STATUS_BADGE[b.status || 'new'];
     sel.onchange = async () => {
       const newStatus = sel.value;
-      // .select().single() so we get back the review_token the database
-      // trigger generates the moment status flips to "completed".
+      // .select().single() so we get back the review_token / property_review_token
+      // the database triggers generate the moment status flips to "completed".
       const { data: updated, error: updateError } = await window.sb.from('bookings')
         .update({ status: newStatus }).eq('id', b.id).select().single();
       if (updateError) { alert("Couldn't update status: " + updateError.message); return; }
@@ -475,6 +540,7 @@
       row.querySelector('.badge').className = 'badge ' + STATUS_BADGE[newStatus];
       sel.className = 'badge status-select ' + STATUS_BADGE[newStatus];
       renderReviewLink(b);
+      renderPropertyReviewLink(b);
     };
 
     const items = [

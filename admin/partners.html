@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>html:not(.jg-authed){visibility:hidden;}</style>
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.sb = createClient('https://fgzfpeewbcccxaakpmty.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnemZwZWV3YmNjY3hhYWtwbXR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1ODAxNzEsImV4cCI6MjEwMjE1NjE3MX0.YLj7ZCr3VRtXrhf_-4C__eyO5iAkrZvF9fZdJKpRqLs');
+  const { data } = await window.sb.auth.getSession();
+  if (!data.session) {
+    window.location.href = 'login.html';
+  } else {
+    document.documentElement.classList.add('jg-authed');
+  }
+</script>
+<title>Jamaica Guru — Partners</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --sidebar: #12281B;
+    --sidebar-hover: #1B4332;
+    --green: #1B4332;
+    --green-2: #2F6B4F;
+    --gold: #9A6B00;
+    --gold-vivid: #FFD100;
+    --bg: #F7F7F5;
+    --card: #FFFFFF;
+    --border: #E4E2DC;
+    --ink: #1A1A1A;
+    --muted: #6B675E;
+    --danger: #C0392B;
+    --danger-bg: #FBEAE8;
+    --warn: #B26A00;
+    --warn-bg: #FDF1DE;
+    --ok: #1B7A45;
+    --ok-bg: #E9F6EF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); font-family:'Inter',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit; text-decoration:none;}
+  button{font:inherit; cursor:pointer;}
+  input, textarea, select{font:inherit;}
+
+  .mobile-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--sidebar); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:60;
+  }
+  .mobile-topbar .brand{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .mobile-topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff; width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .sidebar{
+    background:var(--sidebar); color:#EFEDE6; width:100%;
+    display:none; flex-direction:column; padding:18px 12px; gap:2px;
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar .brand{display:flex; align-items:center; justify-content:space-between; padding:6px 10px 18px;}
+  .sidebar .brand-name{display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#fff;}
+  .sidebar .close-btn{background:none; border:none; color:#fff; width:32px; height:32px;}
+  .nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:rgba(239,237,230,0.45); padding:14px 12px 6px;}
+  .nav-item{display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; color:rgba(239,237,230,0.75); font-size:14px; font-weight:500;}
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  .nav-item.active{background:var(--sidebar-hover); color:#fff;}
+  .nav-item.active svg{color:var(--gold-vivid);}
+  .sidebar-footer{margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:10px; font-size:13px;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--gold-vivid); color:#12281B; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+
+  .main{flex:1; padding:20px 16px 40px;}
+  .page-header{margin-bottom:18px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .page-header h1{font-size:22px; font-weight:600;}
+  .page-header .sub{font-size:13px; color:var(--muted); margin-top:5px;}
+  .btn-primary{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-secondary{
+    background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600; white-space:nowrap;
+  }
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:16px;}
+  .card h3{font-size:14.5px; font-weight:600; margin-bottom:3px;}
+  .card .card-sub{font-size:12px; color:var(--muted); margin-bottom:14px;}
+
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px; font-weight:600;}
+  .field .hint{font-weight:400; color:var(--muted); font-size:11px;}
+  .field input, .field textarea, .field select{
+    width:100%; border:1px solid var(--border); border-radius:10px; padding:11px 13px;
+    font-size:14px; background:#fff; color:var(--ink); min-height:44px;
+  }
+  .field textarea{min-height:80px; resize:vertical; line-height:1.5;}
+  .field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible{outline:2px solid var(--green); outline-offset:1px;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .three-col{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+
+  /* filter pills */
+  .filter-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;}
+  .filter-pill{
+    flex-shrink:0; background:#fff; border:1px solid var(--border); border-radius:20px; padding:9px 14px;
+    font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap;
+  }
+  .filter-pill.active{background:var(--green); color:#fff; border-color:var(--green);}
+
+  /* list rows used as a responsive "table" */
+  .rowlist{background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;}
+  .rlrow{padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .rlrow:last-child{border-bottom:none;}
+  .rlrow:hover{background:var(--bg);}
+  .rlrow.selected{background:#F0EEE6;}
+  .rl-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .rl-title{font-size:14px; font-weight:600;}
+  .rl-sub{font-size:12px; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rl-meta{display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;}
+  .rl-meta .m{font-size:11.5px; color:var(--muted);}
+  .rl-meta .m b{color:var(--ink); font-weight:600;}
+  .rl-rating{display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--muted); white-space:nowrap;}
+  .rl-rating .star{color:var(--gold-vivid);}
+  .rlrow-empty{padding:24px 16px; font-size:13px; color:var(--muted); text-align:center;}
+
+  .badge{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; padding:4px 10px; border-radius:14px; white-space:nowrap;}
+  .badge.ok{background:var(--ok-bg); color:var(--ok);}
+  .badge.warn{background:var(--warn-bg); color:var(--warn);}
+  .badge.danger{background:var(--danger-bg); color:var(--danger);}
+  .badge.neutral{background:var(--bg); color:var(--muted);}
+  .badge.gold{background:rgba(154,107,0,0.1); color:var(--gold);}
+
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:16px 0 20px; overflow-x:auto;}
+  .tab-btn{background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600; color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;}
+  .tab-btn.active{color:var(--green); border-bottom-color:var(--green);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .note-banner{
+    background:var(--warn-bg); border:1px solid rgba(178,106,0,0.25); border-radius:12px; padding:12px 14px;
+    font-size:12.5px; color:var(--warn); margin-bottom:16px; line-height:1.5;
+  }
+
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:9px; border:1px solid var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .icon-btn.danger{color:var(--danger); border-color:var(--danger-bg);}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
+  .btn-discard{
+    background:none; border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:11px 16px;
+    font-size:13px; font-weight:600;
+  }
+  .btn-save{
+    background:var(--green); color:#fff; border:none; border-radius:20px; padding:11px 18px;
+    font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;
+  }
+  .toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-140%);
+    background:var(--green); color:#fff; padding:12px 20px; border-radius:12px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px; z-index:100; transition:transform 0.3s ease; box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ===== Partner category tabs (Properties / Transportation / Excursions) ===== */
+  .catalog-tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:4px 0 20px; overflow-x:auto;}
+  .catalog-tab{
+    background:none; border:none; padding:11px 4px; margin-right:22px; font-size:13.5px; font-weight:600;
+    color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .catalog-tab.active{color:var(--green); border-bottom-color:var(--green);}
+  .catalog-panel{display:none;}
+  .catalog-panel.active{display:block;}
+
+  /* ===== Image gallery (reused from Packages/Experiences editors) ===== */
+  .img-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;}
+  .img-tile{
+    position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff;
+  }
+  .img-tile .remove-img{
+    position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,0.5); color:#fff; border:none; display:flex; align-items:center; justify-content:center;
+  }
+  .img-tile .cover-tag{
+    position:absolute; bottom:6px; left:6px; font-size:9.5px; font-weight:700; text-transform:uppercase;
+    background:var(--gold-vivid); color:#12281B; padding:3px 7px; border-radius:8px;
+  }
+  .img-tile.add-tile{
+    background:var(--bg); border:2px dashed var(--border); color:var(--muted); flex-direction:column; gap:8px;
+    cursor:pointer;
+  }
+  .img-tile.add-tile:hover{border-color:var(--green); color:var(--green);}
+  @media (min-width:960px){ .img-grid{grid-template-columns:repeat(3, 1fr);} }
+
+  .rating-readout{
+    display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px; font-size:13px; color:var(--muted);
+  }
+  .rating-readout .stars{color:var(--gold-vivid); font-size:15px; letter-spacing:1px;}
+  .rating-readout b{color:var(--ink);}
+
+  @media (min-width:960px){
+    .mobile-topbar{display:none;}
+    body{flex-direction:row;}
+    .sidebar{display:flex; position:sticky; top:0; height:100vh; width:250px; flex-shrink:0; inset:auto;}
+    .sidebar .close-btn{display:none;}
+    .main{flex:1; padding:32px 40px 60px; max-width:1080px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <div class="brand">🌴 Jamaica Guru Admin</div>
+  <button id="menuToggle" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-name">🌴 Jamaica Guru</div>
+    <button class="close-btn" id="closeSidebar" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-group-label">Overview</div>
+  <a class="nav-item " href="dashboard-home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+
+  <div class="nav-group-label">Operations</div>
+  <a class="nav-item " href="bookings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>Bookings</a>
+  <a class="nav-item " href="customers.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 4-5.5 7-5.5s6 2 7 5.5M17 8a3.5 3.5 0 100-7M22 20c-.6-2.2-2-3.8-4-4.7"/></svg>Customers</a>
+
+  <div class="nav-group-label">Catalog</div>
+  <a class="nav-item " href="admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>Packages</a>
+  <a class="nav-item " href="reviews.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 6.2 6.6.7-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.7L12 2.5z"/></svg>Reviews</a>
+  <a class="nav-item " href="experiences.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5L12 2z"/></svg>Experiences</a>
+
+  <div class="nav-group-label">Partners</div>
+  <a class="nav-item active" href="partners.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>Partners</a>
+
+  <div class="nav-group-label">Site</div>
+  <a class="nav-item " href="website.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 4 5.8 4 9s-1.5 6.5-4 9c-2.5-2.5-4-5.8-4-9s1.5-6.5 4-9z"/></svg>Website</a>
+  <a class="nav-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18M8 17V10m5 7V6m5 11v-5"/></svg>Analytics</a>
+  <a class="nav-item " href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</a>
+
+  <div class="sidebar-footer">
+    <div class="avatar">T</div>
+    <div style="flex:1;">
+      <div style="font-weight:600; color:#fff;">Tray</div>
+      <div style="font-size:11.5px; color:rgba(239,237,230,0.55);">Admin</div>
+    </div>
+    <a href="#" id="logoutLink" style="font-size:11.5px; color:rgba(239,237,230,0.5); text-decoration:underline;">Log out</a>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page-header">
+    <div><h1>Partners</h1><div class="sub" id="pageSub">Properties, transportation, and excursion partners — all in one place.</div></div>
+    <button class="btn-primary" id="addPropertyBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add Property</button>
+  </div>
+
+  <div class="catalog-tabs">
+    <button class="catalog-tab active" data-panel="properties" type="button">Properties</button>
+    <button class="catalog-tab" data-panel="transportation" type="button">Transportation</button>
+    <button class="catalog-tab" data-panel="excursions" type="button">Excursions</button>
+  </div>
+
+  <!-- ===================== PANEL: Properties ===================== -->
+  <div class="catalog-panel active" id="panel-properties">
+    <div class="note-banner">
+      Guest ratings here are filled in automatically — a rating survey link is generated for the property once a guest's trip status is marked "Completed" in Bookings and a property is assigned to that trip. You don't need to enter stars by hand.
+    </div>
+
+    <div class="rowlist" id="propertyList">
+      <div class="rlrow-empty">Loading properties&hellip;</div>
+    </div>
+
+    <div class="card" id="propertyEditCard" style="margin-top:20px; display:none;">
+      <h3 id="propertyEditCardTitle">Edit property — <span id="pName">&nbsp;</span></h3>
+      <div class="card-sub">Changes here apply everywhere this property is shown.</div>
+
+      <div class="field"><label>Property name</label><input type="text" id="pNameInput" placeholder="e.g. Ocean Breeze Villa"></div>
+      <div class="two-col">
+        <div class="field"><label>Host / company name</label><input type="text" id="pHostName" placeholder="Who manages this property"></div>
+        <div class="field"><label>Location</label><input type="text" id="pLocation" placeholder="e.g. Ocho Rios, St. Ann"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Contact email</label><input type="text" id="pContactEmail"></div>
+        <div class="field"><label>Contact phone</label><input type="text" id="pContactPhone"></div>
+      </div>
+
+      <div class="rating-readout" id="pRatingReadout" style="margin-bottom:14px;">
+        <span class="stars" id="pRatingStars">☆☆☆☆☆</span>
+        <span id="pRatingText">No guest ratings yet</span>
+      </div>
+
+      <div class="three-col">
+        <div class="field"><label>Bedrooms</label><input type="number" min="0" step="1" id="pBedrooms"></div>
+        <div class="field"><label>Bathrooms</label><input type="number" min="0" step="0.5" id="pBathrooms"></div>
+        <div class="field"><label>Beds</label><input type="number" min="0" step="1" id="pBeds"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Max guests</label><input type="number" min="0" step="1" id="pMaxGuests"></div>
+        <div class="field"><label>Property size <span class="hint">— free text, e.g. 2,400 sq ft</span></label><input type="text" id="pSize"></div>
+      </div>
+
+      <div class="three-col">
+        <div class="field">
+          <label>Kitchen</label>
+          <select id="pKitchen"><option value="true">Yes</option><option value="false">No</option></select>
+        </div>
+        <div class="field">
+          <label>Pool</label>
+          <select id="pPool"><option value="true">Yes</option><option value="false">No</option></select>
+        </div>
+        <div class="field">
+          <label>Gated community</label>
+          <select id="pGated"><option value="true">Yes</option><option value="false">No</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Other amenities <span class="hint">— comma-separated, e.g. AC, WiFi, Hot tub, Beach access</span></label><input type="text" id="pAmenities"></div>
+
+      <div class="two-col">
+        <div class="field"><label>Airbnb link</label><input type="text" id="pAirbnb" placeholder="https://airbnb.com/rooms/..."></div>
+        <div class="field">
+          <label>Status</label>
+          <select id="pStatus"><option value="pending">Pending review</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Photos</label>
+        <div class="img-grid" id="propertyImgGrid">
+          <div class="img-tile add-tile" id="addPropertyImgTile">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add photo</span>
+          </div>
+        </div>
+        <input type="file" id="propertyImgFileInput" accept="image/*" multiple style="display:none;">
+        <div class="img-upload-status" id="propertyImgUploadStatus" style="font-size:12px; color:var(--muted); margin-top:10px; display:none;"></div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:4px;">
+        <button class="icon-btn danger" id="deletePropertyBtn" type="button" aria-label="Delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-discard" id="cancelPropertyBtn" type="button">Cancel</button>
+          <button class="btn-save" id="savePropertyBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANEL: Transportation (moved here — CRUD + status/email workflow coming in the next pass) ===================== -->
+  <div class="catalog-panel" id="panel-transportation">
+    <div class="note-banner">
+      Moved here from its own page. This tab still shows placeholder data — Gurus (drivers) with full profiles, the applied → processing → approved → assigned status workflow, and its "Send Email" buttons are built in the next pass.
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="vehicles">Vehicles</button>
+      <button class="tab-btn" data-tab="drivers">Gurus (Drivers)</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-vehicles">
+      <div class="rowlist">
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-001</span><span class="badge ok">Assigned</span></div>
+          <div class="rl-sub">2019 · Plate JA-4471 · Capacity 8</div>
+          <div class="rl-meta"><span class="m">Mileage <b>186,432 km</b></span><span class="m">Next service <b>190,000 km</b></span><span class="m">Driver <b>Michael</b></span><span class="m">Insurance exp. <b>Dec 2026</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Toyota Hiace — #JG-002</span><span class="badge ok">Assigned</span></div>
+          <div class="rl-sub">2021 · Plate JA-5820 · Capacity 12</div>
+          <div class="rl-meta"><span class="m">Mileage <b>92,110 km</b></span><span class="m">Next service <b>100,000 km</b></span><span class="m">Driver <b>Andre</b></span><span class="m">Insurance exp. <b>Mar 2027</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Honda CR-V — #JG-003</span><span class="badge warn">Maintenance</span></div>
+          <div class="rl-sub">2020 · Plate JA-3390 · Capacity 5</div>
+          <div class="rl-meta"><span class="m">Mileage <b>141,880 km</b></span><span class="m">In shop until <b>Aug 15</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jan 2027</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Toyota Noah — #JG-004</span><span class="badge neutral">Available</span></div>
+          <div class="rl-sub">2022 · Plate JA-6127 · Capacity 8</div>
+          <div class="rl-meta"><span class="m">Mileage <b>44,205 km</b></span><span class="m">Next service <b>50,000 km</b></span><span class="m">Driver <b>Unassigned</b></span><span class="m">Insurance exp. <b>Jul 2027</b></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-drivers">
+      <div class="rowlist">
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Guru #14 — Michael</span><span class="badge ok">Available</span></div>
+          <div class="rl-sub">Toyota Noah #JG-001 · St. Ann service area</div>
+          <div class="rl-meta"><span class="m">Trips completed <b>147</b></span><span class="m">Rating <b>4.9</b></span><span class="m">On-time <b>94%</b></span><span class="m">This month <b>14 trips</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Guru #7 — Andre</span><span class="badge warn">On Trip</span></div>
+          <div class="rl-sub">Toyota Hiace #JG-002 · Montego Bay service area</div>
+          <div class="rl-meta"><span class="m">Trips completed <b>93</b></span><span class="m">Rating <b>4.8</b></span><span class="m">On-time <b>91%</b></span><span class="m">This month <b>9 trips</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Guru #3 — Kadeem</span><span class="badge ok">Available</span></div>
+          <div class="rl-sub">Unassigned vehicle · Ocho Rios service area</div>
+          <div class="rl-meta"><span class="m">Trips completed <b>61</b></span><span class="m">Rating <b>4.7</b></span><span class="m">On-time <b>88%</b></span><span class="m">This month <b>6 trips</b></span></div>
+        </div>
+        <div class="rlrow">
+          <div class="rl-top"><span class="rl-title">Guru #22 — Sasha-Kay</span><span class="badge neutral">Off Today</span></div>
+          <div class="rl-sub">Unassigned vehicle · Negril service area</div>
+          <div class="rl-meta"><span class="m">Trips completed <b>28</b></span><span class="m">Rating <b>5.0</b></span><span class="m">On-time <b>100%</b></span><span class="m">This month <b>3 trips</b></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANEL: Excursions (built in a later pass) ===================== -->
+  <div class="catalog-panel" id="panel-excursions">
+    <div class="note-banner">
+      Excursion partner directory — excursion types offered, location, prices, star ratings, and provider info — is built in a later pass, same shape as Properties.
+    </div>
+    <div class="rowlist"><div class="rlrow-empty">Nothing here yet.</div></div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
+  <span id="toastText">Saved</span>
+</div>
+
+<script type="module">
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.add('open'));
+  document.getElementById('closeSidebar').addEventListener('click', () => sidebar.classList.remove('open'));
+
+  /* ===== Top-level category tabs (Properties / Transportation / Excursions) ===== */
+  const pageSub = document.getElementById('pageSub');
+  const addPropertyBtn = document.getElementById('addPropertyBtn');
+  const SUB_TEXT = {
+    properties: 'Individual properties guests can be booked into — with host, amenities, and guest ratings.',
+    transportation: 'Your fleet and your Gurus (drivers).',
+    excursions: 'Excursion providers your packages and add-ons pull from.'
+  };
+  document.querySelectorAll('.catalog-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const panel = tab.dataset.panel;
+      document.querySelectorAll('.catalog-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.catalog-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+      pageSub.textContent = SUB_TEXT[panel];
+      addPropertyBtn.style.display = panel === 'properties' ? '' : 'none';
+    });
+  });
+
+  /* ===== Transportation sub-tabs (Vehicles / Gurus) — unchanged, moved as-is ===== */
+  document.querySelectorAll('#panel-transportation .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#panel-transportation .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#panel-transportation .tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastText').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  /* ===== Properties: load, add, edit, delete, image upload ===== */
+  let properties = [];
+  let editingPropertyId = null;
+  let currentPropertyImages = [];
+
+  const propertyList = document.getElementById('propertyList');
+  const propertyEditCard = document.getElementById('propertyEditCard');
+  const pNameInput = document.getElementById('pNameInput');
+  const pName = document.getElementById('pName');
+  const pHostName = document.getElementById('pHostName');
+  const pLocation = document.getElementById('pLocation');
+  const pContactEmail = document.getElementById('pContactEmail');
+  const pContactPhone = document.getElementById('pContactPhone');
+  const pBedrooms = document.getElementById('pBedrooms');
+  const pBathrooms = document.getElementById('pBathrooms');
+  const pBeds = document.getElementById('pBeds');
+  const pMaxGuests = document.getElementById('pMaxGuests');
+  const pSize = document.getElementById('pSize');
+  const pKitchen = document.getElementById('pKitchen');
+  const pPool = document.getElementById('pPool');
+  const pGated = document.getElementById('pGated');
+  const pAmenities = document.getElementById('pAmenities');
+  const pAirbnb = document.getElementById('pAirbnb');
+  const pStatus = document.getElementById('pStatus');
+  const pRatingStars = document.getElementById('pRatingStars');
+  const pRatingText = document.getElementById('pRatingText');
+  const deletePropertyBtn = document.getElementById('deletePropertyBtn');
+
+  const propertyImgGrid = document.getElementById('propertyImgGrid');
+  const addPropertyImgTile = document.getElementById('addPropertyImgTile');
+  const propertyImgFileInput = document.getElementById('propertyImgFileInput');
+  const propertyImgUploadStatus = document.getElementById('propertyImgUploadStatus');
+
+  function renderPropertyImages(){
+    propertyImgGrid.querySelectorAll('.img-tile:not(.add-tile)').forEach(t => t.remove());
+    currentPropertyImages.forEach((url, idx) => {
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.backgroundImage = `url("${url}")`;
+      tile.style.backgroundSize = 'cover';
+      tile.style.backgroundPosition = 'center';
+      tile.dataset.idx = idx;
+      tile.innerHTML = (idx === 0 ? '<span class="cover-tag">Cover</span>' : '') +
+        '<button class="remove-img" type="button" aria-label="Remove image"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+      propertyImgGrid.insertBefore(tile, addPropertyImgTile);
+    });
+  }
+  propertyImgGrid.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-img');
+    if (!removeBtn) return;
+    currentPropertyImages.splice(Number(removeBtn.closest('.img-tile').dataset.idx), 1);
+    renderPropertyImages();
+  });
+  addPropertyImgTile.addEventListener('click', () => propertyImgFileInput.click());
+  propertyImgFileInput.addEventListener('change', async () => {
+    const files = Array.from(propertyImgFileInput.files || []);
+    if (!files.length) return;
+    propertyImgUploadStatus.style.display = 'block';
+    for (const file of files) {
+      propertyImgUploadStatus.textContent = `Uploading ${file.name}…`;
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await window.sb.storage.from('property-images').upload(path, file, { upsert: false });
+      if (upErr) { propertyImgUploadStatus.textContent = `Couldn't upload ${file.name}: ${upErr.message}`; continue; }
+      const { data: pub } = window.sb.storage.from('property-images').getPublicUrl(path);
+      currentPropertyImages.push(pub.publicUrl);
+    }
+    propertyImgUploadStatus.style.display = 'none';
+    propertyImgFileInput.value = '';
+    renderPropertyImages();
+  });
+
+  function starString(rating) {
+    if (rating == null) return '☆☆☆☆☆';
+    const full = Math.max(0, Math.min(5, Math.round(rating)));
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function renderPropertyList(){
+    if (!properties.length) {
+      propertyList.innerHTML = '<div class="rlrow-empty">No properties yet — click "Add Property" to create your first one.</div>';
+      return;
+    }
+    const STATUS_BADGE = { active: 'ok', pending: 'gold', inactive: 'neutral' };
+    const STATUS_LABEL = { active: 'Active', pending: 'Pending review', inactive: 'Inactive' };
+    propertyList.innerHTML = properties.map(p => {
+      const ratingLabel = p.rating_avg != null
+        ? '<span class="star">★</span> ' + Number(p.rating_avg).toFixed(1) + ' (' + (p.rating_count || 0) + ')'
+        : 'No ratings yet';
+      const status = p.status || 'active';
+      return '<div class="rlrow' + (p.id === editingPropertyId ? ' selected' : '') + '" data-id="' + p.id + '">' +
+        '<div class="rl-top"><span class="rl-title"></span><span class="badge ' + STATUS_BADGE[status] + '">' + STATUS_LABEL[status] + '</span></div>' +
+        '<div class="rl-sub"></div>' +
+        '<div class="rl-meta"><span class="m">Bedrooms <b>' + (p.bedrooms ?? '—') + '</b></span><span class="m">Sleeps <b>' + (p.max_guests ?? '—') + '</b></span><span class="rl-rating">' + ratingLabel + '</span></div>' +
+      '</div>';
+    }).join('');
+    propertyList.querySelectorAll('.rlrow').forEach(row => {
+      const p = properties.find(x => x.id === row.dataset.id);
+      row.querySelector('.rl-title').textContent = p.name;
+      row.querySelector('.rl-sub').textContent = [p.host_name, p.location].filter(Boolean).join(' · ');
+      row.addEventListener('click', () => openPropertyEditor(p));
+    });
+  }
+
+  function setRatingReadout(p) {
+    pRatingStars.textContent = starString(p ? p.rating_avg : null);
+    pRatingText.textContent = (p && p.rating_avg != null)
+      ? Number(p.rating_avg).toFixed(1) + ' average from ' + (p.rating_count || 0) + (p.rating_count === 1 ? ' guest survey' : ' guest surveys')
+      : 'No guest ratings yet';
+  }
+
+  function openPropertyEditor(p){
+    editingPropertyId = p.id;
+    pName.textContent = p.name;
+    document.getElementById('propertyEditCardTitle').firstChild.textContent = 'Edit property — ';
+    pNameInput.value = p.name || '';
+    pHostName.value = p.host_name || '';
+    pLocation.value = p.location || '';
+    pContactEmail.value = p.contact_email || '';
+    pContactPhone.value = p.contact_phone || '';
+    pBedrooms.value = p.bedrooms ?? '';
+    pBathrooms.value = p.bathrooms ?? '';
+    pBeds.value = p.beds ?? '';
+    pMaxGuests.value = p.max_guests ?? '';
+    pSize.value = p.property_size || '';
+    pKitchen.value = String(!!p.has_kitchen);
+    pPool.value = String(!!p.has_pool);
+    pGated.value = String(!!p.gated_community);
+    pAmenities.value = Array.isArray(p.amenities) ? p.amenities.join(', ') : '';
+    pAirbnb.value = p.airbnb_url || '';
+    pStatus.value = p.status || 'active';
+    setRatingReadout(p);
+    currentPropertyImages = Array.isArray(p.images) ? p.images.slice() : [];
+    renderPropertyImages();
+    deletePropertyBtn.style.display = '';
+    propertyEditCard.style.display = '';
+    renderPropertyList();
+    propertyEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function openNewProperty(){
+    editingPropertyId = null;
+    pName.textContent = 'New property';
+    document.getElementById('propertyEditCardTitle').firstChild.textContent = 'Add property — ';
+    pNameInput.value = '';
+    pHostName.value = '';
+    pLocation.value = '';
+    pContactEmail.value = '';
+    pContactPhone.value = '';
+    pBedrooms.value = '';
+    pBathrooms.value = '';
+    pBeds.value = '';
+    pMaxGuests.value = '';
+    pSize.value = '';
+    pKitchen.value = 'false';
+    pPool.value = 'false';
+    pGated.value = 'false';
+    pAmenities.value = '';
+    pAirbnb.value = '';
+    pStatus.value = 'active';
+    setRatingReadout(null);
+    currentPropertyImages = [];
+    renderPropertyImages();
+    deletePropertyBtn.style.display = 'none';
+    propertyEditCard.style.display = '';
+    renderPropertyList();
+    propertyEditCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  addPropertyBtn.addEventListener('click', openNewProperty);
+  document.getElementById('cancelPropertyBtn').addEventListener('click', () => { propertyEditCard.style.display = 'none'; editingPropertyId = null; renderPropertyList(); });
+
+  async function loadProperties(){
+    const { data, error } = await window.sb.from('partner_properties').select('*').order('name');
+    if (error) { alert("Couldn't load properties: " + error.message); return; }
+    properties = data || [];
+    renderPropertyList();
+  }
+
+  document.getElementById('savePropertyBtn').addEventListener('click', async () => {
+    const name = pNameInput.value.trim();
+    if (!name) { alert('Please enter a property name.'); return; }
+    const payload = {
+      name,
+      host_name: pHostName.value.trim() || null,
+      location: pLocation.value.trim() || null,
+      contact_email: pContactEmail.value.trim() || null,
+      contact_phone: pContactPhone.value.trim() || null,
+      bedrooms: pBedrooms.value !== '' ? parseInt(pBedrooms.value, 10) : null,
+      bathrooms: pBathrooms.value !== '' ? parseFloat(pBathrooms.value) : null,
+      beds: pBeds.value !== '' ? parseInt(pBeds.value, 10) : null,
+      max_guests: pMaxGuests.value !== '' ? parseInt(pMaxGuests.value, 10) : null,
+      property_size: pSize.value.trim() || null,
+      has_kitchen: pKitchen.value === 'true',
+      has_pool: pPool.value === 'true',
+      gated_community: pGated.value === 'true',
+      amenities: pAmenities.value.split(',').map(s => s.trim()).filter(Boolean),
+      airbnb_url: pAirbnb.value.trim() || null,
+      status: pStatus.value,
+      images: currentPropertyImages
+    };
+    const { error } = editingPropertyId
+      ? await window.sb.from('partner_properties').update(payload).eq('id', editingPropertyId)
+      : await window.sb.from('partner_properties').insert(payload);
+    if (error) { alert("Couldn't save: " + error.message); return; }
+    const wasEditing = !!editingPropertyId;
+    propertyEditCard.style.display = 'none';
+    editingPropertyId = null;
+    await loadProperties();
+    showToast(wasEditing ? 'Property updated' : 'Property added');
+  });
+
+  deletePropertyBtn.addEventListener('click', async () => {
+    if (!editingPropertyId) return;
+    if (!confirm('Delete this property? This can’t be undone.')) return;
+    const { error } = await window.sb.from('partner_properties').delete().eq('id', editingPropertyId);
+    if (error) { alert("Couldn't delete: " + error.message); return; }
+    propertyEditCard.style.display = 'none';
+    editingPropertyId = null;
+    await loadProperties();
+    showToast('Property deleted');
+  });
+
+  loadProperties();
+</script>
+<script type="module">
+  document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await window.sb.auth.signOut();
+    window.location.href = 'login.html';
+  });
+</script>
+</body>
+</html>
