@@ -414,6 +414,7 @@
     background: var(--mist); color: var(--purple); padding: 0.35em 0.7em; border-radius: 999px;
   }
   .addon-modal-price { font-family: var(--font); font-weight: 700; font-size: 1.2rem; color: var(--ink); margin-bottom: 1rem; }
+  .addon-modal-lead { font-size: 0.95rem; font-weight: 600; color: var(--ink); line-height: 1.55; margin-bottom: 0.6rem; }
   .addon-modal-desc { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65; }
   .addon-modal-footer {
     flex: 0 0 auto; padding: 1rem 1.4rem calc(1rem + env(safe-area-inset-bottom));
@@ -551,6 +552,7 @@
           <span class="addon-modal-tag" id="addonModalUnit"></span>
         </div>
         <div class="addon-modal-price" id="addonModalPrice"></div>
+        <p class="addon-modal-lead" id="addonModalLead" style="display:none"></p>
         <p class="addon-modal-desc" id="addonModalDesc"></p>
       </div>
     </div>
@@ -678,6 +680,7 @@
   const addonModalTitle = document.getElementById('addonModalTitle');
   const addonModalUnit = document.getElementById('addonModalUnit');
   const addonModalPrice = document.getElementById('addonModalPrice');
+  const addonModalLead = document.getElementById('addonModalLead');
   const addonModalDesc = document.getElementById('addonModalDesc');
   const addonModalAddBtn = document.getElementById('addonModalAddBtn');
   const addonModalViewCartBtn = document.getElementById('addonModalViewCartBtn');
@@ -751,6 +754,12 @@
     addonModalUnit.textContent = a.price_unit || '';
     addonModalUnit.style.display = a.price_unit ? '' : 'none';
     addonModalPrice.textContent = '$' + fmtAddonPrice(a.price);
+    // Short/card description as a bold lead-in, then the full description
+    // below it — skip the lead if there's no short version, or it's the
+    // same text as the long one (e.g. fallback data), to avoid repeating.
+    const showLead = a.card_description && a.card_description !== a.description;
+    addonModalLead.textContent = showLead ? a.card_description : '';
+    addonModalLead.style.display = showLead ? '' : 'none';
     addonModalDesc.textContent = a.description || '';
     renderAddonModalGallery(a.images);
     addonModalScroll.scrollTop = 0;
