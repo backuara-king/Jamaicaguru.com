@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
           last_name: record.last_name || null,
           phone: record.phone || null
         },
-        redirectTo: 'https://jamaicaguru.com/set-password.html'
+        redirectTo: 'https://www.jamaicaguru.com/set-password.html'
       });
       if (inviteErr) throw inviteErr;
       userId = invited.user.id;
