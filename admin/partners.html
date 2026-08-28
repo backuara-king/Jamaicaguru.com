@@ -285,6 +285,10 @@
       Guest ratings here are filled in automatically — a rating survey link is generated for the property once a guest's trip status is marked "Completed" in Bookings and a property is assigned to that trip. You don't need to enter stars by hand.
     </div>
 
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="propertySearch" placeholder="Search by name, host, or location…">
+    </div>
+
     <div class="rowlist" id="propertyList">
       <div class="rlrow-empty">Loading properties&hellip;</div>
     </div>
@@ -373,6 +377,10 @@
   <div class="catalog-panel" id="panel-transportation">
     <div class="note-banner">
       The old separate fleet-maintenance "Vehicles" list (mileage, insurance expiry) was placeholder data that was never part of the spec, so it's gone — each Guru's vehicle info now lives directly on their own profile below. Guest ratings work the same way as Properties: assign a Guru to a booking, and a rating survey link generates once that trip is marked Completed.
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="driverSearch" placeholder="Search by name, phone, email, or vehicle…">
     </div>
 
     <div class="rowlist" id="driverList">
@@ -506,6 +514,10 @@
   <div class="catalog-panel" id="panel-excursions">
     <div class="note-banner">
       This is a standalone excursion-provider directory — it doesn't replace the free-text "Supplier" field on individual Activities in the Experiences tab. Guest ratings work the same way as Properties/Transportation: assign a provider as a booking's excursion partner, and a rating survey link generates once that trip is marked Completed.
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="excursionSearch" placeholder="Search by name, type, or location…">
     </div>
 
     <div class="rowlist" id="excursionList">
@@ -719,9 +731,20 @@
       const p = properties.find(x => x.id === row.dataset.id);
       row.querySelector('.rl-title').textContent = p.name;
       row.querySelector('.rl-sub').textContent = [p.host_name, p.location].filter(Boolean).join(' · ');
+      row.dataset.search = [p.name, p.host_name, p.location].filter(Boolean).join(' ').toLowerCase();
       row.addEventListener('click', () => openPropertyEditor(p));
     });
+    applyPropertySearch();
   }
+
+  function applyPropertySearch() {
+    const q = propertySearchInput.value.trim().toLowerCase();
+    propertyList.querySelectorAll('.rlrow').forEach(row => {
+      row.style.display = (!q || (row.dataset.search || '').includes(q)) ? '' : 'none';
+    });
+  }
+  const propertySearchInput = document.getElementById('propertySearch');
+  propertySearchInput.addEventListener('input', applyPropertySearch);
 
   function setRatingReadout(p) {
     pRatingStars.textContent = starString(p ? p.rating_avg : null);
@@ -1057,9 +1080,21 @@
       const d = drivers.find(x => x.id === row.dataset.id);
       row.querySelector('.rl-title').textContent = d.name;
       row.querySelector('.rl-sub').textContent = [d.vehicle_type, d.affiliation].filter(Boolean).join(' · ');
+      row.dataset.search = [d.name, d.email, d.phone, (d.phone || '').replace(/\D/g, ''), d.vehicle_type, d.affiliation, d.tour_company_name]
+        .filter(Boolean).join(' ').toLowerCase();
       row.addEventListener('click', () => openDriverEditor(d));
     });
+    applyDriverSearch();
   }
+
+  function applyDriverSearch() {
+    const q = driverSearchInput.value.trim().toLowerCase();
+    driverList.querySelectorAll('.rlrow').forEach(row => {
+      row.style.display = (!q || (row.dataset.search || '').includes(q)) ? '' : 'none';
+    });
+  }
+  const driverSearchInput = document.getElementById('driverSearch');
+  driverSearchInput.addEventListener('input', applyDriverSearch);
 
   function openDriverEditor(d){
     editingDriverId = d.id;
@@ -1288,9 +1323,20 @@
       const x = excursions.find(i => i.id === row.dataset.id);
       row.querySelector('.rl-title').textContent = x.name;
       row.querySelector('.rl-sub').textContent = [x.excursion_types, x.location].filter(Boolean).join(' · ');
+      row.dataset.search = [x.name, x.excursion_types, x.location, x.contact_email, x.contact_phone].filter(Boolean).join(' ').toLowerCase();
       row.addEventListener('click', () => openExcursionEditor(x));
     });
+    applyExcursionSearch();
   }
+
+  function applyExcursionSearch() {
+    const q = excursionSearchInput.value.trim().toLowerCase();
+    excursionList.querySelectorAll('.rlrow').forEach(row => {
+      row.style.display = (!q || (row.dataset.search || '').includes(q)) ? '' : 'none';
+    });
+  }
+  const excursionSearchInput = document.getElementById('excursionSearch');
+  excursionSearchInput.addEventListener('input', applyExcursionSearch);
 
   function openExcursionEditor(x){
     editingExcursionId = x.id;
