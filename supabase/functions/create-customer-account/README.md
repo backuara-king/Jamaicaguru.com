@@ -44,7 +44,25 @@ default text with something like:
 (`{{ .ConfirmationURL }}` is Supabase's placeholder for the actual signed
 link — leave it as-is, just wrap your own link text/button around it.)
 
-## 4. Deploy the Edge Function
+## 4. Set the RESEND_API_KEY secret (booking confirmation email)
+
+The function sends the booking-confirmation email (trip details) via
+Resend's API directly, separate from the account-setup email Supabase Auth
+sends via SMTP. It needs its own copy of the API key as a function secret:
+
+- **If using the dashboard's Edge Functions editor**: look for a
+  "Secrets" / "Environment Variables" section for the function and add
+  `RESEND_API_KEY` = *(the same Resend API key from step 2)*.
+- **If using the CLI**: `supabase secrets set RESEND_API_KEY=re_xxxxx`
+
+Without this secret the function still runs fine — it just skips the
+confirmation email and only sends the account-setup one.
+
+The confirmation email sends from `bookings@jamaicaguru.com` — that address
+doesn't need to be a real inbox, just on your verified domain. Change the
+`from` line in `index.ts` if you want a different address.
+
+## 5. Deploy the Edge Function
 
 You need the Supabase CLI installed once (`npm install -g supabase`, or see
 supabase.com/docs/guides/cli for other install methods), then from this
@@ -56,30 +74,29 @@ supabase link --project-ref fgzfpeewbcccxaakpmty
 supabase functions deploy create-customer-account
 ```
 
-No extra secrets to set — `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are
-automatically available inside every Edge Function.
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are automatically available
+inside every Edge Function — no need to set those yourself.
 
 (If your Supabase project's dashboard has an Edge Functions section with an
 in-browser code editor, you can paste `index.ts`'s contents there instead —
-check Edge Functions in the left sidebar first before installing the CLI.)
+check Edge Functions in the left sidebar first before installing the CLI.
+That's how this was actually deployed the first time.)
 
-## 5. Wire it up as a Database Webhook
+## 6. Wire it up so it actually fires
 
-**Supabase → Database → Webhooks → Create a new webhook.**
-- Name: `create-customer-account`
-- Table: `bookings`
-- Events: `Update` only
-- Type: `Supabase Edge Functions`
-- Edge Function: `create-customer-account`
-
-That's it — Supabase signs and sends the request automatically, no secrets
-to wire up by hand. The function itself checks whether this particular
-update actually just flipped status to "confirmed" before doing anything,
-so it's safe that it fires on every booking edit.
+The dashboard's **Database → Webhooks** feature errors on this project
+(`schema "supabase_functions" does not exist`), so this is wired via a
+direct SQL trigger instead — already set up if you ran
+**`sql/customer-account-webhook-fallback.sql`**. That trigger calls this
+function whenever a booking's status flips to "confirmed". Nothing to redo
+here unless you haven't run that file yet.
 
 ## Testing it
 
-In admin → Bookings, open a booking with a real email you can check, and
-change its status to **Confirmed**. Within a few seconds you should get the
-invite email. Click through, set a password, and you should land on
+In admin → Bookings, open a booking with a real email you can check
+(a fresh one it hasn't already sent to — repeat emails to the same address
+only get the confirmation email, not a second account-setup email), and
+change its status to **Confirmed**. Within a few seconds to a minute you
+should get two emails: the trip confirmation, and the account-setup invite.
+Click the invite link, set a password, and you should land on
 `my-trip.html` showing that booking.
