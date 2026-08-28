@@ -323,11 +323,22 @@
   .hero-art { position: relative; aspect-ratio: 1; perspective: 1400px; }
   .polaroid-stack { position: relative; width: 100%; height: 100%; }
   .polaroid {
-    position: absolute; background: #fff; padding: 0.5rem 0.5rem 1.6rem; border-radius: 6px;
+    position: absolute; background: #fff; border-radius: 6px;
     box-shadow: 0 26px 46px -18px rgb(20 20 40 / 0.4), 0 8px 16px -10px rgb(20 20 40 / 0.22);
     transition: transform 0.4s cubic-bezier(.2,.8,.2,1), box-shadow 0.4s ease, z-index 0s;
   }
-  .polaroid img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 2px; filter: saturate(1.15) contrast(1.05); }
+  /* Image is absolutely positioned with fixed insets (matching the white
+     "frame" border) rather than width:100%/height:100% — a percentage
+     height on a child doesn't reliably resolve when the parent's own
+     height comes only from aspect-ratio on an absolutely-positioned box,
+     which is exactly .polaroid's situation and rendered inconsistently
+     across browsers/devices (this was showing blank white frames with no
+     photo on some phones). Fixed insets sidestep that entirely. */
+  .polaroid img {
+    position: absolute; inset: 0.5rem 0.5rem 1.6rem;
+    width: auto; height: auto; object-fit: cover; border-radius: 2px;
+    filter: saturate(1.15) contrast(1.05);
+  }
   @media (hover: hover) and (pointer: fine) {
     .polaroid:hover { z-index: 9 !important; box-shadow: 0 34px 60px -18px rgb(20 20 40 / 0.5), 0 10px 20px -10px rgb(20 20 40 / 0.28); }
   }
