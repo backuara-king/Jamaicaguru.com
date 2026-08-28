@@ -311,9 +311,26 @@
   .hero-ctas { margin-top: 2.1rem; display: flex; flex-wrap: wrap; gap: 0.9rem; }
   .hero .btn-outline { border-color: rgb(255 255 255 / 0.7); color: #fff; }
   .hero .btn-outline:hover { background: #fff; color: var(--purple); }
-  .hero-stats { margin-top: 2.75rem; display: flex; gap: clamp(1.5rem, 4vw, 3rem); flex-wrap: wrap; }
+  .hero-stats { margin-top: 2.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .hero-stats .stat {
+    padding: 0.7rem 1.15rem; border-radius: 14px;
+    background: rgb(255 255 255 / 0.08); border: 1px solid rgb(255 255 255 / 0.14);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
   .hero-stats .stat b { display: block; font-size: var(--step-2); font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
   .hero-stats .stat span { color: rgb(255 255 255 / 0.75); font-size: var(--step--1); }
+
+  /* Dark frosted-glass variant for the hero copy panel — overrides
+     .glass-panel's default light-tinted background, since this one sits
+     over a photo with light-on-dark text rather than a plain paper bg. */
+  .hero-copy {
+    padding: clamp(1.75rem, 4vw, 2.75rem);
+    border-radius: 26px;
+    background: rgba(12, 8, 24, 0.4);
+    border-color: rgb(255 255 255 / 0.14);
+    box-shadow: 0 34px 60px -30px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  }
+  @media (max-width: 860px) { .hero-copy { padding: clamp(1.5rem, 6vw, 2.25rem); } }
 
   /* ---------- Hero art: a layered stack of "floating" glass cards instead
      of a flat illustration — the depth cue is real box-shadow + rotation +
@@ -666,7 +683,7 @@
   <section class="hero" id="top">
     <div class="mesh-bg" aria-hidden="true"><span class="mesh-blob"></span></div>
     <div class="wrap hero-grid">
-      <div>
+      <div class="hero-copy glass-panel">
         <span class="kicker">Unlock the Real Jamaica</span>
         <h1>Come explore Jamaica with the <span class="accent">Guru</span></h1>
         <p class="lede">We're Jamaica's most trusted travel partner, crafting authentic all-inclusive trips &mdash; a 5-star Airbnb, private transportation, and every excursion booked &mdash; that turn a vacation into a lifetime of memories.</p>
