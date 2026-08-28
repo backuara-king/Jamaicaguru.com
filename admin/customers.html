@@ -252,7 +252,7 @@
   </div>
 
   <div class="field" style="margin-bottom:14px;">
-    <input type="text" id="customerSearch" placeholder="Search by name or email…">
+    <input type="text" id="customerSearch" placeholder="Search by name, email, or phone…">
   </div>
 
   <div class="two-up">
@@ -333,7 +333,9 @@
     customers.forEach((c, i) => {
       const row = document.createElement('div');
       row.className = 'rlrow';
-      row.dataset.search = [c.name, c.email, c.phone].filter(Boolean).join(' ').toLowerCase();
+      // Phone included both as-stored and digits-only, so searching
+      // "8765550100" still matches a number stored as "876-555-0100".
+      row.dataset.search = [c.name, c.email, c.phone, (c.phone || '').replace(/\D/g, '')].filter(Boolean).join(' ').toLowerCase();
       row.innerHTML = `
         <div class="rl-top"><span class="rl-title">${c.name}</span><span class="badge ${c.trips.length > 1 ? 'ok' : 'neutral'}">${c.trips.length > 1 ? 'Repeat · ' + c.trips.length + ' trips' : '1 trip'}</span></div>
         <div class="rl-sub">${c.email}</div>

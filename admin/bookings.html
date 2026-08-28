@@ -278,7 +278,7 @@
   </div>
 
   <div class="field" style="margin-bottom:14px;">
-    <input type="text" id="bookingSearch" placeholder="Search by name, email, or booking number…">
+    <input type="text" id="bookingSearch" placeholder="Search by name, email, phone, or booking number…">
   </div>
 
   <div class="filter-row" id="filterRow">
@@ -475,7 +475,9 @@
       row.className = 'rlrow';
       row.dataset.index = i;
       row.dataset.status = status;
-      row.dataset.search = [guestName, b.email, b.booking_ref, b.phone].filter(Boolean).join(' ').toLowerCase();
+      // Phone included both as-stored and digits-only, so searching
+      // "8765550100" still matches a number stored as "876-555-0100".
+      row.dataset.search = [guestName, b.email, b.booking_ref, b.phone, (b.phone || '').replace(/\D/g, '')].filter(Boolean).join(' ').toLowerCase();
       row.innerHTML = `
         <div class="rl-top"><span class="rl-title">${b.booking_ref} — ${guestName}</span><span class="badge ${STATUS_BADGE[status]}">${STATUS_LABEL[status]}</span></div>
         <div class="rl-sub">${b.package_name} · Arrives ${fmtDate(b.arrival_date)}</div>
