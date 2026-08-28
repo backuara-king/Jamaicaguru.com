@@ -119,8 +119,32 @@
     transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   .btn:active { transform: translateY(1px); }
-  .btn-solid { background: var(--purple); color: #fff; }
+
+  /* Primary buttons get a soft pulsing glow halo plus a light sweep that
+     runs across the surface on a loop — the "major" CTAs across the page
+     all share this one class, so this applies everywhere at once. */
+  .btn-solid {
+    position: relative; overflow: hidden; isolation: isolate;
+    background: var(--purple); color: #fff;
+    animation: btn-glow-pulse 3.4s ease-in-out infinite;
+  }
+  .btn-solid::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgb(255 255 255 / 0.55), transparent);
+    transform: skewX(-20deg); pointer-events: none;
+    animation: btn-shine 3.4s ease-in-out infinite;
+  }
   .btn-solid:hover { background: var(--pink); color: var(--purple-tint); }
+  @keyframes btn-shine {
+    0% { left: -60%; }
+    35% { left: 130%; }
+    100% { left: 130%; }
+  }
+  @keyframes btn-glow-pulse {
+    0%, 100% { box-shadow: 0 4px 16px -6px color-mix(in srgb, var(--purple) 55%, transparent); }
+    50% { box-shadow: 0 6px 28px 0px color-mix(in srgb, var(--purple) 70%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) { .btn-solid, .btn-solid::after { animation: none; } }
   .btn-outline { background: transparent; border-color: var(--purple); color: var(--purple); }
   .btn-outline:hover { background: var(--purple); color: #fff; }
   .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
