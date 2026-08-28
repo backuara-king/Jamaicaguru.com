@@ -141,6 +141,12 @@
     background-repeat:no-repeat !important; background-position:right 10px center !important; background-size:14px !important;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
   }
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:9px; border:1px solid var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .icon-btn.danger{color:var(--danger); border-color:var(--danger-bg);}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
 
   /* detail panel */
   .detail-panel{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;}
@@ -271,6 +277,10 @@
     <button class="btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>New Booking</button>
   </div>
 
+  <div class="field" style="margin-bottom:14px;">
+    <input type="text" id="bookingSearch" placeholder="Search by name, email, or booking number…">
+  </div>
+
   <div class="filter-row" id="filterRow">
     <button class="filter-pill active" data-filter="all">All</button>
     <button class="filter-pill" data-filter="new">New</button>
@@ -294,13 +304,18 @@
             <h2 id="dGuest">—</h2>
             <div class="sub" id="dPackage">—</div>
           </div>
-          <select id="dStatusSelect" class="badge status-select" style="cursor:pointer;">
-            <option value="new">New</option>
-            <option value="pending">Pending Payment</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <select id="dStatusSelect" class="badge status-select" style="cursor:pointer;">
+              <option value="new">New</option>
+              <option value="pending">Pending Payment</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="icon-btn danger" id="deleteBookingBtn" type="button" aria-label="Delete booking" title="Delete booking">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16Z"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="kv-grid">
@@ -460,6 +475,7 @@
       row.className = 'rlrow';
       row.dataset.index = i;
       row.dataset.status = status;
+      row.dataset.search = [guestName, b.email, b.booking_ref, b.phone].filter(Boolean).join(' ').toLowerCase();
       row.innerHTML = `
         <div class="rl-top"><span class="rl-title">${b.booking_ref} — ${guestName}</span><span class="badge ${STATUS_BADGE[status]}">${STATUS_LABEL[status]}</span></div>
         <div class="rl-sub">${b.package_name} · Arrives ${fmtDate(b.arrival_date)}</div>
@@ -480,14 +496,24 @@
     }
   }
 
+  // Status filter pills and the search box both narrow the same list —
+  // combined here so either one (or both together) can be active at once.
+  const bookingSearchInput = document.getElementById('bookingSearch');
+  function applyBookingFilters() {
+    const activeFilter = document.querySelector('.filter-pill.active')?.dataset.filter || 'all';
+    const q = bookingSearchInput.value.trim().toLowerCase();
+    document.querySelectorAll('#bookingList .rlrow').forEach(row => {
+      const statusMatch = activeFilter === 'all' || row.dataset.status === activeFilter;
+      const searchMatch = !q || (row.dataset.search || '').includes(q);
+      row.style.display = (statusMatch && searchMatch) ? '' : 'none';
+    });
+  }
+  bookingSearchInput.addEventListener('input', applyBookingFilters);
   document.querySelectorAll('.filter-pill').forEach(p => {
     p.addEventListener('click', () => {
       document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
       p.classList.add('active');
-      const f = p.dataset.filter;
-      document.querySelectorAll('#bookingList .rlrow').forEach(row => {
-        row.style.display = (f === 'all' || row.dataset.status === f) ? '' : 'none';
-      });
+      applyBookingFilters();
     });
   });
 
@@ -635,6 +661,15 @@
     document.getElementById('dPaid').textContent = fmt(due);
     document.getElementById('dOutstanding').textContent = fmt(remaining);
     renderReviewLink(b);
+
+    document.getElementById('deleteBookingBtn').onclick = async () => {
+      if (!confirm(`Delete booking ${b.booking_ref} for ${guestName}? This can't be undone.`)) return;
+      const { error: delError } = await window.sb.from('bookings').delete().eq('id', b.id);
+      if (delError) { alert("Couldn't delete: " + delError.message); return; }
+      row.remove();
+      document.getElementById('detailPanel').style.display = 'none';
+      document.getElementById('detailEmpty').style.display = 'block';
+    };
 
     dPropertySelect.value = b.property_id || '';
     renderPropertyReviewLink(b);
